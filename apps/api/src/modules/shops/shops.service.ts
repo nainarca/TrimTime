@@ -59,23 +59,36 @@ export class ShopsService {
 
   // ── Queries ───────────────────────────────────────────────────────────────
 
-  async findById(id: string) {
+  async findById(id: string, allowedShopIds?: string[]) {
     const shop = await this.prisma.shop.findUnique({ where: { id } });
     if (!shop) throw new NotFoundException(`Shop ${id} not found`);
+    if (allowedShopIds && !allowedShopIds.includes(shop.id)) {
+      throw new ForbiddenException('Access to this shop is not permitted');
+    }
     return shop;
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slug: string, allowedShopIds?: string[]) {
     const shop = await this.prisma.shop.findUnique({ where: { slug } });
     if (!shop) throw new NotFoundException(`Shop with slug "${slug}" not found`);
+    if (allowedShopIds && !allowedShopIds.includes(shop.id)) {
+      throw new ForbiddenException('Access to this shop is not permitted');
+    }
     return shop;
   }
 
-  async findByOwner(ownerId: string) {
-    return this.prisma.shop.findFirst({ where: { ownerId, isActive: true } });
+  async findByOwner(ownerId: string, allowedShopIds?: string[]) {
+    const shop = await this.prisma.shop.findFirst({ where: { ownerId, isActive: true } });
+    if (shop && allowedShopIds && !allowedShopIds.includes(shop.id)) {
+      throw new ForbiddenException('Access to this shop is not permitted');
+    }
+    return shop;
   }
 
-  async getBranches(shopId: string) {
+  async getBranches(shopId: string, allowedShopIds?: string[]) {
+    if (allowedShopIds && !allowedShopIds.includes(shopId)) {
+      throw new ForbiddenException('Access to this shop is not permitted');
+    }
     return this.prisma.shopBranch.findMany({
       where: { shopId, isActive: true },
       orderBy: [{ isMain: 'desc' }, { createdAt: 'asc' }],

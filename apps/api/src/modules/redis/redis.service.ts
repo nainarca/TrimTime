@@ -164,11 +164,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   /** Daily ticket counter key for a shop */
   ticketCounterKey(shopId: string, date: string): string {
-    return `ticket:${shopId}:${date}`;
+    // include shopId to avoid cross-tenant conflicts
+    return `ticket_counter:${shopId}:${date}`;
   }
 
-  /** Live queue state for a shop/barber */
-  queueStateKey(shopId: string, barberId?: string): string {
+  /** Live queue state for a shop/branch/barber */
+  queueStateKey(shopId: string, branchId?: string, barberId?: string): string {
+    if (branchId) {
+      return barberId
+        ? `queue:${shopId}:branch:${branchId}:barber:${barberId}`
+        : `queue:${shopId}:branch:${branchId}`;
+    }
     return barberId
       ? `queue:${shopId}:barber:${barberId}`
       : `queue:${shopId}`;

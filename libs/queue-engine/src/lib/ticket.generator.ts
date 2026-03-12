@@ -21,5 +21,6 @@ export function nextTicketNumber(current: number, maxTicket = 999): number {
  * Generates a Redis key for a shop's daily ticket counter
  */
 export function ticketCounterKey(shopId: string, date: string): string {
-  return `ticket:${shopId}:${date}`;
+  // prefix includes shop to guarantee per-tenant isolation
+  return `ticket_counter:${shopId}:${date}`;
 }

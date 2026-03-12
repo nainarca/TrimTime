@@ -18,7 +18,17 @@ export function graphqlConfig(config: ConfigService): ApolloDriverConfig {
         },
       },
     },
-    context: ({ req, res, extra }) => ({ req: req ?? extra?.request, res }),
+    context: ({ req, res, extra }) => {
+      const request = req ?? extra?.request;
+      const user = request?.user;
+      return {
+        req: request,
+        res,
+        userId: user?.id,
+        roles: user?.roles,
+        shopIds: user?.shopIds,
+      };
+    },
     formatError: (error) => {
       // Strip internal error details in production
       if (process.env.NODE_ENV === 'production') {

@@ -28,6 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('User not found or inactive');
     }
 
-    return user;
+    // attach shopIds from payload (could be multiple)
+    const shopIds = payload.shopIds ?? [];
+    return Object.assign(user, { shopIds });
   }
 }

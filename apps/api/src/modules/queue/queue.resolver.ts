@@ -16,7 +16,7 @@ import {
 import { JoinQueueInput } from './dto/join-queue.input';
 import { UpdateQueueStatusInput } from './dto/update-queue-status.input';
 import { GqlJwtGuard } from '../auth/guards/gql-jwt.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CurrentUser, AuthenticatedUser } from '../auth/decorators/current-user.decorator';
 import { pubSub, QUEUE_EVENTS } from './queue.pubsub';
 import { User } from '@prisma/client';
 
@@ -62,9 +62,9 @@ export class QueueResolver {
   })
   joinQueue(
     @Args('input') input: JoinQueueInput,
-    @Optional() @CurrentUser() user?: User,
+    @Optional() @CurrentUser() user?: AuthenticatedUser,
   ): Promise<QueueEntryModel> {
-    return this.queueService.joinQueue(input, user?.id) as unknown as Promise<QueueEntryModel>;
+    return this.queueService.joinQueue(input, user?.id, user?.shopIds) as unknown as Promise<QueueEntryModel>;
   }
 
   @UseGuards(GqlJwtGuard)
@@ -73,9 +73,9 @@ export class QueueResolver {
   })
   updateQueueStatus(
     @Args('input') input: UpdateQueueStatusInput,
-    @CurrentUser() user: User,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<QueueEntryModel> {
-    return this.queueService.updateStatus(input, user.id) as unknown as Promise<QueueEntryModel>;
+    return this.queueService.updateStatus(input, user.id, user.shopIds) as unknown as Promise<QueueEntryModel>;
   }
 
   @UseGuards(GqlJwtGuard)
@@ -84,9 +84,9 @@ export class QueueResolver {
   })
   leaveQueue(
     @Args('entryId', { type: () => ID }) entryId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<QueueEntryModel> {
-    return this.queueService.leaveQueue(entryId, user.id) as unknown as Promise<QueueEntryModel>;
+    return this.queueService.leaveQueue(entryId, user.id, user.shopIds) as unknown as Promise<QueueEntryModel>;
   }
 
   // ── Subscriptions ─────────────────────────────────────────────────────────

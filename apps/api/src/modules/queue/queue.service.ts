@@ -32,7 +32,11 @@ export class QueueService {
 
   // ── Join queue ─────────────────────────────────────────────────────────────
 
-  async joinQueue(input: JoinQueueInput, customerId?: string) {
+  async joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]) {
+    // tenant check
+    if (allowedShopIds && !allowedShopIds.includes(input.shopId)) {
+      throw new ForbiddenException('Cannot join queue for another shop');
+    }
     // Validate shop & branch
     const branch = await this.prisma.shopBranch.findFirst({
       where: { id: input.branchId, shopId: input.shopId, isActive: true },
@@ -101,9 +105,12 @@ export class QueueService {
     return entries;
   }
 
-  async getEntryById(entryId: string) {
+  async getEntryById(entryId: string, allowedShopIds?: string[]) {
     const entry = await this.prisma.queueEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException(`Queue entry ${entryId} not found`);
+    if (allowedShopIds && !allowedShopIds.includes(entry.shopId)) {
+      throw new ForbiddenException('Cannot access queue entry from another shop');
+    }
     return entry;
   }
 
@@ -141,8 +148,8 @@ export class QueueService {
 
   // ── Status transitions ─────────────────────────────────────────────────────
 
-  async updateStatus(input: UpdateQueueStatusInput, actorId: string) {
-    const entry = await this.getEntryById(input.entryId);
+  async updateStatus(input: UpdateQueueStatusInput, actorId: string, allowedShopIds?: string[]) {
+    const entry = await this.getEntryById(input.entryId, allowedShopIds);
 
     if (!isValidTransition(entry.status as QueueStatus, input.newStatus)) {
       throw new BadRequestException(
@@ -176,8 +183,8 @@ export class QueueService {
 
   // ── Customer leaves queue ─────────────────────────────────────────────────
 
-  async leaveQueue(entryId: string, customerId: string) {
-    const entry = await this.getEntryById(entryId);
+  async leaveQueue(entryId: string, customerId: string, allowedShopIds?: string[]) {
+    const entry = await this.getEntryById(entryId, allowedShopIds);
 
     if (entry.customerId !== customerId) {
       throw new BadRequestException('Not your queue entry');
