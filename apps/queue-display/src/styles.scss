@@ -1,0 +1,41 @@
+// ============================================================
+// TrimTime Queue Display — Kiosk Screen Styles
+// ============================================================
+:root {
+  --tt-bg:      #0f172a;
+  --tt-surface: #1e293b;
+  --tt-primary: #4f46e5;
+  --tt-accent:  #f59e0b;
+  --tt-text:    #f1f5f9;
+  --tt-muted:   #94a3b8;
+
+  // Kiosk-specific large typography
+  --tt-display-font-size: clamp(48px, 8vw, 120px);
+  --tt-title-font-size:   clamp(24px, 4vw, 56px);
+  --tt-body-font-size:    clamp(16px, 2vw, 28px);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--tt-bg);
+  color: var(--tt-text);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden; // Kiosk — no scroll
+  height: 100vh;
+  width: 100vw;
+}
+
+// Now serving ticker
+.now-serving {
+  font-size: var(--tt-display-font-size);
+  font-weight: 900;
+  color: var(--tt-accent);
+  letter-spacing: -3px;
+}
+
+// Queue list items
+.queue-ticket {
+  font-size: var(--tt-title-font-size);
+  font-weight: 700;
+}

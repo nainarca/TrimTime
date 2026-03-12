@@ -1,0 +1,661 @@
+// ============================================================
+// TRIMTIME — Prisma Database Schema
+// PostgreSQL | 20 Models | Generated: 2025
+//
+// Naming conventions:
+//   - Models:  PascalCase  (maps to snake_case tables via @@map)
+//   - Fields:  camelCase   (maps to snake_case columns via @map)
+//   - Enums:   SCREAMING_SNAKE_CASE
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  BARBER
+  SHOP_OWNER
+  ADMIN
+}
+
+enum BarberStatus {
+  AVAILABLE
+  BUSY
+  ON_BREAK
+  OFFLINE
+}
+
+enum QueueStatus {
+  WAITING
+  CALLED
+  SERVING
+  SERVED
+  NO_SHOW
+  LEFT
+  REMOVED
+}
+
+enum EntryType {
+  WALK_IN
+  APPOINTMENT
+}
+
+enum QrCodeType {
+  SHOP
+  BRANCH
+  BARBER
+  CAMPAIGN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  QUEUED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  PAUSED
+}
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+  PUSH
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ============================================================
+// MODEL 1: User
+// Base user record. All roles share this table.
+// ============================================================
+
+model User {
+  id            String   @id @default(uuid())
+  phone         String?  @unique @map("phone")
+  email         String?  @unique @map("email")
+  name          String?  @map("name")
+  avatarUrl     String?  @map("avatar_url")
+  isVerified    Boolean  @default(false) @map("is_verified")
+  isActive      Boolean  @default(true)  @map("is_active")
+  preferredLang String   @default("en")  @map("preferred_lang")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  roles          UserRoleAssignment[]
+  ownedShops     Shop[]               @relation("ShopOwner")
+  barberProfile  Barber?
+  queueEntries   QueueEntry[]         @relation("CustomerQueueEntries")
+  appointments   Appointment[]        @relation("CustomerAppointments")
+  reviews        Review[]             @relation("CustomerReviews")
+  otpRequests    OtpRequest[]
+  notifications  NotificationLog[]
+  auditActions   AuditLog[]           @relation("AuditActor")
+
+  @@map("users")
+}
+
+// ============================================================
+// MODEL 2: UserRoleAssignment
+// Many-to-many: user ↔ role, scoped optionally to a shop
+// ============================================================
+
+model UserRoleAssignment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  role      UserRole
+  shopId    String?  @map("shop_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role, shopId], name: "unique_user_role_shop")
+  @@index([userId])
+  @@index([shopId])
+  @@map("user_roles")
+}
+
+// ============================================================
+// MODEL 3: Shop
+// Barber shop entity. One owner can have multiple shops.
+// ============================================================
+
+model Shop {
+  id          String   @id @default(uuid())
+  ownerId     String   @map("owner_id")
+  name        String
+  slug        String   @unique  // e.g. "barber-king" → trimtime.app/q/barber-king
+  description String?
+  logoUrl     String?  @map("logo_url")
+  phone       String
+  email       String?
+  country     String   @default("US")
+  timezone    String   @default("UTC")
+  currency    String   @default("USD")
+  isActive    Boolean  @default(true)  @map("is_active")
+  isVerified  Boolean  @default(false) @map("is_verified")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  owner         User                 @relation("ShopOwner", fields: [ownerId], references: [id])
+  branches      ShopBranch[]
+  barbers       Barber[]
+  services      Service[]
+  qrCodes       QrCode[]
+  queueEntries  QueueEntry[]
+  appointments  Appointment[]
+  reviews       Review[]
+  subscription  Subscription?
+  userRoles     UserRoleAssignment[]
+  analytics     AnalyticsSnapshot[]
+
+  @@index([ownerId])
+  @@index([isActive])
+  @@map("shops")
+}
+
+// ============================================================
+// MODEL 4: ShopBranch
+// A shop can have multiple physical branches/locations
+// ============================================================
+
+model ShopBranch {
+  id        String   @id @default(uuid())
+  shopId    String   @map("shop_id")
+  name      String
+  address   String
+  city      String
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  phone     String?
+  isActive  Boolean  @default(true)  @map("is_active")
+  isMain    Boolean  @default(false) @map("is_main")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  operatingHours OperatingHour[]
+  barbers        Barber[]
+  qrCodes        QrCode[]
+  queueEntries   QueueEntry[]
+  appointments   Appointment[]
+
+  @@index([shopId, isActive])
+  @@map("shop_branches")
+}
+
+// ============================================================
+// MODEL 5: OperatingHour
+// Branch opening hours per day of week
+// ============================================================
+
+model OperatingHour {
+  id         String  @id @default(uuid())
+  branchId   String  @map("branch_id")
+  dayOfWeek  Int     @map("day_of_week")  // 0=Sunday … 6=Saturday
+  openTime   String  @map("open_time")    // "09:00"
+  closeTime  String  @map("close_time")   // "21:00"
+  isClosed   Boolean @default(false) @map("is_closed")
+
+  // ── Relations ─────────────────────────────────────────
+  branch ShopBranch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, dayOfWeek], name: "unique_branch_day")
+  @@map("operating_hours")
+}
+
+// ============================================================
+// MODEL 6: Barber
+// Staff member profile, linked 1:1 to a User
+// ============================================================
+
+model Barber {
+  id                     String       @id @default(uuid())
+  userId                 String       @unique @map("user_id")
+  shopId                 String       @map("shop_id")
+  branchId               String?      @map("branch_id")
+  displayName            String       @map("display_name")
+  bio                    String?
+  avatarUrl              String?      @map("avatar_url")
+  avgServiceDurationMins Int          @default(20) @map("avg_service_duration_mins")
+  currentStatus          BarberStatus @default(OFFLINE) @map("current_status")
+  queueAccepting         Boolean      @default(false) @map("queue_accepting")
+  maxQueueSize           Int          @default(20)    @map("max_queue_size")
+  isActive               Boolean      @default(true)  @map("is_active")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  user         User                @relation(fields: [userId], references: [id])
+  shop         Shop                @relation(fields: [shopId], references: [id])
+  branch       ShopBranch?         @relation(fields: [branchId], references: [id])
+  services     BarberService[]
+  workingHours WorkingHour[]
+  breaks       BarberBreak[]
+  qrCodes      QrCode[]
+  queueEntries QueueEntry[]        @relation("BarberQueueEntries")
+  appointments Appointment[]       @relation("BarberAppointments")
+  reviews      Review[]            @relation("BarberReviews")
+  analytics    AnalyticsSnapshot[]
+
+  @@index([shopId, isActive])
+  @@index([shopId, currentStatus])
+  @@map("barbers")
+}
+
+// ============================================================
+// MODEL 7: Service
+// Service catalog for a shop (haircut types, prices, durations)
+// ============================================================
+
+model Service {
+  id           String   @id @default(uuid())
+  shopId       String   @map("shop_id")
+  name         String
+  description  String?
+  durationMins Int      @map("duration_mins")
+  price        Decimal  @db.Decimal(10, 2)
+  currency     String   @default("USD")
+  isActive     Boolean  @default(true)  @map("is_active")
+  displayOrder Int      @default(0)     @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop         Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  barbers      BarberService[]
+  queueEntries QueueEntry[]
+  appointments Appointment[]
+
+  @@index([shopId, isActive])
+  @@map("services")
+}
+
+// ============================================================
+// MODEL 8: BarberService
+// Junction: which barber offers which services (with overrides)
+// ============================================================
+
+model BarberService {
+  id             String   @id @default(uuid())
+  barberId       String   @map("barber_id")
+  serviceId      String   @map("service_id")
+  customDuration Int?     @map("custom_duration")
+  customPrice    Decimal? @db.Decimal(10, 2) @map("custom_price")
+  isActive       Boolean  @default(true) @map("is_active")
+
+  // ── Relations ─────────────────────────────────────────
+  barber  Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, serviceId], name: "unique_barber_service")
+  @@map("barber_services")
+}
+
+// ============================================================
+// MODEL 9: WorkingHour
+// Per-barber schedule (different from branch operating hours)
+// ============================================================
+
+model WorkingHour {
+  id         String  @id @default(uuid())
+  barberId   String  @map("barber_id")
+  dayOfWeek  Int     @map("day_of_week")  // 0=Sunday … 6=Saturday
+  startTime  String  @map("start_time")   // "09:00"
+  endTime    String  @map("end_time")     // "18:00"
+  isWorking  Boolean @default(true) @map("is_working")
+
+  // ── Relations ─────────────────────────────────────────
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, dayOfWeek], name: "unique_barber_day")
+  @@map("working_hours")
+}
+
+// ============================================================
+// MODEL 10: QrCode
+// QR codes for shops, branches, or specific barbers
+// ============================================================
+
+model QrCode {
+  id        String     @id @default(uuid())
+  code      String     @unique  // UUID used as the scan token
+  shopId    String     @map("shop_id")
+  branchId  String?    @map("branch_id")
+  barberId  String?    @map("barber_id")
+  type      QrCodeType
+  targetUrl String     @map("target_url")
+  expiresAt DateTime?  @map("expires_at")
+  scanCount Int        @default(0) @map("scan_count")
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop   Shop        @relation(fields: [shopId], references: [id])
+  branch ShopBranch? @relation(fields: [branchId], references: [id])
+  barber Barber?     @relation(fields: [barberId], references: [id])
+
+  // Hot path: QR scan lookup must be sub-10ms
+  @@index([code, isActive], name: "idx_qr_code_active")
+  @@index([shopId, isActive])
+  @@map("qr_codes")
+}
+
+// ============================================================
+// MODEL 11: QueueEntry  ← CORE TABLE
+// Every customer interaction with the queue is a row here.
+// ============================================================
+
+model QueueEntry {
+  id                String      @id @default(uuid())
+  shopId            String      @map("shop_id")
+  branchId          String      @map("branch_id")
+  barberId          String?     @map("barber_id")
+  customerId        String?     @map("customer_id")
+  guestPhone        String?     @map("guest_phone")
+  guestName         String?     @map("guest_name")
+  serviceId         String?     @map("service_id")
+  ticketNumber      Int         @map("ticket_number")
+  ticketDisplay     String      @default("A000") @map("ticket_display")
+  entryType         EntryType   @default(WALK_IN) @map("entry_type")
+  priority          Int         @default(0)
+  status            QueueStatus @default(WAITING)
+  position          Int
+  estimatedWaitMins Int?        @map("estimated_wait_mins")
+  joinedAt          DateTime    @default(now()) @map("joined_at")
+  calledAt          DateTime?   @map("called_at")
+  servingAt         DateTime?   @map("serving_at")
+  servedAt          DateTime?   @map("served_at")
+  leftAt            DateTime?   @map("left_at")
+  noShowAt          DateTime?   @map("no_show_at")
+  appointmentId     String?     @unique @map("appointment_id")
+  notes             String?
+  createdAt         DateTime    @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop        Shop         @relation(fields: [shopId], references: [id])
+  branch      ShopBranch   @relation(fields: [branchId], references: [id])
+  barber      Barber?      @relation("BarberQueueEntries", fields: [barberId], references: [id])
+  customer    User?        @relation("CustomerQueueEntries", fields: [customerId], references: [id])
+  service     Service?     @relation(fields: [serviceId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  review      Review?
+
+  // ── Critical Indexes ────────────────────────────────
+  // Primary query: "all WAITING entries for this barber, ordered by joinedAt"
+  @@index([shopId, status, joinedAt],   name: "idx_queue_shop_status_time")
+  @@index([barberId, status],           name: "idx_queue_barber_status")
+  @@index([customerId, status],         name: "idx_queue_customer_status")
+  @@index([shopId, joinedAt],           name: "idx_queue_shop_time")
+  // Daily ticket uniqueness enforced at application layer (Redis INCR)
+  @@map("queue_entries")
+}
+
+// ============================================================
+// MODEL 12: Appointment
+// Scheduled booking that converts to a QueueEntry on arrival
+// ============================================================
+
+model Appointment {
+  id           String            @id @default(uuid())
+  shopId       String            @map("shop_id")
+  branchId     String            @map("branch_id")
+  barberId     String            @map("barber_id")
+  customerId   String            @map("customer_id")
+  serviceId    String            @map("service_id")
+  scheduledAt  DateTime          @map("scheduled_at")
+  durationMins Int               @map("duration_mins")
+  status       AppointmentStatus @default(PENDING)
+  notes        String?
+  reminderSent Boolean           @default(false) @map("reminder_sent")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop       Shop       @relation(fields: [shopId], references: [id])
+  branch     ShopBranch @relation(fields: [branchId], references: [id])
+  barber     Barber     @relation("BarberAppointments", fields: [barberId], references: [id])
+  customer   User       @relation("CustomerAppointments", fields: [customerId], references: [id])
+  service    Service    @relation(fields: [serviceId], references: [id])
+  queueEntry QueueEntry?
+
+  @@index([barberId, scheduledAt, status], name: "idx_appt_barber_time_status")
+  @@index([customerId, scheduledAt],       name: "idx_appt_customer_time")
+  @@index([shopId, scheduledAt],           name: "idx_appt_shop_time")
+  @@map("appointments")
+}
+
+// ============================================================
+// MODEL 13: BarberBreak
+// Tracks when a barber pauses queue acceptance (break/lunch)
+// ============================================================
+
+model BarberBreak {
+  id        String    @id @default(uuid())
+  barberId  String    @map("barber_id")
+  startsAt  DateTime  @map("starts_at")
+  endsAt    DateTime? @map("ends_at")   // NULL = currently on break
+  reason    String?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@index([barberId, startsAt])
+  @@map("barber_breaks")
+}
+
+// ============================================================
+// MODEL 14: Review
+// Customer review after a completed service
+// ============================================================
+
+model Review {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  barberId    String   @map("barber_id")
+  customerId  String   @map("customer_id")
+  queueId     String?  @unique @map("queue_id")  // one review per queue visit
+  rating      Int      // 1–5
+  comment     String?
+  isVisible   Boolean  @default(true) @map("is_visible")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop       Shop       @relation(fields: [shopId], references: [id])
+  barber     Barber     @relation("BarberReviews", fields: [barberId], references: [id])
+  customer   User       @relation("CustomerReviews", fields: [customerId], references: [id])
+  queueEntry QueueEntry? @relation(fields: [queueId], references: [id])
+
+  @@unique([customerId, queueId], name: "unique_customer_queue_review")
+  @@index([barberId, isVisible])
+  @@index([shopId, isVisible])
+  @@map("reviews")
+}
+
+// ============================================================
+// MODEL 15: SubscriptionPlan
+// SaaS plan definitions (Free / Pro / Enterprise)
+// ============================================================
+
+model SubscriptionPlan {
+  id                     String   @id @default(uuid())
+  name                   String   @unique
+  stripePriceId          String?  @map("stripe_price_id")
+  priceMonthly           Decimal  @db.Decimal(10, 2) @map("price_monthly")
+  maxBarbers             Int      @map("max_barbers")
+  maxDailyQueueEntries   Int      @map("max_daily_queue_entries")
+  analyticsRetentionDays Int      @map("analytics_retention_days")
+  smsCreditsMonthly      Int      @default(0) @map("sms_credits_monthly")
+  hasAppointments        Boolean  @default(false) @map("has_appointments")
+  hasAnalytics           Boolean  @default(false) @map("has_analytics")
+  hasMultiBranch         Boolean  @default(false) @map("has_multi_branch")
+  hasApiAccess           Boolean  @default(false) @map("has_api_access")
+  isActive               Boolean  @default(true)  @map("is_active")
+  createdAt              DateTime @default(now())  @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+// ============================================================
+// MODEL 16: Subscription
+// Active subscription record for a shop
+// ============================================================
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  shopId               String             @unique @map("shop_id")
+  planId               String             @map("plan_id")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  status               SubscriptionStatus @default(TRIALING)
+  currentPeriodStart   DateTime           @map("current_period_start")
+  currentPeriodEnd     DateTime           @map("current_period_end")
+  trialEndsAt          DateTime?          @map("trial_ends_at")
+  cancelledAt          DateTime?          @map("cancelled_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt      @map("updated_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop Shop             @relation(fields: [shopId], references: [id])
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+// ============================================================
+// MODEL 17: NotificationLog
+// Audit trail for every notification sent by the platform
+// ============================================================
+
+model NotificationLog {
+  id           String              @id @default(uuid())
+  userId       String?             @map("user_id")
+  queueEntryId String?             @map("queue_entry_id")
+  channel      NotificationChannel
+  eventType    String              @map("event_type")
+  recipient    String              // phone number or email address
+  content      String
+  status       NotificationStatus  @default(PENDING)
+  sentAt       DateTime?           @map("sent_at")
+  errorMessage String?             @map("error_message")
+  createdAt    DateTime            @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt],   name: "idx_notif_user_time")
+  @@index([queueEntryId],        name: "idx_notif_queue_entry")
+  @@index([status, createdAt],   name: "idx_notif_status_time")
+  @@map("notification_logs")
+}
+
+// ============================================================
+// MODEL 18: OtpRequest
+// OTP requests for phone-based authentication
+// ============================================================
+
+model OtpRequest {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  phone     String
+  otpHash   String   @map("otp_hash")  // bcrypt hash — never store plaintext
+  expiresAt DateTime @map("expires_at")
+  isUsed    Boolean  @default(false) @map("is_used")
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  user User? @relation(fields: [userId], references: [id])
+
+  // Hot query path: check valid OTP by phone
+  @@index([phone, isUsed, expiresAt], name: "idx_otp_phone_valid")
+  @@map("otp_requests")
+}
+
+// ============================================================
+// MODEL 19: AuditLog
+// Immutable audit trail for all significant platform actions
+// ============================================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?  @map("actor_id")
+  actorRole  String?  @map("actor_role")
+  entityType String   @map("entity_type")  // 'queue_entry', 'shop', 'barber', ...
+  entityId   String   @map("entity_id")
+  action     String                         // 'queue.joined', 'barber.status_changed', ...
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId],  name: "idx_audit_entity")
+  @@index([actorId, createdAt],    name: "idx_audit_actor_time")
+  @@index([action, createdAt],     name: "idx_audit_action_time")
+  @@map("audit_logs")
+}
+
+// ============================================================
+// MODEL 20: AnalyticsSnapshot
+// Daily aggregated metrics per shop / per barber
+// Populated by scheduled BullMQ aggregation job (nightly)
+// ============================================================
+
+model AnalyticsSnapshot {
+  id                 String   @id @default(uuid())
+  shopId             String   @map("shop_id")
+  barberId           String?  @map("barber_id")
+  date               DateTime @db.Date         // date-only field
+  totalServed        Int      @default(0) @map("total_served")
+  totalNoShow        Int      @default(0) @map("total_no_show")
+  totalLeft          Int      @default(0) @map("total_left")
+  avgWaitTimeMins    Decimal  @default(0) @db.Decimal(5, 2) @map("avg_wait_time_mins")
+  avgServiceTimeMins Decimal  @default(0) @db.Decimal(5, 2) @map("avg_service_time_mins")
+  peakHour           Int?     @map("peak_hour")     // 0–23
+  totalQueueEntries  Int      @default(0) @map("total_queue_entries")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // ── Relations ─────────────────────────────────────────
+  shop   Shop    @relation(fields: [shopId], references: [id])
+  barber Barber? @relation(fields: [barberId], references: [id])
+
+  @@unique([shopId, barberId, date], name: "unique_shop_barber_date")
+  @@index([shopId, date],            name: "idx_analytics_shop_date")
+  @@map("analytics_snapshots")
+}

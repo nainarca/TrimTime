@@ -1,0 +1,6 @@
+dist
+node_modules
+.nx
+coverage
+prisma/migrations
+libs/graphql-schema/src/generated

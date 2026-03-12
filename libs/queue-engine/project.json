@@ -1,0 +1,24 @@
+{
+  "name": "queue-engine",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/queue-engine/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:lib"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/queue-engine/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/queue-engine"],
+      "options": {
+        "jestConfig": "libs/queue-engine/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

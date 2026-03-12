@@ -1,0 +1,117 @@
+{
+  "name": "customer-mobile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/customer-mobile/src",
+  "tags": ["scope:mobile", "type:app", "platform:mobile"],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/customer-mobile",
+        "index": "apps/customer-mobile/src/index.html",
+        "browser": "apps/customer-mobile/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/customer-mobile/tsconfig.app.json",
+        "assets": [
+          "apps/customer-mobile/src/favicon.ico",
+          "apps/customer-mobile/src/assets",
+          {
+            "glob": "**/*.svg",
+            "input": "node_modules/ionicons/dist/ionicons/svg",
+            "output": "./svg"
+          }
+        ],
+        "styles": [
+          "node_modules/@ionic/angular/css/core.css",
+          "node_modules/@ionic/angular/css/normalize.css",
+          "node_modules/@ionic/angular/css/structure.css",
+          "node_modules/@ionic/angular/css/typography.css",
+          "node_modules/@ionic/angular/css/padding.css",
+          "node_modules/@ionic/angular/css/float-elements.css",
+          "node_modules/@ionic/angular/css/text-alignment.css",
+          "node_modules/@ionic/angular/css/text-transformation.css",
+          "node_modules/@ionic/angular/css/flex-utils.css",
+          "apps/customer-mobile/src/styles.scss"
+        ],
+        "scripts": [],
+        "serviceWorker": "apps/customer-mobile/ngsw-config.json"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            }
+          ],
+          "outputHashing": "all",
+          "optimization": true,
+          "serviceWorker": "apps/customer-mobile/ngsw-config.json"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "serviceWorker": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4300,
+        "proxyConfig": "apps/customer-mobile/proxy.conf.json"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "customer-mobile:build:production"
+        },
+        "development": {
+          "buildTarget": "customer-mobile:build:development"
+        }
+      }
+    },
+    "cap-sync": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx cap sync",
+        "cwd": "apps/customer-mobile"
+      }
+    },
+    "cap-open-ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx cap open ios",
+        "cwd": "apps/customer-mobile"
+      }
+    },
+    "cap-open-android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx cap open android",
+        "cwd": "apps/customer-mobile"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/customer-mobile/**/*.ts", "apps/customer-mobile/**/*.html"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/customer-mobile"],
+      "options": {
+        "jestConfig": "apps/customer-mobile/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

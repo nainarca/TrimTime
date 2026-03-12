@@ -1,0 +1,51 @@
+# ============================================================
+# TrimTime — GraphQL Code Generator Config
+# Run: npm run codegen
+# Requires the API to be running: npm run start:api
+# ============================================================
+
+overwrite: true
+
+schema:
+  - http://localhost:3000/graphql:
+      headers:
+        # Add auth header if introspection requires auth
+        # Authorization: "Bearer ${CODEGEN_TOKEN}"
+
+documents:
+  # Scan all GraphQL operation files across Angular apps
+  - "apps/admin-dashboard/src/**/*.graphql"
+  - "apps/customer-mobile/src/**/*.graphql"
+  - "apps/queue-display/src/**/*.graphql"
+
+generates:
+  # ── Angular Apollo Client Types ──────────────────────────
+  libs/graphql-schema/src/generated/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-apollo-angular
+    config:
+      addExplicitOverride: true
+      strictScalars: true
+      scalars:
+        DateTime: string
+        Date: string
+        JSON: "Record<string, unknown>"
+        Upload: File
+      enumsAsTypes: false
+      maybeValue: "T | null | undefined"
+      # Apollo Angular specific
+      apolloAngularVersion: 3
+      addTypenameSelectionDocumentNode: true
+
+  # ── GraphQL Introspection (for IDE tooling) ───────────────
+  libs/graphql-schema/src/generated/introspection.json:
+    plugins:
+      - introspection
+    config:
+      minify: false
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write libs/graphql-schema/src/generated/**/*.ts

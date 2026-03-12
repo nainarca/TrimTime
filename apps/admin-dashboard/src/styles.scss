@@ -1,0 +1,98 @@
+// ============================================================
+// TrimTime Dashboard — Global Styles
+// ============================================================
+
+// Bootstrap is loaded via angular.json styles array
+
+// ── CSS Custom Properties ─────────────────────────────────
+:root {
+  // Brand colors
+  --tt-primary:        #4f46e5;  // Indigo
+  --tt-primary-dark:   #3730a3;
+  --tt-primary-light:  #818cf8;
+  --tt-secondary:      #06b6d4;  // Cyan
+  --tt-accent:         #f59e0b;  // Amber (queue highlight)
+  --tt-success:        #10b981;  // Emerald
+  --tt-danger:         #ef4444;
+  --tt-warning:        #f59e0b;
+
+  // Surfaces
+  --tt-bg:             #0f172a;  // Dark navy
+  --tt-surface:        #1e293b;
+  --tt-surface-2:      #334155;
+  --tt-border:         #334155;
+  --tt-text:           #f1f5f9;
+  --tt-text-muted:     #94a3b8;
+
+  // Queue status colors
+  --tt-waiting:        #3b82f6;
+  --tt-called:         #f59e0b;
+  --tt-serving:        #10b981;
+  --tt-served:         #6b7280;
+  --tt-no-show:        #ef4444;
+
+  // Spacing
+  --tt-sidebar-width:  260px;
+  --tt-topbar-height:  64px;
+
+  // Typography
+  --tt-font:           'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --tt-font-size-base: 14px;
+}
+
+// ── Base Reset ────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--tt-font);
+  font-size: var(--tt-font-size-base);
+  background-color: var(--tt-bg);
+  color: var(--tt-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ── Bootstrap Overrides ───────────────────────────────────
+.btn-primary {
+  background-color: var(--tt-primary);
+  border-color: var(--tt-primary);
+
+  &:hover {
+    background-color: var(--tt-primary-dark);
+    border-color: var(--tt-primary-dark);
+  }
+}
+
+.card {
+  background-color: var(--tt-surface);
+  border-color: var(--tt-border);
+  color: var(--tt-text);
+}
+
+// ── Utility Classes ───────────────────────────────────────
+.text-muted-tt    { color: var(--tt-text-muted) !important; }
+.bg-surface       { background-color: var(--tt-surface) !important; }
+.bg-surface-2     { background-color: var(--tt-surface-2) !important; }
+.border-tt        { border-color: var(--tt-border) !important; }
+
+// Queue status badges
+.badge-waiting    { background-color: var(--tt-waiting); }
+.badge-called     { background-color: var(--tt-called); }
+.badge-serving    { background-color: var(--tt-serving); }
+.badge-served     { background-color: var(--tt-served); }
+.badge-no-show    { background-color: var(--tt-no-show); }
+
+// ── Animations ────────────────────────────────────────────
+@keyframes pulse-queue {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.animate-pulse { animation: pulse-queue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }

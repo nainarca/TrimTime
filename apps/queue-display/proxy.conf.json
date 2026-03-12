@@ -1,0 +1,12 @@
+{
+  "/graphql": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/graphql-ws": {
+    "target": "ws://localhost:3000",
+    "secure": false,
+    "ws": true
+  }
+}

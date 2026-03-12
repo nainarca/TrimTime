@@ -1,0 +1,72 @@
+{
+  "name": "queue-display",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "trimtime",
+  "sourceRoot": "apps/queue-display/src",
+  "tags": ["scope:display", "type:app", "platform:kiosk"],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/queue-display",
+        "index": "apps/queue-display/src/index.html",
+        "browser": "apps/queue-display/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/queue-display/tsconfig.app.json",
+        "assets": [
+          "apps/queue-display/src/favicon.ico",
+          "apps/queue-display/src/assets"
+        ],
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "apps/queue-display/src/styles.scss"
+        ],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "outputHashing": "all",
+          "optimization": true
+        },
+        "development": {
+          "optimization": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4400,
+        "proxyConfig": "apps/queue-display/proxy.conf.json"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "queue-display:build:production"
+        },
+        "development": {
+          "buildTarget": "queue-display:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/queue-display/**/*.ts", "apps/queue-display/**/*.html"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/queue-display"],
+      "options": {
+        "jestConfig": "apps/queue-display/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

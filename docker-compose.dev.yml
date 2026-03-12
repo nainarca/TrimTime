@@ -1,0 +1,72 @@
+version: '3.9'
+
+# ============================================================
+# TRIMTIME — Development Docker Compose
+# Only infrastructure services — API runs via `nx serve api`
+# Usage: npm run docker:up
+# ============================================================
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: trimtime-postgres-dev
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: trimtime_dev
+      POSTGRES_USER: trimtime_user
+      POSTGRES_PASSWORD: trimtime_pass
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U trimtime_user -d trimtime_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis ─────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: trimtime-redis-dev
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis Commander (Dev UI) ──────────────────────────────
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: trimtime-redis-ui
+    restart: unless-stopped
+    ports:
+      - '8081:8081'
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+
+  # ── Mailhog (Local Email Testing) ─────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: trimtime-mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025'   # SMTP
+      - '8025:8025'   # Web UI
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local

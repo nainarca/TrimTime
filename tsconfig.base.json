@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "strict": false,
+    "paths": {
+      "@trimtime/shared-types": ["libs/shared-types/src/index.ts"],
+      "@trimtime/shared-utils": ["libs/shared-utils/src/index.ts"],
+      "@trimtime/graphql-schema": ["libs/graphql-schema/src/index.ts"],
+      "@trimtime/ui-components": ["libs/ui-components/src/index.ts"],
+      "@trimtime/auth": ["libs/auth/src/index.ts"],
+      "@trimtime/queue-engine": ["libs/queue-engine/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "dist"]
+}

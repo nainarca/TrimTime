@@ -1,0 +1,91 @@
+{
+  "name": "admin-dashboard",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "trimtime",
+  "sourceRoot": "apps/admin-dashboard/src",
+  "tags": ["scope:dashboard", "type:app", "platform:web"],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/admin-dashboard",
+        "index": "apps/admin-dashboard/src/index.html",
+        "browser": "apps/admin-dashboard/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/admin-dashboard/tsconfig.app.json",
+        "assets": [
+          "apps/admin-dashboard/src/favicon.ico",
+          "apps/admin-dashboard/src/assets"
+        ],
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "apps/admin-dashboard/src/styles.scss"
+        ],
+        "scripts": [
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+        ],
+        "serviceWorker": "ngsw-config.json"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "750kb",
+              "maximumError": "1.5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "optimization": true,
+          "extractLicenses": true,
+          "sourceMap": false
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "serviceWorker": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4200,
+        "proxyConfig": "apps/admin-dashboard/proxy.conf.json"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "admin-dashboard:build:production"
+        },
+        "development": {
+          "buildTarget": "admin-dashboard:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/admin-dashboard/**/*.ts", "apps/admin-dashboard/**/*.html"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/admin-dashboard"],
+      "options": {
+        "jestConfig": "apps/admin-dashboard/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

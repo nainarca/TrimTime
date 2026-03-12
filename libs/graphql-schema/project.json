@@ -1,0 +1,28 @@
+{
+  "name": "graphql-schema",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/graphql-schema/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:lib"],
+  "targets": {
+    "codegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "graphql-codegen --config libs/graphql-schema/codegen.yml"
+      }
+    },
+    "codegen-watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "graphql-codegen --config libs/graphql-schema/codegen.yml --watch"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/graphql-schema/**/*.ts"]
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+// ============================================================
+// TrimTime Customer App — Global Styles (Ionic)
+// ============================================================
+
+// Ionic CSS variables override
+:root {
+  --ion-color-primary:          #4f46e5;
+  --ion-color-primary-rgb:      79,70,229;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade:    #3730a3;
+  --ion-color-primary-tint:     #818cf8;
+
+  --ion-color-secondary:        #06b6d4;
+  --ion-color-secondary-rgb:    6,182,212;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-shade:  #0891b2;
+  --ion-color-secondary-tint:   #67e8f9;
+
+  --ion-color-success:          #10b981;
+  --ion-color-warning:          #f59e0b;
+  --ion-color-danger:           #ef4444;
+
+  --ion-background-color:       #0f172a;
+  --ion-background-color-rgb:   15,23,42;
+  --ion-text-color:             #f1f5f9;
+  --ion-text-color-rgb:         241,245,249;
+
+  --ion-card-background:        #1e293b;
+  --ion-item-background:        #1e293b;
+  --ion-toolbar-background:     #1e293b;
+  --ion-tab-bar-background:     #1e293b;
+  --ion-border-color:           #334155;
+
+  // Queue-specific
+  --tt-ticket-number-size: 72px;
+  --tt-position-size:      48px;
+}
+
+// Ticket number display
+.ticket-number {
+  font-size: var(--tt-ticket-number-size);
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--ion-color-primary);
+}
+
+.queue-position {
+  font-size: var(--tt-position-size);
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+// Called state pulse animation
+@keyframes called-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+  70%  { box-shadow: 0 0 0 20px rgba(245,158,11,0); }
+  100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+}
+
+.called-indicator {
+  animation: called-pulse 1.5s infinite;
+  border-radius: 50%;
+}
