@@ -1,0 +1,64 @@
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <h1 class="h4 mb-0">Queue</h1>
+  <div class="text-muted small">
+    Waiting: {{ stats?.waitingCount || 0 }} ·
+    Serving: {{ stats?.servingCount || 0 }} ·
+    Served today: {{ stats?.servedTodayCount || 0 }}
+  </div>
+</div>
+
+<p-table
+  [value]="entries"
+  [loading]="loading"
+  [paginator]="true"
+  [rows]="20"
+  [rowsPerPageOptions]="[20, 50, 100]"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Ticket</th>
+      <th>Status</th>
+      <th>Position</th>
+      <th>ETA (min)</th>
+      <th>Customer</th>
+      <th>Joined</th>
+      <th style="width: 80px;"></th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-entry>
+    <tr>
+      <td>{{ entry.ticketDisplay }}</td>
+      <td>
+        <p-tag
+          [value]="entry.status"
+          [severity]="
+            entry.status === 'WAITING'
+              ? 'info'
+              : entry.status === 'SERVING'
+              ? 'success'
+              : entry.status === 'CALLED'
+              ? 'warning'
+              : 'secondary'
+          "
+        ></p-tag>
+      </td>
+      <td>{{ entry.position }}</td>
+      <td>{{ entry.estimatedWaitMins ?? '—' }}</td>
+      <td>
+        <ng-container *ngIf="entry.customerId; else guest">
+          User #{{ entry.customerId | slice : 0 : 6 }}…
+        </ng-container>
+        <ng-template #guest>
+          {{ entry.guestName || entry.guestPhone || 'Guest' }}
+        </ng-template>
+      </td>
+      <td>{{ entry.joinedAt | date : 'shortTime' }}</td>
+      <td class="text-end">
+        <a [routerLink]="['/queue', entry.id]" class="btn btn-sm btn-link px-1">
+          Details
+        </a>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+

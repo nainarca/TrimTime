@@ -12,6 +12,7 @@
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/admin-dashboard",
+        "preserveSymlinks": true,
         "index": "apps/admin-dashboard/src/index.html",
         "browser": "apps/admin-dashboard/src/main.ts",
         "polyfills": ["zone.js"],
@@ -26,8 +27,7 @@
         ],
         "scripts": [
           "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-        ],
-        "serviceWorker": "ngsw-config.json"
+        ]
       },
       "configurations": {
         "production": {
@@ -58,18 +58,8 @@
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
-      "defaultConfiguration": "development",
       "options": {
-        "port": 4200,
-        "proxyConfig": "apps/admin-dashboard/proxy.conf.json"
-      },
-      "configurations": {
-        "production": {
-          "buildTarget": "admin-dashboard:build:production"
-        },
-        "development": {
-          "buildTarget": "admin-dashboard:build:development"
-        }
+        "buildTarget": "admin-dashboard:build"
       }
     },
     "lint": {

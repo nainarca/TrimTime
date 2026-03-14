@@ -1,0 +1,300 @@
+<div class="row g-3">
+  <div class="col-12">
+    <h1 class="h4 mb-3">Finance</h1>
+  </div>
+
+  <!-- Profit summary -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-1">Profit summary</h2>
+        <p class="text-muted mb-3">
+          Monthly profit over the last period.
+        </p>
+        <p-chart type="line" [data]="profitChartData" [options]="profitChartOptions"></p-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h5 mb-1">Expenses</h2>
+            <p class="text-muted mb-0">Track shop expenses.</p>
+          </div>
+          <button
+            pButton
+            type="button"
+            label="Add expense"
+            icon="pi pi-plus"
+            class="p-button-sm"
+            (click)="expensesDialogVisible = true"
+          ></button>
+        </div>
+
+        <p-table [value]="expenses" [paginator]="true" [rows]="5">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-exp>
+            <tr>
+              <td>{{ exp.date | date : 'shortDate' }}</td>
+              <td>{{ exp.category }}</td>
+              <td class="text-end">{{ exp.amount | currency : 'USD' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-muted">No expenses recorded yet.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchases -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h5 mb-1">Purchases</h2>
+            <p class="text-muted mb-0">Product and inventory purchases.</p>
+          </div>
+          <button
+            pButton
+            type="button"
+            label="Add purchase"
+            icon="pi pi-plus"
+            class="p-button-sm"
+            (click)="purchasesDialogVisible = true"
+          ></button>
+        </div>
+
+        <p-table [value]="purchases" [paginator]="true" [rows]="5">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Date</th>
+              <th>Vendor</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-p>
+            <tr>
+              <td>{{ p.date | date : 'shortDate' }}</td>
+              <td>{{ p.vendor }}</td>
+              <td class="text-end">{{ p.amount | currency : 'USD' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-muted">No purchases recorded yet.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salary management -->
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h2 class="h5 mb-1">Salary management</h2>
+            <p class="text-muted mb-0">Overview of staff salaries.</p>
+          </div>
+          <button
+            pButton
+            type="button"
+            label="Add salary"
+            icon="pi pi-plus"
+            class="p-button-sm"
+            (click)="salariesDialogVisible = true"
+          ></button>
+        </div>
+
+        <p-table [value]="salaries" [paginator]="true" [rows]="5">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-sal>
+            <tr>
+              <td>{{ sal.name }}</td>
+              <td>{{ sal.role }}</td>
+              <td class="text-end">{{ sal.amount | currency : 'USD' }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-muted">No salary data yet.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Expense dialog -->
+<p-dialog
+  header="Add expense"
+  [(visible)]="expensesDialogVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+>
+  <div class="mb-3">
+    <label class="form-label">Date</label>
+    <p-calendar [(ngModel)]="newExpense.date" class="w-100"></p-calendar>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Category</label>
+    <input
+      pInputText
+      type="text"
+      class="form-control"
+      [(ngModel)]="newExpense.category"
+    />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Amount</label>
+    <input
+      pInputText
+      type="number"
+      class="form-control"
+      [(ngModel)]="newExpense.amount"
+    />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      class="p-button-text"
+      (click)="expensesDialogVisible = false"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      (click)="saveExpense()"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Purchase dialog -->
+<p-dialog
+  header="Add purchase"
+  [(visible)]="purchasesDialogVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+>
+  <div class="mb-3">
+    <label class="form-label">Date</label>
+    <p-calendar [(ngModel)]="newPurchase.date" class="w-100"></p-calendar>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Vendor</label>
+    <input
+      pInputText
+      type="text"
+      class="form-control"
+      [(ngModel)]="newPurchase.vendor"
+    />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Amount</label>
+    <input
+      pInputText
+      type="number"
+      class="form-control"
+      [(ngModel)]="newPurchase.amount"
+    />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      class="p-button-text"
+      (click)="purchasesDialogVisible = false"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      (click)="savePurchase()"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Salary dialog -->
+<p-dialog
+  header="Add salary"
+  [(visible)]="salariesDialogVisible"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+>
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input
+      pInputText
+      type="text"
+      class="form-control"
+      [(ngModel)]="newSalary.name"
+    />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Role</label>
+    <input
+      pInputText
+      type="text"
+      class="form-control"
+      [(ngModel)]="newSalary.role"
+    />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Amount</label>
+    <input
+      pInputText
+      type="number"
+      class="form-control"
+      [(ngModel)]="newSalary.amount"
+    />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      class="p-button-text"
+      (click)="salariesDialogVisible = false"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      (click)="saveSalary()"
+    ></button>
+  </ng-template>
+</p-dialog>
+

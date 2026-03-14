@@ -1,0 +1,165 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h4 mb-3">Bookings</h1>
+    <p class="text-muted">
+      Upcoming and recent appointments loaded from the GraphQL API.
+    </p>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div></div>
+      <button
+        pButton
+        type="button"
+        label="New booking"
+        icon="pi pi-plus"
+        (click)="createBooking()"
+      ></button>
+    </div>
+
+    <p-table
+      #dt
+      [value]="bookings"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [globalFilterFields]="['customerId', 'serviceId', 'barberId', 'status']"
+    >
+      <ng-template pTemplate="caption" let-dt>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Bookings</span>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              (input)="dt.filterGlobal($event.target.value, 'contains')"
+              placeholder="Search"
+            />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th pSortableColumn="customerId">
+            Customer
+            <p-sortIcon field="customerId"></p-sortIcon>
+          </th>
+          <th pSortableColumn="serviceId">
+            Service
+            <p-sortIcon field="serviceId"></p-sortIcon>
+          </th>
+          <th pSortableColumn="barberId">
+            Barber
+            <p-sortIcon field="barberId"></p-sortIcon>
+          </th>
+          <th pSortableColumn="scheduledAt">
+            Scheduled
+            <p-sortIcon field="scheduledAt"></p-sortIcon>
+          </th>
+          <th pSortableColumn="status">
+            Status
+            <p-sortIcon field="status"></p-sortIcon>
+          </th>
+          <th style="width: 80px;"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-booking>
+        <tr>
+          <td>{{ booking.customerId | slice : 0 : 6 }}…</td>
+          <td>{{ booking.serviceId | slice : 0 : 6 }}…</td>
+          <td>{{ booking.barberId | slice : 0 : 6 }}…</td>
+          <td>{{ booking.scheduledAt | date : 'short' }}</td>
+          <td>{{ booking.status }}</td>
+          <td class="text-end">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-times"
+              class="p-button-text p-button-sm p-button-danger"
+              (click)="cancelBooking(booking)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-muted">No bookings found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog
+      header="New booking"
+      [(visible)]="createDialogVisible"
+      [modal]="true"
+      [style]="{ width: '400px' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <div class="mb-3">
+        <label class="form-label">Customer ID</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="newBooking.customerId"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Service ID</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="newBooking.serviceId"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Barber ID</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="newBooking.barberId"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Scheduled at</label>
+        <p-calendar
+          [(ngModel)]="newBooking.scheduledAt"
+          [showTime]="true"
+          [hourFormat]="24"
+          class="w-100"
+        ></p-calendar>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Duration (minutes)</label>
+        <input
+          pInputText
+          type="number"
+          class="form-control"
+          [(ngModel)]="newBooking.durationMins"
+        />
+      </div>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          class="p-button-text"
+          (click)="createDialogVisible = false"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Save"
+          icon="pi pi-check"
+          (click)="saveBooking()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+

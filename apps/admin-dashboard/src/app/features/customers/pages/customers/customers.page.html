@@ -1,0 +1,123 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h4 mb-3">Customers</h1>
+    <p class="text-muted">
+      Customers loaded from the GraphQL API.
+    </p>
+
+    <p-table
+      #dt
+      [value]="customers"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [globalFilterFields]="['name', 'phone', 'email']"
+    >
+      <ng-template pTemplate="caption" let-dt>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Customers</span>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              (input)="dt.filterGlobal($event.target.value, 'contains')"
+              placeholder="Search"
+            />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">
+            Name
+            <p-sortIcon field="name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="phone">
+            Phone
+            <p-sortIcon field="phone"></p-sortIcon>
+          </th>
+          <th pSortableColumn="email">
+            Email
+            <p-sortIcon field="email"></p-sortIcon>
+          </th>
+          <th pSortableColumn="isActive">
+            Status
+            <p-sortIcon field="isActive"></p-sortIcon>
+          </th>
+          <th style="width: 80px;"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-c>
+        <tr>
+          <td>{{ c.name || '—' }}</td>
+          <td>{{ c.phone || '—' }}</td>
+          <td>{{ c.email || '—' }}</td>
+          <td>{{ c.isActive ? 'Active' : 'Inactive' }}</td>
+          <td class="text-end">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-clock"
+              class="p-button-text p-button-sm"
+              (click)="viewHistory(c)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-muted">No customers found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog
+      header="Visit history"
+      [(visible)]="visitDialogVisible"
+      [modal]="true"
+      [style]="{ width: '500px' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <p *ngIf="selectedCustomer" class="mb-3">
+        Visits for <strong>{{ selectedCustomer.name || selectedCustomer.phone || selectedCustomer.email }}</strong>
+      </p>
+
+      <div *ngIf="visitLoading" class="text-muted">Loading history…</div>
+
+      <table class="table table-sm align-middle" *ngIf="!visitLoading && visitHistory.length">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let visit of visitHistory">
+            <td>{{ visit.date | date : 'short' }}</td>
+            <td>{{ visit.type }}</td>
+            <td>{{ visit.description }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!visitLoading && !visitHistory.length" class="text-muted mb-0">
+        No visits found for this customer yet.
+      </p>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          type="button"
+          label="Close"
+          class="p-button-text"
+          (click)="visitDialogVisible = false"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+

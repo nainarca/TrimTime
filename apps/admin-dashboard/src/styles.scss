@@ -2,7 +2,12 @@
 // TrimTime Dashboard — Global Styles
 // ============================================================
 
-// Bootstrap is loaded via angular.json styles array
+// PrimeNG theme and icons (required for PrimeNG components)
+@import 'primeng/resources/themes/lara-dark-blue/theme.css';
+@import 'primeng/resources/primeng.min.css';
+@import 'primeicons/primeicons.css';
+
+// Bootstrap is loaded via project.json styles array
 
 // ── CSS Custom Properties ─────────────────────────────────
 :root {

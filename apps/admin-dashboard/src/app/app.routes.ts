@@ -1,42 +1,8 @@
 import { Routes } from '@angular/router';
+import { DashboardLayoutComponent } from './core/layout/dashboard-layout/dashboard-layout.component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
 
-/**
- * TrimTime Dashboard Routes
- *
- * Route tree (to be implemented per phase):
- *
- * /auth
- *   /login              → PhoneLoginPage
- *   /verify             → OtpVerifyPage
- *
- * /onboarding           → OnboardingWizardPage (multi-step)
- *   /shop-details
- *   /add-barbers
- *   /set-hours
- *   /qr-setup
- *   /go-live
- *
- * /dashboard            → DashboardShellComponent (auth guard)
- *   /                   → LiveQueuePage  ← DEFAULT
- *   /barbers
- *   /appointments
- *   /services
- *   /qr-codes
- *   /analytics
- *   /reviews
- *   /settings
- *     /shop
- *     /hours
- *     /branches
- *     /billing
- *   /staff
- *
- * /admin                → AdminShellComponent (ADMIN role guard)
- *   /shops
- *   /users
- *   /subscriptions
- *   /analytics
- */
 export const routes: Routes = [
   {
     path: '',
@@ -46,32 +12,98 @@ export const routes: Routes = [
   {
     path: 'auth',
     loadChildren: () =>
-      import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+      import('./features/auth/auth.module').then((m) => m.AuthModule),
   },
   {
-    path: 'onboarding',
-    loadChildren: () =>
-      import('./features/onboarding/onboarding.routes').then(
-        (m) => m.ONBOARDING_ROUTES,
-      ),
-    // canActivate: [AuthGuard]
-  },
-  {
-    path: 'dashboard',
-    loadChildren: () =>
-      import('./features/dashboard/dashboard.routes').then(
-        (m) => m.DASHBOARD_ROUTES,
-      ),
-    // canActivate: [AuthGuard, ShopGuard]
-  },
-  {
-    path: 'admin',
-    loadChildren: () =>
-      import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
-    // canActivate: [AuthGuard, AdminGuard]
+    path: '',
+    component: DashboardLayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.module').then(
+            (m) => m.DashboardModule,
+          ),
+      },
+      {
+        path: 'queue',
+        loadChildren: () =>
+          import('./features/queue/queue.module').then((m) => m.QueueModule),
+        data: { roles: ['OWNER', 'BARBER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'bookings',
+        loadChildren: () =>
+          import('./features/bookings/bookings.module').then(
+            (m) => m.BookingsModule,
+          ),
+        data: { roles: ['OWNER', 'BARBER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'customers',
+        loadChildren: () =>
+          import('./features/customers/customers.module').then(
+            (m) => m.CustomersModule,
+          ),
+      },
+      {
+        path: 'staff',
+        loadChildren: () =>
+          import('./features/staff/staff.module').then((m) => m.StaffModule),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'services',
+        loadChildren: () =>
+          import('./features/services/services.module').then(
+            (m) => m.ServicesModule,
+          ),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'finance',
+        loadChildren: () =>
+          import('./features/finance/finance.module').then(
+            (m) => m.FinanceModule,
+          ),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'marketing',
+        loadChildren: () =>
+          import('./features/marketing/marketing.module').then(
+            (m) => m.MarketingModule,
+          ),
+      },
+      {
+        path: 'reports',
+        loadChildren: () =>
+          import('./features/reports/reports.module').then(
+            (m) => m.ReportsModule,
+          ),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
+        path: 'settings',
+        loadChildren: () =>
+          import('./features/settings/settings.module').then(
+            (m) => m.SettingsModule,
+          ),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+    ],
   },
   {
     path: '**',
     redirectTo: 'dashboard',
   },
 ];
+

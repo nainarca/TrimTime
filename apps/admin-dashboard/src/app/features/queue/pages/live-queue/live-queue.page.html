@@ -1,0 +1,120 @@
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Current</h5>
+
+        <div *ngIf="currentServing; else noServing">
+          <div class="display-4 fw-bold">{{ currentServing.ticketDisplay }}</div>
+          <div class="text-muted">
+            Position: {{ currentServing.position }} ·
+            ETA: {{ currentServing.estimatedWaitMins ?? '—' }} min
+          </div>
+        </div>
+        <ng-template #noServing>
+          <p class="text-muted mb-0">No customer is currently being served.</p>
+        </ng-template>
+
+        <div class="mt-3 d-flex gap-2">
+          <button
+            pButton
+            label="Call Next"
+            icon="pi pi-chevron-right"
+            class="p-button-primary flex-grow-1"
+            (click)="callNext()"
+            [disabled]="actionLoading || !nextWaiting"
+          ></button>
+          <button
+            pButton
+            label="Complete"
+            icon="pi pi-check"
+            class="p-button-success flex-grow-1"
+            (click)="completeCurrent()"
+            [disabled]="actionLoading || !currentServing"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title">Next in line</h6>
+        <div *ngIf="nextWaiting; else noNext">
+          <div class="h3 mb-1">{{ nextWaiting.ticketDisplay }}</div>
+          <div class="text-muted">
+            Position: {{ nextWaiting.position }} ·
+            ETA: {{ nextWaiting.estimatedWaitMins ?? '—' }} min
+          </div>
+        </div>
+        <ng-template #noNext>
+          <p class="text-muted mb-0">No waiting customers.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Live Queue</h5>
+      <button
+        pButton
+        icon="pi pi-refresh"
+        class="p-button-text"
+        (click)="reload()"
+        [disabled]="loading"
+      ></button>
+    </div>
+
+    <p-table [value]="entries" [loading]="loading">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Ticket</th>
+          <th>Status</th>
+          <th>Position</th>
+          <th>ETA</th>
+          <th>Customer</th>
+          <th style="width: 180px;">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entry>
+        <tr>
+          <td>{{ entry.ticketDisplay }}</td>
+          <td>
+            <p-tag [value]="entry.status"></p-tag>
+          </td>
+          <td>{{ entry.position }}</td>
+          <td>{{ entry.estimatedWaitMins ?? '—' }}</td>
+          <td>
+            <ng-container *ngIf="entry.customerId; else guest">
+              User #{{ entry.customerId | slice : 0 : 6 }}…
+            </ng-container>
+            <ng-template #guest>
+              {{ entry.guestName || entry.guestPhone || 'Guest' }}
+            </ng-template>
+          </td>
+          <td>
+            <div class="d-flex gap-2">
+              <button
+                pButton
+                icon="pi pi-step-forward"
+                class="p-button-sm p-button-text"
+                (click)="startServing(entry)"
+                [disabled]="actionLoading || entry.status !== 'CALLED'"
+                pTooltip="Start serving"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-times"
+                class="p-button-sm p-button-text p-button-danger"
+                (click)="skipToken(entry)"
+                [disabled]="actionLoading || entry.status !== 'WAITING'"
+                pTooltip="Skip token"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+

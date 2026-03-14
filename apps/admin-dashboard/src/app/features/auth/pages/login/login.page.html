@@ -1,0 +1,52 @@
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+  <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <i class="pi pi-clock text-primary me-2"></i>
+        <h1 class="h5 mb-0">TrimTime Admin</h1>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-3">
+          <label class="form-label" for="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            class="form-control"
+            formControlName="username"
+            placeholder="Enter your username"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger py-2">
+          {{ errorMessage }}
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          [disabled]="form.invalid || loading"
+        >
+          <span *ngIf="!loading">Login</span>
+          <span *ngIf="loading">
+            <i class="pi pi-spin pi-spinner me-2"></i>
+            Signing in...
+          </span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+

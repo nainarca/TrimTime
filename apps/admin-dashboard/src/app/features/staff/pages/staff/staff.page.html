@@ -1,0 +1,147 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h4 mb-3">Staff</h1>
+    <p class="text-muted">
+      Barbers and staff loaded from the GraphQL API.
+    </p>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div></div>
+      <button
+        pButton
+        type="button"
+        label="Add staff"
+        icon="pi pi-plus"
+        (click)="openNew()"
+      ></button>
+    </div>
+
+    <p-table
+      #dt
+      [value]="staff"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [globalFilterFields]="['displayName', 'currentStatus']"
+    >
+      <ng-template pTemplate="caption" let-dt>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Staff</span>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              (input)="dt.filterGlobal($event.target.value, 'contains')"
+              placeholder="Search"
+            />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="displayName">
+            Name
+            <p-sortIcon field="displayName"></p-sortIcon>
+          </th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Working hours</th>
+          <th>Queue</th>
+          <th style="width: 80px;"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-member>
+        <tr>
+          <td>{{ member.displayName }}</td>
+          <td>—</td>
+          <td>Barber</td>
+          <td>—</td>
+          <td>
+            {{ member.queueAccepting ? 'Accepting' : 'Closed' }}
+            · Max: {{ member.maxQueueSize }}
+          </td>
+          <td class="text-end">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm"
+              (click)="editStaff(member)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-muted">No staff members found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog
+      header="{{ editingStaff ? 'Edit staff' : 'New staff' }}"
+      [(visible)]="staffDialogVisible"
+      [modal]="true"
+      [style]="{ width: '400px' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="form.name"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="form.phone"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Role</label>
+        <select class="form-select" [(ngModel)]="form.role">
+          <option value="BARBER">Barber</option>
+          <option value="SHOP_OWNER">Shop owner</option>
+          <option value="STAFF">Staff</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Working hours</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="form.workingHours"
+          placeholder="e.g. Mon–Fri 09:00–18:00"
+        />
+      </div>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          class="p-button-text"
+          (click)="staffDialogVisible = false"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Save"
+          icon="pi pi-check"
+          (click)="saveStaff()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+

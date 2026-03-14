@@ -1,0 +1,85 @@
+<div class="card shadow-sm" *ngIf="!loading; else loadingTpl">
+  <div class="card-body" *ngIf="entry; else errorTpl">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1 class="h5 mb-1">Queue Details</h1>
+        <div class="text-muted small">Ticket {{ entry.ticketDisplay }}</div>
+      </div>
+      <p-tag [value]="entry.status"></p-tag>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <div class="mb-2"><strong>Position:</strong> {{ entry.position }}</div>
+        <div class="mb-2">
+          <strong>ETA:</strong> {{ entry.estimatedWaitMins ?? '—' }} min
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="mb-2">
+          <strong>Customer:</strong>
+          <ng-container *ngIf="entry.customerId; else guest">
+            User #{{ entry.customerId | slice : 0 : 6 }}…
+          </ng-container>
+          <ng-template #guest>
+            {{ entry.guestName || entry.guestPhone || 'Guest' }}
+          </ng-template>
+        </div>
+        <div class="mb-2">
+          <strong>Type:</strong> {{ entry.entryType }}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="mb-2">
+          <strong>Joined at:</strong> {{ entry.joinedAt | date : 'short' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <button
+        pButton
+        label="Call next"
+        icon="pi pi-chevron-right"
+        class="p-button-primary"
+        (click)="callNext()"
+        [disabled]="entry.status !== 'WAITING'"
+      ></button>
+      <button
+        pButton
+        label="Skip token"
+        icon="pi pi-times"
+        class="p-button-danger p-button-outlined"
+        (click)="skipToken()"
+        [disabled]="entry.status !== 'WAITING'"
+      ></button>
+      <button
+        pButton
+        label="Cancel booking"
+        icon="pi pi-ban"
+        class="p-button-secondary p-button-outlined"
+        (click)="cancelBooking()"
+        [disabled]="entry.status !== 'WAITING' && entry.status !== 'CALLED'"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="text-center py-5">
+    <i class="pi pi-spin pi-spinner fs-3 mb-2"></i>
+    <div>Loading queue details…</div>
+  </div>
+</ng-template>
+
+<ng-template #errorTpl>
+  <div class="alert alert-warning mb-0" *ngIf="errorMessage; else notFound">
+    {{ errorMessage }}
+  </div>
+  <ng-template #notFound>
+    <div class="alert alert-warning mb-0">
+      Queue entry not found or is no longer active.
+    </div>
+  </ng-template>
+</ng-template>
+

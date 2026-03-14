@@ -1,0 +1,50 @@
+<div class="h-100 d-flex flex-column">
+  <!-- Header -->
+  <div class="px-4 py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <div class="text-uppercase text-muted small">Now serving</div>
+      <div class="now-serving">
+        {{ current?.ticketDisplay || '—' }}
+      </div>
+    </div>
+    <div class="text-end">
+      <div class="fw-semibold" style="font-size: var(--tt-body-font-size);">
+        TrimTime Queue
+      </div>
+      <div class="text-muted" style="font-size: 0.9rem;">
+        Please wait for your token on screen
+      </div>
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div style="height: 4px; background: linear-gradient(to right, #4f46e5, #f59e0b);"></div>
+
+  <!-- Next in queue -->
+  <div class="flex-grow-1 d-flex flex-column">
+    <div class="px-4 py-3">
+      <div class="text-uppercase text-muted mb-2" style="font-size: 0.9rem;">
+        Next in line
+      </div>
+      <div class="d-flex flex-column gap-2">
+        <div
+          *ngFor="let entry of next; let i = index"
+          class="d-flex justify-content-between align-items-center px-3 py-2"
+          style="background-color: var(--tt-surface); border-radius: 12px;"
+        >
+          <div class="queue-ticket">
+            {{ entry.ticketDisplay }}
+          </div>
+          <div class="text-muted" style="font-size: var(--tt-body-font-size);">
+            Est. {{ entry.estimatedWaitMins ?? '—' }} min
+          </div>
+        </div>
+
+        <div *ngIf="!next.length" class="text-muted" style="font-size: var(--tt-body-font-size);">
+          No waiting customers at the moment.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

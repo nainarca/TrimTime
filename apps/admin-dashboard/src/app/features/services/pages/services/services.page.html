@@ -1,0 +1,149 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h4 mb-3">Services</h1>
+    <p class="text-muted">
+      Service catalog loaded from the GraphQL API.
+    </p>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div></div>
+      <button
+        pButton
+        type="button"
+        label="Add service"
+        icon="pi pi-plus"
+        (click)="openNew()"
+      ></button>
+    </div>
+
+    <p-table
+      #dt
+      [value]="services"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [globalFilterFields]="['name']"
+    >
+      <ng-template pTemplate="caption" let-dt>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Services</span>
+          <span class="p-input-icon-left">
+            <i class="pi pi-search"></i>
+            <input
+              pInputText
+              type="text"
+              (input)="dt.filterGlobal($event.target.value, 'contains')"
+              placeholder="Search"
+            />
+          </span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">
+            Name
+            <p-sortIcon field="name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="durationMins">
+            Duration (min)
+            <p-sortIcon field="durationMins"></p-sortIcon>
+          </th>
+          <th pSortableColumn="price">
+            Price
+            <p-sortIcon field="price"></p-sortIcon>
+          </th>
+          <th pSortableColumn="isActive">
+            Status
+            <p-sortIcon field="isActive"></p-sortIcon>
+          </th>
+          <th style="width: 100px;"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-s>
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.durationMins }}</td>
+          <td>{{ s.price | number : '1.2-2' }} {{ s.currency }}</td>
+          <td>{{ s.isActive ? 'Active' : 'Archived' }}</td>
+          <td class="text-end">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm me-1"
+              (click)="editService(s)"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-archive"
+              class="p-button-text p-button-sm p-button-danger"
+              (click)="archiveService(s)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-muted">No services defined yet.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog
+      header="{{ editingService ? 'Edit service' : 'New service' }}"
+      [(visible)]="serviceDialogVisible"
+      [modal]="true"
+      [style]="{ width: '400px' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+      <div class="mb-3">
+        <label class="form-label">Service name</label>
+        <input
+          pInputText
+          type="text"
+          class="form-control"
+          [(ngModel)]="form.name"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Duration (minutes)</label>
+        <input
+          pInputText
+          type="number"
+          class="form-control"
+          [(ngModel)]="form.durationMins"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Price</label>
+        <input
+          pInputText
+          type="number"
+          class="form-control"
+          [(ngModel)]="form.price"
+        />
+      </div>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          class="p-button-text"
+          (click)="serviceDialogVisible = false"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="Save"
+          icon="pi pi-check"
+          (click)="saveService()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+
