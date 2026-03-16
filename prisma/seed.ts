@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, QueueStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -149,19 +149,19 @@ await prisma.userRoleAssignment.upsert({
   console.log('🏪 Creating sample shop...');
 
   const demoShop = await prisma.shop.upsert({
-    where: { slug: 'mikes-barber-shop' },
+    where: { slug: 'downtown-barber' },
     update: {},
     create: {
-      ownerId:    ownerUser.id,
-      name:       "Mike's Barber Shop",
-      slug:       'mikes-barber-shop',
-      description: 'Premium cuts and styling in downtown.',
-      phone:      '+15551234568',
-      email:      'mikes@demo.trimtime.app',
-      country:    'US',
-      timezone:   'America/New_York',
-      isActive:   true,
-      isVerified: true,
+      ownerId:     ownerUser.id,
+      name:        'Downtown Barber',
+      slug:        'downtown-barber',
+      description: 'Modern barber shop in Chennai OMR.',
+      phone:       '+919999000001',
+      email:       'hello@downtownbarber.trimtime',
+      country:     'IN',
+      timezone:    'Asia/Kolkata',
+      isActive:    true,
+      isVerified:  true,
     },
   });
 
@@ -289,12 +289,23 @@ await prisma.userRoleAssignment.upsert({
   });
 
   const barberUser2 = await prisma.user.upsert({
-    where: { email: 'james@demo.trimtime.app' },
+    where: { email: 'arun@downtownbarber.trimtime' },
     update: {},
     create: {
-      name:       'James',
-      email:      'james@demo.trimtime.app',
-      phone:      '+15559990002',
+      name:       'Arun',
+      email:      'arun@downtownbarber.trimtime',
+      phone:      '+919999000002',
+      isVerified: true,
+    },
+  });
+
+  const barberUser3 = await prisma.user.upsert({
+    where: { email: 'karthik@downtownbarber.trimtime' },
+    update: {},
+    create: {
+      name:       'Karthik',
+      email:      'karthik@downtownbarber.trimtime',
+      phone:      '+919999000003',
       isVerified: true,
     },
   });
@@ -322,11 +333,26 @@ await prisma.userRoleAssignment.upsert({
       userId:                barberUser2.id,
       shopId:                shop.id,
       branchId:              mainBranch.id,
-      displayName:           'James',
-      avgServiceDurationMins: 25,
-      currentStatus:         'OFFLINE',
-      queueAccepting:        false,
-      maxQueueSize:          15,
+      displayName:           'Arun',
+      avgServiceDurationMins: 20,
+      currentStatus:         'AVAILABLE',
+      queueAccepting:        true,
+      maxQueueSize:          20,
+    },
+  });
+
+  const barber3 = await prisma.barber.upsert({
+    where: { userId: barberUser3.id },
+    update: {},
+    create: {
+      userId:                barberUser3.id,
+      shopId:                shop.id,
+      branchId:              mainBranch.id,
+      displayName:           'Karthik',
+      avgServiceDurationMins: 20,
+      currentStatus:         'AVAILABLE',
+      queueAccepting:        true,
+      maxQueueSize:          20,
     },
   });
 
@@ -334,6 +360,7 @@ await prisma.userRoleAssignment.upsert({
   for (const { userId, barberId } of [
     { userId: barberUser1.id, barberId: barber1.id },
     { userId: barberUser2.id, barberId: barber2.id },
+    { userId: barberUser3.id, barberId: barber3.id },
   ]) {
     await prisma.userRoleAssignment.upsert({
       where: {
@@ -345,7 +372,7 @@ await prisma.userRoleAssignment.upsert({
   }
 
   // ── 11. Barber Services ────────────────────────────────
-  for (const barberId of [barber1.id, barber2.id]) {
+  for (const barberId of [barber1.id, barber2.id, barber3.id]) {
     for (const serviceId of [haircut.id, beardTrim.id, haircutBeard.id]) {
       await prisma.barberService.upsert({
         where: { unique_barber_service: { barberId, serviceId } },
@@ -386,7 +413,7 @@ await prisma.userRoleAssignment.upsert({
       shopId:    shop.id,
       branchId:  mainBranch.id,
       type:      'SHOP',
-      targetUrl: `${process.env.MOBILE_URL || 'http://localhost:4300'}/shop/mikes-barber-shop`,
+      targetUrl: `${process.env.MOBILE_URL || 'http://localhost:4300'}/shop/downtown-barber`,
       isActive:  true,
     },
   });
@@ -405,14 +432,121 @@ await prisma.userRoleAssignment.upsert({
     },
   });
 
+  // ── 14. Customers ─────────────────────────────────────────
+  const raj = await prisma.user.upsert({
+    where: { email: 'raj@downtownbarber.trimtime' },
+    update: {},
+    create: { name: 'Raj', email: 'raj@downtownbarber.trimtime', phone: '+919900010001', isVerified: true },
+  });
+
+  const vijay = await prisma.user.upsert({
+    where: { email: 'vijay@downtownbarber.trimtime' },
+    update: {},
+    create: { name: 'Vijay', email: 'vijay@downtownbarber.trimtime', phone: '+919900010002', isVerified: true },
+  });
+
+  const suresh = await prisma.user.upsert({
+    where: { email: 'suresh@downtownbarber.trimtime' },
+    update: {},
+    create: { name: 'Suresh', email: 'suresh@downtownbarber.trimtime', phone: '+919900010003', isVerified: true },
+  });
+
+  const arjun = await prisma.user.upsert({
+    where: { email: 'arjun@downtownbarber.trimtime' },
+    update: {},
+    create: { name: 'Arjun', email: 'arjun@downtownbarber.trimtime', phone: '+919900010004', isVerified: true },
+  });
+
+  // ── 15. Queue entries ─────────────────────────────────────
+  await prisma.queueEntry.create({
+    data: {
+      shopId: shop.id,
+      branchId: mainBranch.id,
+      barberId: barber1.id,
+      customerId: raj.id,
+      serviceId: haircut.id,
+      ticketNumber: 1001,
+      ticketDisplay: 'A001',
+      status: QueueStatus.WAITING,
+      position: 1,
+      estimatedWaitMins: 15,
+    },
+  });
+
+  await prisma.queueEntry.create({
+    data: {
+      shopId: shop.id,
+      branchId: mainBranch.id,
+      barberId: barber2.id,
+      customerId: vijay.id,
+      serviceId: beardTrim.id,
+      ticketNumber: 1002,
+      ticketDisplay: 'A002',
+      status: QueueStatus.SERVING,
+      position: 2,
+      estimatedWaitMins: 5,
+      calledAt: new Date(),
+      servingAt: new Date(),
+    },
+  });
+
+  await prisma.queueEntry.create({
+    data: {
+      shopId: shop.id,
+      branchId: mainBranch.id,
+      barberId: barber3.id,
+      customerId: suresh.id,
+      serviceId: haircutBeard.id,
+      ticketNumber: 1003,
+      ticketDisplay: 'A003',
+      status: QueueStatus.SERVED,
+      position: 3,
+      estimatedWaitMins: 0,
+      calledAt: new Date(Date.now() - 1000 * 60 * 20),
+      servingAt: new Date(Date.now() - 1000 * 60 * 18),
+      servedAt: new Date(Date.now() - 1000 * 60 * 5),
+    },
+  });
+
+  await prisma.queueEntry.create({
+    data: {
+      shopId: shop.id,
+      branchId: mainBranch.id,
+      barberId: barber1.id,
+      customerId: arjun.id,
+      serviceId: haircut.id,
+      ticketNumber: 1004,
+      ticketDisplay: 'A004',
+      status: QueueStatus.WAITING,
+      position: 4,
+      estimatedWaitMins: 22,
+    },
+  });
+
+  await prisma.queueEntry.create({
+    data: {
+      shopId: shop.id,
+      branchId: mainBranch.id,
+      barberId: barber2.id,
+      guestName: 'Guest Priya',
+      guestPhone: '+919900011111',
+      serviceId: beardTrim.id,
+      ticketNumber: 1005,
+      ticketDisplay: 'A005',
+      status: QueueStatus.WAITING,
+      position: 5,
+      estimatedWaitMins: 25,
+    },
+  });
+
   console.log('\n✅ Seed completed successfully!\n');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('📊 Summary:');
   console.log(`   Plans:   Free, Pro, Enterprise`);
-  console.log(`   Shop:    Mike's Barber Shop  (slug: mikes-barber-shop)`);
-  console.log(`   Barbers: Mike, James`);
+  console.log(`   Shop:    Downtown Barber  (slug: downtown-barber)`);
+  console.log(`   Barbers: Mike, Arun, Karthik`);
   console.log(`   Services: Haircut, Beard Trim, Haircut + Beard`);
-  console.log(`   QR scan URL: http://localhost:4300/shop/mikes-barber-shop`);
+  console.log(`   QR scan URL: http://localhost:4300/shop/downtown-barber`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 

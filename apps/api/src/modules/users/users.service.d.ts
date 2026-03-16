@@ -6,73 +6,73 @@ export declare class UsersService {
     findById(id: string): Promise<{
         roles: {
             id: string;
-            createdAt: Date;
             shopId: string;
+            createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
         }[];
     } & {
         name: string;
         id: string;
+        createdAt: Date;
+        isActive: boolean;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
-        isActive: boolean;
         preferredLang: string;
-        createdAt: Date;
         updatedAt: Date;
     }>;
     findByPhone(phone: string): Promise<{
         roles: {
             id: string;
-            createdAt: Date;
             shopId: string;
+            createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
         }[];
     } & {
         name: string;
         id: string;
+        createdAt: Date;
+        isActive: boolean;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
-        isActive: boolean;
         preferredLang: string;
-        createdAt: Date;
         updatedAt: Date;
     }>;
     updateProfile(userId: string, input: UpdateProfileInput): Promise<{
         roles: {
             id: string;
-            createdAt: Date;
             shopId: string;
+            createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
         }[];
     } & {
         name: string;
         id: string;
+        createdAt: Date;
+        isActive: boolean;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
-        isActive: boolean;
         preferredLang: string;
-        createdAt: Date;
         updatedAt: Date;
     }>;
     deactivate(userId: string): Promise<{
         name: string;
         id: string;
+        createdAt: Date;
+        isActive: boolean;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
-        isActive: boolean;
         preferredLang: string;
-        createdAt: Date;
         updatedAt: Date;
     }>;
 }

@@ -9,3 +9,4 @@ export * from './lib/subscription.types';
 export * from './lib/notification.types';
 export * from './lib/analytics.types';
 export * from './lib/pagination.types';
+export * from './lib/queue-stats.model';

@@ -6,6 +6,7 @@ export declare class ShopsResolver {
     private readonly shopsService;
     constructor(shopsService: ShopsService);
     shopBySlug(slug: string): Promise<ShopModel>;
+    shopBranchesBySlug(slug: string): Promise<BranchModel[]>;
     myShop(user: AuthenticatedUser): Promise<ShopModel | null>;
     shopBranches(shopId: string, user: AuthenticatedUser): Promise<BranchModel[]>;
     createShop(user: AuthenticatedUser, input: CreateShopInput): Promise<ShopModel>;

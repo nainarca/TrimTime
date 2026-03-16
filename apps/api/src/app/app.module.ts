@@ -12,6 +12,10 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { ShopsModule } from '../modules/shops/shops.module';
 import { QueueModule } from '../modules/queue/queue.module';
+import { BarbersModule } from '../barbers/barbers.module';
+import { ServicesModule } from '../services/services.module';
+import { AppointmentsModule } from '../appointments/appointments.module';
+import { ReportsModule } from '../reports/reports.module';
 
 // GraphQL config
 import { graphqlConfig } from '../config/graphql.config';
@@ -40,13 +44,10 @@ import { graphqlConfig } from '../config/graphql.config';
     UsersModule,
     ShopsModule,
     QueueModule,
-
-    // TODO Phase 2:
-    // BarbersModule
-    // ServicesModule
-    // QrCodeModule
-    // AppointmentsModule
-    // NotificationsModule
+    BarbersModule,
+    ServicesModule,
+    AppointmentsModule,
+    ReportsModule,
 
     // TODO Phase 3:
     // SubscriptionsModule

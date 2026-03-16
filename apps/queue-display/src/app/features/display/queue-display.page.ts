@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { QueueService } from '../../../core/services/queue.service';
+import { QueueService } from '../../core/services/queue.service';
 import type { QueueEntry } from '../../../../../../libs/shared/src';
 
 @Component({
@@ -35,7 +35,8 @@ export class QueueDisplayPage implements OnInit, OnDestroy {
 
     this.sub = this.queueService
       .queueUpdated$(this.shopId, null)
-      .subscribe((evt) => this.applyQueue(evt.activeEntries));
+      .subscribe((evt: { activeEntries: QueueEntry[] }) => this.applyQueue(evt.activeEntries));
+
   }
 
   ngOnDestroy(): void {
@@ -43,7 +44,7 @@ export class QueueDisplayPage implements OnInit, OnDestroy {
   }
 
   private loadQueue(): void {
-    this.queueService.getActiveQueue(this.shopId).subscribe((entries) => {
+    this.queueService.getActiveQueue(this.shopId).subscribe((entries: QueueEntry[]) => {
       this.applyQueue(entries);
     });
   }

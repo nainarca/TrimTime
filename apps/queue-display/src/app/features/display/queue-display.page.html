@@ -1,50 +1,38 @@
-<div class="h-100 d-flex flex-column">
-  <!-- Header -->
-  <div class="px-4 py-3 d-flex justify-content-between align-items-center">
+<div class="queue-display-shell">
+  <div class="top-row">
     <div>
-      <div class="text-uppercase text-muted small">Now serving</div>
-      <div class="now-serving">
-        {{ current?.ticketDisplay || '—' }}
-      </div>
+      <div class="label">Now Serving</div>
+      <div class="now-serving-number">{{ current?.ticketDisplay || '--' }}</div>
+      <div class="sub">Please keep your seat until your number appears.</div>
     </div>
-    <div class="text-end">
-      <div class="fw-semibold" style="font-size: var(--tt-body-font-size);">
-        TrimTime Queue
-      </div>
-      <div class="text-muted" style="font-size: 0.9rem;">
-        Please wait for your token on screen
-      </div>
+    <div class="shop-meta">
+      <div class="shop-name">QueueCut Premium</div>
+      <div class="shop-note">Branch: Main Floor</div>
     </div>
   </div>
 
-  <!-- Divider -->
-  <div style="height: 4px; background: linear-gradient(to right, #4f46e5, #f59e0b);"></div>
-
-  <!-- Next in queue -->
-  <div class="flex-grow-1 d-flex flex-column">
-    <div class="px-4 py-3">
-      <div class="text-uppercase text-muted mb-2" style="font-size: 0.9rem;">
-        Next in line
+  <div class="queue-panels">
+    <section class="panel current-card">
+      <div class="panel-title">Current</div>
+      <div class="ticket">{{ current?.ticketDisplay || '---' }}</div>
+      <div class="status">
+        Status: <span>{{ current?.status || 'WAITING' }}</span>
       </div>
-      <div class="d-flex flex-column gap-2">
-        <div
-          *ngFor="let entry of next; let i = index"
-          class="d-flex justify-content-between align-items-center px-3 py-2"
-          style="background-color: var(--tt-surface); border-radius: 12px;"
-        >
-          <div class="queue-ticket">
-            {{ entry.ticketDisplay }}
-          </div>
-          <div class="text-muted" style="font-size: var(--tt-body-font-size);">
-            Est. {{ entry.estimatedWaitMins ?? '—' }} min
-          </div>
-        </div>
+    </section>
 
-        <div *ngIf="!next.length" class="text-muted" style="font-size: var(--tt-body-font-size);">
-          No waiting customers at the moment.
-        </div>
+    <section class="panel next-card">
+      <div class="panel-title">Next up</div>
+      <div class="next-list">
+        <ng-container *ngFor="let entry of next; let i=index">
+          <div class="next-item">
+            <div class="next-pos">#{{ i + 2 }}</div>
+            <div class="next-ticket">{{ entry.ticketDisplay }}</div>
+            <div class="next-wait">Est. {{ entry.estimatedWaitMins ?? '--' }} min</div>
+          </div>
+        </ng-container>
+        <div *ngIf="!next.length" class="empty">No customers waiting</div>
       </div>
-    </div>
+    </section>
   </div>
 </div>
 

@@ -8,11 +8,8 @@ import {
 } from '@nestjs/graphql';
 import { UseGuards, Optional } from '@nestjs/common';
 import { QueueService } from './queue.service';
-import {
-  QueueEntryModel,
-  QueueStatsModel,
-  QueueUpdateEvent,
-} from './models/queue-entry.model';
+import { QueueEntryModel, QueueUpdateEvent } from './models/queue-entry.model';
+import { QueueStatsModel } from '@trimtime/shared-types';
 import { JoinQueueInput } from './dto/join-queue.input';
 import { UpdateQueueStatusInput } from './dto/update-queue-status.input';
 import { GqlJwtGuard } from '../auth/guards/gql-jwt.guard';

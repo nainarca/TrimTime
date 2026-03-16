@@ -51,5 +51,15 @@ export class QueueListPageComponent implements OnInit, OnDestroy {
       this.stats = stats;
     });
   }
+
+  callNext(): void {
+    // Implement call next logic
+    console.log('Call next customer');
+  }
+
+  markServed(entryId: string): void {
+    // Implement mark served logic
+    console.log('Mark served', entryId);
+  }
 }
 

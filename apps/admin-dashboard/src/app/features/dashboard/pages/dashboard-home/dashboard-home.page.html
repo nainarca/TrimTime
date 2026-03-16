@@ -1,64 +1,45 @@
-<div class="row g-3">
-  <div class="col-12">
-    <h1 class="h4 mb-3">Dashboard</h1>
+<div class="dashboard-main">
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow">Analytics</p>
+      <h1>Dashboard overview</h1>
+      <p class="subtext">Live queue insights and revenue trends for your shop.</p>
+    </div>
+    <button pButton label="+ New service" class="p-button-outlined p-button-plain"></button>
   </div>
 
-  <div class="col-12 col-md-3">
-    <p-card>
-      <ng-template pTemplate="header">
-        <span class="text-muted small">Total customers today</span>
-      </ng-template>
-      <div class="fs-3 fw-semibold">
-        {{ kpis?.totalCustomersToday ?? 0 }}
-      </div>
-    </p-card>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Customers Today</div>
+      <div class="kpi-value">{{ kpis?.totalCustomersToday ?? 0 }}</div>
+      <div class="kpi-meta">Compared to yesterday: +8%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active Queue</div>
+      <div class="kpi-value">{{ kpis?.activeQueueCount ?? 0 }}</div>
+      <div class="kpi-meta">Now serving</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Revenue Today</div>
+      <div class="kpi-value">${{ kpis?.revenueToday ?? 0 }}</div>
+      <div class="kpi-meta">Estimated</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Completed Services</div>
+      <div class="kpi-value">{{ kpis?.completedServicesToday ?? 0 }}</div>
+      <div class="kpi-meta">Today</div>
+    </div>
   </div>
 
-  <div class="col-12 col-md-3">
-    <p-card>
-      <ng-template pTemplate="header">
-        <span class="text-muted small">Active queue</span>
-      </ng-template>
-      <div class="fs-3 fw-semibold">
-        {{ kpis?.activeQueueCount ?? 0 }}
-      </div>
-    </p-card>
-  </div>
-
-  <div class="col-12 col-md-3">
-    <p-card>
-      <ng-template pTemplate="header">
-        <span class="text-muted small">Completed services</span>
-      </ng-template>
-      <div class="fs-3 fw-semibold">
-        {{ kpis?.completedServicesToday ?? 0 }}
-      </div>
-    </p-card>
-  </div>
-
-  <div class="col-12 col-md-3">
-    <p-card>
-      <ng-template pTemplate="header">
-        <span class="text-muted small">Today's revenue</span>
-      </ng-template>
-      <div class="fs-3 fw-semibold">
-        {{ (kpis?.revenueToday ?? 0) | currency : 'USD' : 'symbol' : '1.0-0' }}
-      </div>
-    </p-card>
-  </div>
-
-  <div class="col-12 col-lg-6">
-    <p-card header="Queue status">
+  <div class="line-grid">
+    <div class="line-card">
+      <div class="line-title">Queue Status</div>
       <p-chart type="doughnut" [data]="queueChartData" [options]="queueChartOptions"></p-chart>
-    </p-card>
-  </div>
-
-  <div class="col-12 col-lg-6">
-    <p-card header="Activity">
-      <p class="text-muted mb-0">
-        Add additional charts here for bookings, revenue trends, or barber performance.
-      </p>
-    </p-card>
+    </div>
+    <div class="line-card">
+      <div class="line-title">Activity Feed</div>
+      <div class="activity-list"><p class="muted">Add reports and events here.</p></div>
+    </div>
   </div>
 </div>
 

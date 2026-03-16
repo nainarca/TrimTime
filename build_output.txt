@@ -1,0 +1,165 @@
+
+> trimtime@0.0.1 build:api
+> nx build api
+
+
+> nx run api:build:production
+
+(node:22084) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+assets by path ../../../apps/api/src/ 32.5 KiB
+  assets by path ../../../apps/api/src/modules/ 21.9 KiB 33 assets
+  assets by path ../../../apps/api/src/barbers/ 3.12 KiB 5 assets
+  assets by path ../../../apps/api/src/appointments/ 3.08 KiB 5 assets
+  assets by path ../../../apps/api/src/services/ 2.62 KiB 5 assets
+  assets by path ../../../apps/api/src/reports/ 1.61 KiB 4 assets
+  + 3 assets
+assets by path ../../../libs/ 15.8 KiB
+  assets by path ../../../libs/shared-types/src/ 9.54 KiB 12 assets
+  assets by path ../../../libs/shared-utils/src/ 2.73 KiB 6 assets
+  assets by path ../../../libs/queue-engine/src/ 3.55 KiB
+    asset ../../../libs/queue-engine/src/lib/ewt.engine.d.ts 1.56 KiB [compared for emit]
+    + 4 assets
+asset main.js 10.9 MiB [emitted] (name: main)
+orphan modules 213 KiB [orphan] 78 modules
+runtime modules 1.37 KiB 6 modules
+modules by path ./node_modules/ 8.38 MiB
+  javascript modules 7.85 MiB 2308 modules
+  json modules 540 KiB
+    modules by path ./node_modules/iconv-lite/ 86.7 KiB 8 modules
+    + 7 modules
+modules by path ./apps/api/src/ 130 KiB
+  modules by path ./apps/api/src/modules/ 85.2 KiB 33 modules
+  modules by path ./apps/api/src/barbers/ 10.7 KiB 5 modules
+  modules by path ./apps/api/src/services/ 10.4 KiB 5 modules
+  modules by path ./apps/api/src/appointments/ 10.6 KiB 5 modules
+  modules by path ./apps/api/src/reports/ 8.15 KiB 4 modules
+  + 3 modules
++ 29 modules
+WARNING in ./node_modules/@nestjs/common/utils/load-package.util.js 9:39-59
+Critical dependency: the request of a dependency is an expression
+ @ ./node_modules/@nestjs/core/nest-factory.js 5:28-77
+ @ ./node_modules/@nestjs/core/index.js 28:21-46
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/@nestjs/core/helpers/load-adapter.js 9:39-63
+Critical dependency: the request of a dependency is an expression
+ @ ./node_modules/@nestjs/core/nest-factory.js 10:23-56
+ @ ./node_modules/@nestjs/core/index.js 28:21-46
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/@nestjs/core/helpers/optional-require.js 6:39-59
+Critical dependency: the request of a dependency is an expression
+ @ ./node_modules/@nestjs/core/nest-application.js 12:27-64
+ @ ./node_modules/@nestjs/core/index.js 26:21-50
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/@nestjs/graphql/node_modules/ws/lib/buffer-util.js 117:23-44
+Module not found: Error: Can't resolve 'bufferutil' in 'D:\Project\Queuecut\node_modules\@nestjs\graphql\node_modules\ws\lib'
+ @ ./node_modules/@nestjs/graphql/node_modules/ws/lib/websocket.js 33:21-45
+ @ ./node_modules/@nestjs/graphql/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/@nestjs/graphql/dist/services/gql-subscription.service.js 8:11-24
+ @ ./node_modules/@nestjs/graphql/dist/index.js 20:21-67
+ @ ./apps/api/src/app/app.module.ts 7:18-44
+ @ ./apps/api/src/main.ts 5:21-48
+WARNING in ./node_modules/@nestjs/graphql/node_modules/ws/lib/validation.js 144:24-49
+Module not found: Error: Can't resolve 'utf-8-validate' in 'D:\Project\Queuecut\node_modules\@nestjs\graphql\node_modules\ws\lib'
+ @ ./node_modules/@nestjs/graphql/node_modules/ws/lib/websocket.js 17:19-42
+ @ ./node_modules/@nestjs/graphql/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/@nestjs/graphql/dist/services/gql-subscription.service.js 8:11-24
+ @ ./node_modules/@nestjs/graphql/dist/index.js 20:21-67
+ @ ./apps/api/src/app/app.module.ts 7:18-44
+ @ ./apps/api/src/main.ts 5:21-48
+WARNING in ./node_modules/engine.io/node_modules/ws/lib/buffer-util.js 117:23-44
+Module not found: Error: Can't resolve 'bufferutil' in 'D:\Project\Queuecut\node_modules\engine.io\node_modules\ws\lib'
+ @ ./node_modules/engine.io/node_modules/ws/lib/websocket.js 33:21-45
+ @ ./node_modules/engine.io/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/engine.io/build/server.js 10:13-26
+ @ ./node_modules/engine.io/build/engine.io.js 7:17-36
+ @ ./node_modules/socket.io/dist/index.js 36:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/io-adapter.js 9:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/index.js 4:21-44
+ @ ./node_modules/@nestjs/platform-socket.io/index.js 10:21-42
+ @ ./node_modules/@nestjs/websockets/socket-module.js 74:112-149
+ @ ./node_modules/@nestjs/core/nest-application.js 19:107-150
+ @ ./node_modules/@nestjs/core/index.js 26:21-50
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/engine.io/node_modules/ws/lib/validation.js 144:24-49
+Module not found: Error: Can't resolve 'utf-8-validate' in 'D:\Project\Queuecut\node_modules\engine.io\node_modules\ws\lib'
+ @ ./node_modules/engine.io/node_modules/ws/lib/websocket.js 17:19-42
+ @ ./node_modules/engine.io/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/engine.io/build/server.js 10:13-26
+ @ ./node_modules/engine.io/build/engine.io.js 7:17-36
+ @ ./node_modules/socket.io/dist/index.js 36:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/io-adapter.js 9:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/index.js 4:21-44
+ @ ./node_modules/@nestjs/platform-socket.io/index.js 10:21-42
+ @ ./node_modules/@nestjs/websockets/socket-module.js 74:112-149
+ @ ./node_modules/@nestjs/core/nest-application.js 19:107-150
+ @ ./node_modules/@nestjs/core/index.js 26:21-50
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/express/lib/view.js 81:13-25
+Critical dependency: the request of a dependency is an expression
+ @ ./node_modules/express/lib/application.js 22:11-28
+ @ ./node_modules/express/lib/express.js 18:12-36
+ @ ./node_modules/express/index.js 11:0-41
+ @ ./node_modules/@nestjs/platform-express/adapters/express-adapter.js 11:16-34
+ @ ./node_modules/@nestjs/platform-express/adapters/index.js 4:21-49
+ @ ./node_modules/@nestjs/platform-express/index.js 10:21-42
+ @ ./node_modules/@nestjs/core/nest-factory.js 164:109-144
+ @ ./node_modules/@nestjs/core/index.js 28:21-46
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/socket.io-adapter/node_modules/ws/lib/buffer-util.js 117:23-44
+Module not found: Error: Can't resolve 'bufferutil' in 'D:\Project\Queuecut\node_modules\socket.io-adapter\node_modules\ws\lib'
+ @ ./node_modules/socket.io-adapter/node_modules/ws/lib/websocket.js 33:21-45
+ @ ./node_modules/socket.io-adapter/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/socket.io-adapter/dist/in-memory-adapter.js 7:18-31
+ @ ./node_modules/socket.io-adapter/dist/index.js 4:26-56
+ @ ./node_modules/socket.io/dist/index.js 42:28-56
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/io-adapter.js 9:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/index.js 4:21-44
+ @ ./node_modules/@nestjs/platform-socket.io/index.js 10:21-42
+ @ ./node_modules/@nestjs/websockets/socket-module.js 74:112-149
+ @ ./node_modules/@nestjs/core/nest-application.js 19:107-150
+ @ ./node_modules/@nestjs/core/index.js 26:21-50
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/socket.io-adapter/node_modules/ws/lib/validation.js 144:24-49
+Module not found: Error: Can't resolve 'utf-8-validate' in 'D:\Project\Queuecut\node_modules\socket.io-adapter\node_modules\ws\lib'
+ @ ./node_modules/socket.io-adapter/node_modules/ws/lib/websocket.js 17:19-42
+ @ ./node_modules/socket.io-adapter/node_modules/ws/index.js 3:18-44
+ @ ./node_modules/socket.io-adapter/dist/in-memory-adapter.js 7:18-31
+ @ ./node_modules/socket.io-adapter/dist/index.js 4:26-56
+ @ ./node_modules/socket.io/dist/index.js 42:28-56
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/io-adapter.js 9:20-40
+ @ ./node_modules/@nestjs/platform-socket.io/adapters/index.js 4:21-44
+ @ ./node_modules/@nestjs/platform-socket.io/index.js 10:21-42
+ @ ./node_modules/@nestjs/websockets/socket-module.js 74:112-149
+ @ ./node_modules/@nestjs/core/nest-application.js 19:107-150
+ @ ./node_modules/@nestjs/core/index.js 26:21-50
+ @ ./apps/api/src/main.ts 3:15-38
+WARNING in ./node_modules/subscriptions-transport-ws/node_modules/ws/lib/buffer-util.js 105:21-42
+Module not found: Error: Can't resolve 'bufferutil' in 'D:\Project\Queuecut\node_modules\subscriptions-transport-ws\node_modules\ws\lib'
+ @ ./node_modules/subscriptions-transport-ws/node_modules/ws/lib/sender.js 12:38-62
+ @ ./node_modules/subscriptions-transport-ws/node_modules/ws/index.js 8:19-42
+ @ ./node_modules/subscriptions-transport-ws/dist/server.js 4:16-29
+ @ ./node_modules/subscriptions-transport-ws/dist/index.js 15:13-32
+ @ ./node_modules/@nestjs/graphql/dist/services/gql-subscription.service.js 7:37-74
+ @ ./node_modules/@nestjs/graphql/dist/index.js 20:21-67
+ @ ./apps/api/src/app/app.module.ts 7:18-44
+ @ ./apps/api/src/main.ts 5:21-48
+WARNING in ./node_modules/subscriptions-transport-ws/node_modules/ws/lib/validation.js 86:20-45
+Module not found: Error: Can't resolve 'utf-8-validate' in 'D:\Project\Queuecut\node_modules\subscriptions-transport-ws\node_modules\ws\lib'
+ @ ./node_modules/subscriptions-transport-ws/node_modules/ws/lib/sender.js 11:30-53
+ @ ./node_modules/subscriptions-transport-ws/node_modules/ws/index.js 8:19-42
+ @ ./node_modules/subscriptions-transport-ws/dist/server.js 4:16-29
+ @ ./node_modules/subscriptions-transport-ws/dist/index.js 15:13-32
+ @ ./node_modules/@nestjs/graphql/dist/services/gql-subscription.service.js 7:37-74
+ @ ./node_modules/@nestjs/graphql/dist/index.js 20:21-67
+ @ ./apps/api/src/app/app.module.ts 7:18-44
+ @ ./apps/api/src/main.ts 5:21-48
+12 warnings have detailed information that is not shown.
+Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+webpack 5.105.4 compiled with 12 warnings in 10723 ms
+
+
+
+ NX   Successfully ran target build for project api
+
+

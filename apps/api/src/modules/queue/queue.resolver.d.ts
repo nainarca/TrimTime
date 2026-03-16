@@ -1,5 +1,6 @@
 import { QueueService } from './queue.service';
-import { QueueEntryModel, QueueStatsModel } from './models/queue-entry.model';
+import { QueueEntryModel } from './models/queue-entry.model';
+import { QueueStatsModel } from '@trimtime/shared-types';
 import { JoinQueueInput } from './dto/join-queue.input';
 import { UpdateQueueStatusInput } from './dto/update-queue-status.input';
 import { AuthenticatedUser } from '../auth/decorators/current-user.decorator';

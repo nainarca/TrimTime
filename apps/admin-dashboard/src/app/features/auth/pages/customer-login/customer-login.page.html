@@ -1,0 +1,11 @@
+<div class="customer-login">
+  <h1>Customer Login</h1>
+  <form [formGroup]="form" (ngSubmit)="requestOtp()">
+    <input type="tel" formControlName="phone" placeholder="Enter phone number" />
+    <button type="submit" [disabled]="loading">Send OTP</button>
+  </form>
+  <form *ngIf="otpSent" [formGroup]="otpForm" (ngSubmit)="verifyOtp()">
+    <input type="text" formControlName="otp" placeholder="Enter OTP" />
+    <button type="submit" [disabled]="loading">Verify</button>
+  </form>
+</div>

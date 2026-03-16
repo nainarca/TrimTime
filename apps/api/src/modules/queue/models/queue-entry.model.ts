@@ -65,21 +65,6 @@ export class QueueEntryModel {
 }
 
 @ObjectType()
-export class QueueStatsModel {
-  @Field(() => Int)
-  waitingCount: number;
-
-  @Field(() => Int)
-  servingCount: number;
-
-  @Field(() => Int, { nullable: true })
-  avgWaitMins: number | null;
-
-  @Field(() => Int)
-  servedTodayCount: number;
-}
-
-@ObjectType()
 export class QueueUpdateEvent {
   @Field()
   shopId: string;

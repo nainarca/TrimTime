@@ -1,4 +1,84 @@
 :host {
   display: block;
+  margin-top: 0.5rem;
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.queue-header .eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8fa3bf;
+  margin-bottom: 0.25rem;
+}
+
+.queue-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #f8fafc;
+}
+
+.queue-header .subtext {
+  margin-top: 0.25rem;
+  color: #cbd5e1;
+}
+
+.stats-pill {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.82rem;
+}
+
+.stats-pill > div {
+  border-right: 1px solid #243451;
+  padding: 0 0.5rem;
+  color: #e2e8f0;
+}
+
+.stats-pill > div:last-child { border-right: none; }
+.stats-pill strong { display: block; color: #94a3b8; font-weight: 600; }
+.stats-pill span { color: #fff; font-weight: 700; }
+
+.table-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+}
+
+::ng-deep .p-table .p-datatable-thead > tr > th {
+  border-bottom: 1px solid #1f2937;
+  color: #e2e8f0;
+  background: #0f172a;
+  font-weight: 600;
+}
+
+::ng-deep .p-table .p-datatable-tbody > tr > td {
+  border-bottom: 1px solid #1f2937;
+  color: #dbeafe;
+}
+
+::ng-deep .p-tag {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+::ng-deep .p-button-rounded {
+  border-radius: 999px;
 }
 

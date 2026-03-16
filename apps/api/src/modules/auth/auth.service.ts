@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../database/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { generateOtp, isOtpLocked } from '@trimtime/shared-utils';
 import { JwtPayload } from '@trimtime/shared-types';
 import { AuthResponse, OtpRequestResponse } from './dto/auth-response.type';

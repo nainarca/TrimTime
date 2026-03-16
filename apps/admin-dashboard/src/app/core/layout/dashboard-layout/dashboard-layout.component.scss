@@ -1,14 +1,23 @@
 .tt-layout {
-  background-color: #f5f6fa;
+  background: #f5f7fb;
+  color: #0f172a;
+  min-height: 100vh;
 }
 
 .tt-sidebar {
   width: 260px;
-  border-right: 1px solid #e0e0e0;
-  background-color: #ffffff;
+  background: #0f172a;
+  border: 0;
+  box-shadow: 2px 0 18px rgba(15, 23, 42, 0.19);
 }
 
 .tt-content {
   overflow-y: auto;
+  background: #f5f7fb;
+  padding: 1rem 1.2rem;
+}
+
+@media (max-width: 992px) {
+  .tt-sidebar { display: none; }
 }
 

@@ -1,33 +1,17 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3 px-md-4">
-  <div class="d-flex align-items-center w-100">
-    <div class="d-flex align-items-center me-auto">
-      <span class="navbar-brand mb-0 h5 d-flex align-items-center">
-        <i class="pi pi-clock me-2 text-primary"></i>
-        <span>TrimTime Admin</span>
-      </span>
+<nav class="tt-topbar">
+  <div class="topbar-left">
+    <div class="brand">QueueCut</div>
+    <div class="search-wrap">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search dashboard" />
     </div>
-
-    <div class="d-flex align-items-center gap-2">
-      <button
-        pButton
-        type="button"
-        icon="pi pi-bell"
-        class="p-button-text p-button-rounded"
-        aria-label="Notifications"
-      ></button>
-
-      <div class="d-flex align-items-center">
-        <div class="me-2 text-end d-none d-sm-block">
-          <div class="fw-semibold">Owner</div>
-          <small class="text-muted">My Barber Shop</small>
-        </div>
-        <div
-          class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-          style="width: 36px; height: 36px;"
-        >
-          <span>ON</span>
-        </div>
-      </div>
+  </div>
+  <div class="topbar-right">
+    <button pButton type="button" icon="pi pi-bell" class="p-button-text p-button-rounded"></button>
+    <button pButton type="button" icon="pi pi-envelope" class="p-button-text p-button-rounded"></button>
+    <div class="profile-pill">
+      <span>Owner</span>
+      <i class="pi pi-user"></i>
     </div>
   </div>
 </nav>

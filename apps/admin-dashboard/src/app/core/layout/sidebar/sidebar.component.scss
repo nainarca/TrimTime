@@ -1,4 +1,26 @@
 .tt-sidebar-inner {
-  padding: 0.75rem 0.5rem;
+  padding: 1rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
+
+.p-panelmenu {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.p-panelmenu .p-menuitem-link {
+  border-radius: 10px;
+  margin-bottom: 0.25rem;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.p-panelmenu .p-menuitem-link:hover {
+  background: #1e293b;
+}
+
+.p-panelmenu .p-menuitem-link .p-menuitem-text { color: #e2e8f0; }
+
 

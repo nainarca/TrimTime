@@ -44,6 +44,33 @@ export class AuthService {
       );
   }
 
+  requestOtp(phone: string): Observable<any> {
+    const mutation = `mutation RequestOtp($phone: String!) { requestOtp(input: { phone: $phone }) { phone otpHash expiresAt } }`;
+    return this.apollo
+      .mutate({
+        mutation: mutation as any,
+        variables: { phone },
+      })
+      .pipe(map((result: any) => result.data?.requestOtp));
+  }
+
+  verifyOtp(phone: string, otp: string): Observable<any> {
+    const mutation = `mutation VerifyOtp($phone: String!, $otp: String!) { verifyOtp(input: { phone: $phone, otp: $otp }) { accessToken refreshToken user { id username role } } }`;
+    return this.apollo
+      .mutate({
+        mutation: mutation as any,
+        variables: { phone, otp },
+      })
+      .pipe(
+        map((result: any) => result.data?.verifyOtp),
+        tap((authResponse: any) => {
+          if (authResponse?.accessToken) {
+            this.setTokens(authResponse.accessToken, authResponse.refreshToken);
+          }
+        }),
+      );
+  }
+
   logout(): void {
     this.clearTokens();
     void this.router.navigate(['/auth/login']);

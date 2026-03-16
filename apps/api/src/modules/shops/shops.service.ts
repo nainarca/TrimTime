@@ -95,6 +95,11 @@ export class ShopsService {
     });
   }
 
+  async getBranchesBySlug(slug: string) {
+    const shop = await this.findBySlug(slug);
+    return this.getBranches(shop.id);
+  }
+
   // ── Owner: update shop ────────────────────────────────────────────────────
 
   async updateShop(shopId: string, ownerId: string, input: UpdateShopInput) {

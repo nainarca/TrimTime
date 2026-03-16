@@ -5,6 +5,8 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { LoginPageComponent } from './pages/login/login.page';
 import { ForgotPasswordPageComponent } from './pages/forgot-password/forgot-password.page';
 import { ResetPasswordPageComponent } from './pages/reset-password/reset-password.page';
+import { LoginSelectionPageComponent } from './pages/login-selection/login-selection.page';
+import { CustomerLoginPageComponent } from './pages/customer-login/customer-login.page';
 
 @NgModule({
   imports: [SharedModule, ReactiveFormsModule, AuthRoutingModule],
@@ -12,6 +14,8 @@ import { ResetPasswordPageComponent } from './pages/reset-password/reset-passwor
     LoginPageComponent,
     ForgotPasswordPageComponent,
     ResetPasswordPageComponent,
+    LoginSelectionPageComponent,
+    CustomerLoginPageComponent,
   ],
 })
 export class AuthModule {}

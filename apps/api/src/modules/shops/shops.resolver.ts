@@ -20,6 +20,13 @@ export class ShopsResolver {
     return this.shopsService.findBySlug(slug) as unknown as Promise<ShopModel>;
   }
 
+  @Query(() => [BranchModel], {
+    description: 'Get active branches for a shop by slug (public)',
+  })
+  shopBranchesBySlug(@Args('slug') slug: string): Promise<BranchModel[]> {
+    return this.shopsService.getBranchesBySlug(slug) as unknown as Promise<BranchModel[]>;
+  }
+
   @UseGuards(GqlJwtGuard, TenantGuard)
   @Query(() => ShopModel, {
     nullable: true,
