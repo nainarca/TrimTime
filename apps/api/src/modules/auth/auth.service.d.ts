@@ -16,6 +16,7 @@ export declare class AuthService {
     constructor(prisma: PrismaService, redis: RedisService, jwt: JwtService, config: ConfigService);
     requestOtp(phone: string): Promise<OtpRequestResponse>;
     verifyOtp(phone: string, otp: string): Promise<AuthResponse>;
+    login(username: string, password: string, role?: string): Promise<AuthResponse>;
     refreshToken(token: string): Promise<AuthResponse>;
     logout(userId: string): Promise<boolean>;
     private generateTokens;

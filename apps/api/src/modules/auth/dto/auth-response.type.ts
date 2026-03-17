@@ -26,4 +26,7 @@ export class OtpRequestResponse {
   /** Seconds until OTP expires */
   @Field()
   expiresIn: number;
+
+  @Field({ nullable: true })
+  otp?: string;
 }

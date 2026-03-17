@@ -59,7 +59,9 @@
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
       "options": {
-        "buildTarget": "admin-dashboard:build"
+        "buildTarget": "admin-dashboard:build",
+        "port": 4201,
+        "host": "localhost"
       }
     },
     "lint": {

@@ -11,13 +11,13 @@ export declare class AppointmentsResolver {
         barberId: string;
         customerId: string;
         serviceId: string;
+        scheduledAt: Date;
+        durationMins: number;
         status: import(".prisma/client").$Enums.AppointmentStatus;
         notes: string;
-        createdAt: Date;
-        durationMins: number;
-        updatedAt: Date;
-        scheduledAt: Date;
         reminderSent: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     cancelAppointment(id: string, user: AuthenticatedUser): Promise<boolean>;
     appointmentsByShop(shopId: string, user: AuthenticatedUser): Promise<{
@@ -27,12 +27,12 @@ export declare class AppointmentsResolver {
         barberId: string;
         customerId: string;
         serviceId: string;
+        scheduledAt: Date;
+        durationMins: number;
         status: import(".prisma/client").$Enums.AppointmentStatus;
         notes: string;
-        createdAt: Date;
-        durationMins: number;
-        updatedAt: Date;
-        scheduledAt: Date;
         reminderSent: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
 }

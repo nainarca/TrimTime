@@ -9,4 +9,5 @@ export declare class OtpRequestResponse {
     message: string;
     /** Seconds until OTP expires */
     expiresIn: number;
+    otp?: string;
 }

@@ -19,13 +19,13 @@ export declare class JwtStrategy extends JwtStrategy_base {
         name: string;
         id: string;
         createdAt: Date;
-        isActive: boolean;
+        updatedAt: Date;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
+        isActive: boolean;
         preferredLang: string;
-        updatedAt: Date;
     } & {
         shopIds: string[];
     }>;

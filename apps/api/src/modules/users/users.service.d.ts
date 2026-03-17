@@ -15,13 +15,13 @@ export declare class UsersService {
         name: string;
         id: string;
         createdAt: Date;
-        isActive: boolean;
+        updatedAt: Date;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
+        isActive: boolean;
         preferredLang: string;
-        updatedAt: Date;
     }>;
     findByPhone(phone: string): Promise<{
         roles: {
@@ -35,13 +35,13 @@ export declare class UsersService {
         name: string;
         id: string;
         createdAt: Date;
-        isActive: boolean;
+        updatedAt: Date;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
+        isActive: boolean;
         preferredLang: string;
-        updatedAt: Date;
     }>;
     updateProfile(userId: string, input: UpdateProfileInput): Promise<{
         roles: {
@@ -55,24 +55,24 @@ export declare class UsersService {
         name: string;
         id: string;
         createdAt: Date;
-        isActive: boolean;
+        updatedAt: Date;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
+        isActive: boolean;
         preferredLang: string;
-        updatedAt: Date;
     }>;
     deactivate(userId: string): Promise<{
         name: string;
         id: string;
         createdAt: Date;
-        isActive: boolean;
+        updatedAt: Date;
         phone: string;
         email: string;
         avatarUrl: string;
         isVerified: boolean;
+        isActive: boolean;
         preferredLang: string;
-        updatedAt: Date;
     }>;
 }

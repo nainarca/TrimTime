@@ -2,45 +2,24 @@
   <div class="login-grid">
     <section class="left-panel">
       <div class="logo">✂ QueueCut</div>
-      <div class="headline">Welcome Back</div>
-      <p class="subtitle">Sign in to your dashboard and manage your queue in real time.</p>
+      <div class="headline">{{ roleLabel }} Login</div>
+      <p class="subtitle">Enter your credentials to continue.</p>
 
       <div class="login-card">
-        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
-          <label class="floating-label">Email</label>
-          <input
-            id="username"
-            type="text"
-            class="input-control"
-            formControlName="username"
-            placeholder="Enter your email"
-          />
+        <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
+          <label class="floating-label">Username or Email</label>
+          <input id="username" type="text" class="input-control" formControlName="username" placeholder="Enter username or email" />
 
           <label class="floating-label">Password</label>
-          <input
-            id="password"
-            type="password"
-            class="input-control"
-            formControlName="password"
-            placeholder="Enter your password"
-          />
+          <input id="password" type="password" class="input-control" formControlName="password" placeholder="Enter password" />
 
-          <div class="row gap">
-            <label class="remember">
-              <input type="checkbox" /> Remember me
-            </label>
-            <a class="link" href="#">Forgot password?</a>
-          </div>
-
-          <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">
-            <span *ngIf="!loading">Sign in</span>
-            <span *ngIf="loading">Signing in...</span>
+          <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || loading">
+            <span *ngIf="!loading">Login</span>
+            <span *ngIf="loading">Logging in...</span>
           </button>
-
-          <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
-
-          <p class="footnote">By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy</a>.</p>
         </form>
+
+        <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
       </div>
     </section>
 

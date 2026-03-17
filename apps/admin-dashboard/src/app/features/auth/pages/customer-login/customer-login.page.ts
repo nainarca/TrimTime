@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth/auth.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'tt-customer-login-page',
@@ -17,38 +18,45 @@ export class CustomerLoginPageComponent {
   });
   otpSent = false;
   loading = false;
-  errorMessage = '';
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private notifications: NotificationService,
+  ) {}
 
   requestOtp() {
-    if (this.form.invalid) return;
+    if (this.form.invalid || this.loading) return;
     this.loading = true;
-    this.errorMessage = '';
     this.auth.requestOtp(this.form.value.phone!).subscribe({
       next: () => {
         this.otpSent = true;
         this.loading = false;
+        this.notifications.success('OTP sent', 'Please check your phone.');
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.message || 'Failed to send OTP';
+        const msg =
+          err?.graphQLErrors?.[0]?.message || err?.message || 'Failed to send OTP';
+        this.notifications.error('OTP Error', msg);
       },
     });
   }
 
   verifyOtp() {
-    if (this.otpForm.invalid) return;
+    if (this.otpForm.invalid || this.loading) return;
     this.loading = true;
-    this.errorMessage = '';
     this.auth.verifyOtp(this.form.value.phone!, this.otpForm.value.otp!).subscribe({
       next: () => {
         this.loading = false;
+        this.notifications.success('Login successful', 'Welcome!');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.message || 'Invalid OTP';
+        const msg = err?.graphQLErrors?.[0]?.message || err?.message || 'Invalid OTP';
+        this.notifications.error('OTP Error', msg);
       },
     });
   }

@@ -8,24 +8,24 @@ export declare class ServicesResolver {
         name: string;
         id: string;
         shopId: string;
+        durationMins: number;
         createdAt: Date;
         description: string;
-        durationMins: number;
+        isActive: boolean;
         price: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        isActive: boolean;
         displayOrder: number;
     }[]>;
     upsertService(input: ServiceInput, user: AuthenticatedUser): Promise<{
         name: string;
         id: string;
         shopId: string;
+        durationMins: number;
         createdAt: Date;
         description: string;
-        durationMins: number;
+        isActive: boolean;
         price: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        isActive: boolean;
         displayOrder: number;
     }>;
     deleteService(id: string, user: AuthenticatedUser): Promise<boolean>;

@@ -68,6 +68,7 @@ export class AuthService {
       success: true,
       message: 'OTP sent successfully',
       expiresIn: this.OTP_TTL,
+      otp: this.config.get('NODE_ENV') !== 'production' ? otp : undefined,
     };
   }
 
@@ -137,6 +138,58 @@ export class AuthService {
     }
 
     return this.generateTokens(user.id, isNewUser);
+  }
+
+  // ── Login with username/password (demo) ───────────────────────────────────
+
+  async login(
+    username: string,
+    password: string,
+    role: string = 'ADMIN',
+  ): Promise<AuthResponse> {
+    const normalized = username.trim().toLowerCase();
+    if (!normalized || !password || password.length < 4) {
+      throw new BadRequestException('Invalid username or password');
+    }
+
+    const roleMap: Record<string, string> = {
+      ADMIN: 'ADMIN',
+      OWNER: 'SHOP_OWNER',
+      STAFF: 'BARBER',
+      CUSTOMER: 'CUSTOMER',
+    };
+    const roleToAssign = roleMap[role?.toUpperCase() ?? 'ADMIN'] ?? 'ADMIN';
+
+    const user =
+      (await this.prisma.user.findUnique({ where: { email: normalized } })) ||
+      (await this.prisma.user.findUnique({ where: { phone: normalized } }));
+
+    let authUser = user;
+    let isNewUser = false;
+    if (!authUser) {
+      isNewUser = true;
+      authUser = await this.prisma.user.create({
+        data: {
+          email: normalized,
+          name: username,
+          isVerified: true,
+          roles: {
+            create: [{ role: roleToAssign as any }],
+          },
+        },
+      });
+    } else {
+      const existingRoles = await this.prisma.userRoleAssignment.findMany({
+        where: { userId: authUser.id, role: roleToAssign as any },
+      });
+      if (!existingRoles.length) {
+        await this.prisma.userRoleAssignment.create({
+          data: { userId: authUser.id, role: roleToAssign as any },
+        });
+      }
+    }
+
+    return this.generateTokens(authUser.id, isNewUser);
   }
 
   // ── Refresh token ─────────────────────────────────────────────────────────

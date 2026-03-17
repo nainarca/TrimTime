@@ -9,9 +9,9 @@ export declare class BarbersResolver {
         shopId: string;
         branchId: string;
         createdAt: Date;
-        isActive: boolean;
-        avatarUrl: string;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
         userId: string;
         displayName: string;
         bio: string;
@@ -25,9 +25,9 @@ export declare class BarbersResolver {
         shopId: string;
         branchId: string;
         createdAt: Date;
-        isActive: boolean;
-        avatarUrl: string;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
         userId: string;
         displayName: string;
         bio: string;

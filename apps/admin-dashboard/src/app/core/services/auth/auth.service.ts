@@ -8,11 +8,8 @@ import { LOGIN_MUTATION } from '../../../features/auth/graphql/auth.gql';
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  };
+  userId: string;
+  isNewUser: boolean;
 }
 
 const ACCESS_TOKEN_KEY = 'tt_access_token';
@@ -22,11 +19,11 @@ const REFRESH_TOKEN_KEY = 'tt_refresh_token';
 export class AuthService {
   constructor(private readonly apollo: Apollo, private readonly router: Router) {}
 
-  login(username: string, password: string): Observable<LoginResponse> {
+  login(username: string, password: string, role: string = 'ADMIN'): Observable<LoginResponse> {
     return this.apollo
       .mutate<{ login: LoginResponse }>({
         mutation: LOGIN_MUTATION,
-        variables: { username, password },
+        variables: { username, password, role },
       })
       .pipe(
         map((result) => {
@@ -44,22 +41,34 @@ export class AuthService {
       );
   }
 
+  private normalizePhone(phone: string): string {
+    const cleaned = phone.replace(/\D/g, '');
+    if (!cleaned) return phone;
+    if (phone.trim().startsWith('+')) {
+      return `+${cleaned}`;
+    }
+    // Default to +1 for demo; adjust by user locale if needed.
+    return `+${cleaned}`;
+  }
+
   requestOtp(phone: string): Observable<any> {
-    const mutation = `mutation RequestOtp($phone: String!) { requestOtp(input: { phone: $phone }) { phone otpHash expiresAt } }`;
+    const normalized = this.normalizePhone(phone);
+    const mutation = `mutation RequestOtp($phone: String!) { requestOtp(input: { phone: $phone }) { success message expiresIn otp } }`;
     return this.apollo
       .mutate({
         mutation: mutation as any,
-        variables: { phone },
+        variables: { phone: normalized },
       })
       .pipe(map((result: any) => result.data?.requestOtp));
   }
 
   verifyOtp(phone: string, otp: string): Observable<any> {
-    const mutation = `mutation VerifyOtp($phone: String!, $otp: String!) { verifyOtp(input: { phone: $phone, otp: $otp }) { accessToken refreshToken user { id username role } } }`;
+    const normalized = this.normalizePhone(phone);
+    const mutation = `mutation VerifyOtp($phone: String!, $otp: String!) { verifyOtp(input: { phone: $phone, otp: $otp }) { accessToken refreshToken userId isNewUser } }`;
     return this.apollo
       .mutate({
         mutation: mutation as any,
-        variables: { phone, otp },
+        variables: { phone: normalized, otp },
       })
       .pipe(
         map((result: any) => result.data?.verifyOtp),
@@ -73,7 +82,7 @@ export class AuthService {
 
   logout(): void {
     this.clearTokens();
-    void this.router.navigate(['/auth/login']);
+    void this.router.navigate(['/auth']);
   }
 
   isAuthenticated(): boolean {
@@ -93,6 +102,10 @@ export class AuthService {
     if (!required.length) return true;
     const roles = this.getRoles();
     return required.some((r) => roles.includes(r));
+  }
+
+  getUserRoles(): string[] {
+    return this.getRoles();
   }
 
   private getRoles(): string[] {

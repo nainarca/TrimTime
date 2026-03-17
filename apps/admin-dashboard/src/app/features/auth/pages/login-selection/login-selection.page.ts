@@ -31,9 +31,9 @@ export class LoginSelectionPageComponent {
 
   selectRole(role: string) {
     if (role === 'CUSTOMER') {
-      this.router.navigate(['/customer-login']);
+      this.router.navigate(['/auth/customer-login']);
     } else {
-      this.router.navigate(['/login'], { queryParams: { role } });
+      this.router.navigate(['/auth/login'], { queryParams: { role } });
     }
   }
 }
