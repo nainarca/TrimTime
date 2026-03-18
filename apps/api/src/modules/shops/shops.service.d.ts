@@ -5,14 +5,14 @@ export declare class ShopsService {
     constructor(prisma: PrismaService);
     createShop(ownerId: string, input: CreateShopInput): Promise<{
         name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
         description: string;
+        id: string;
         phone: string;
         email: string;
         isVerified: boolean;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         currency: string;
         slug: string;
         ownerId: string;
@@ -22,14 +22,14 @@ export declare class ShopsService {
     }>;
     findById(id: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
         description: string;
+        id: string;
         phone: string;
         email: string;
         isVerified: boolean;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         currency: string;
         slug: string;
         ownerId: string;
@@ -39,14 +39,14 @@ export declare class ShopsService {
     }>;
     findBySlug(slug: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
         description: string;
+        id: string;
         phone: string;
         email: string;
         isVerified: boolean;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         currency: string;
         slug: string;
         ownerId: string;
@@ -56,14 +56,14 @@ export declare class ShopsService {
     }>;
     findByOwner(ownerId: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
         description: string;
+        id: string;
         phone: string;
         email: string;
         isVerified: boolean;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         currency: string;
         slug: string;
         ownerId: string;
@@ -73,12 +73,12 @@ export declare class ShopsService {
     }>;
     getBranches(shopId: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
         shopId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         phone: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         address: string;
         city: string;
         latitude: import("@prisma/client/runtime/library").Decimal;
@@ -87,12 +87,12 @@ export declare class ShopsService {
     }[]>;
     getBranchesBySlug(slug: string): Promise<{
         name: string;
-        id: string;
         shopId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         phone: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         address: string;
         city: string;
         latitude: import("@prisma/client/runtime/library").Decimal;
@@ -101,14 +101,14 @@ export declare class ShopsService {
     }[]>;
     updateShop(shopId: string, ownerId: string, input: UpdateShopInput): Promise<{
         name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
         description: string;
+        id: string;
         phone: string;
         email: string;
         isVerified: boolean;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         currency: string;
         slug: string;
         ownerId: string;

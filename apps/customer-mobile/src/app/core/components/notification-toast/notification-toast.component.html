@@ -1,0 +1,48 @@
+<!-- ══════════════════════════════════════════════════
+     Notification Toast Stack
+     async pipe drives OnPush change detection
+     ══════════════════════════════════════════════════ -->
+
+<div class="toast-portal" aria-live="polite" aria-atomic="false">
+
+  <ng-container *ngFor="let toast of (toasts$ | async); trackBy: trackById">
+    <div
+      class="toast-card"
+      [class.toast-visible]="toast.visible"
+      [class.toast-high]="toast.priority === 'high'"
+      role="status"
+    >
+
+      <!-- Left accent stripe -->
+      <div class="toast-accent" [ngClass]="'accent-' + colorFor(toast.type)"></div>
+
+      <!-- Icon -->
+      <div class="toast-icon-wrap" [ngClass]="'icon-' + colorFor(toast.type)">
+        <ion-icon [name]="iconFor(toast.type)" class="toast-icon"></ion-icon>
+      </div>
+
+      <!-- Content -->
+      <div class="toast-content">
+        <p class="toast-title">{{ toast.title }}</p>
+        <p class="toast-message">{{ toast.message }}</p>
+      </div>
+
+      <!-- Dismiss -->
+      <button
+        class="toast-dismiss"
+        (click)="dismiss(toast.id)"
+        aria-label="Dismiss notification"
+      >
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+
+      <!-- Auto-dismiss countdown bar -->
+      <div
+        class="toast-progress"
+        [class.progress-high]="toast.priority === 'high'"
+      ></div>
+
+    </div>
+  </ng-container>
+
+</div>

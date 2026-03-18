@@ -1,0 +1,449 @@
+/* ════════════════════════════════════════════
+   Live Tracker Page  ·  QueueCut Customer App
+   ════════════════════════════════════════════ */
+
+// ── Content background — changes with queue status ─────────────
+// These classes are applied by the HTML: [class]="'status-bg-' + statusColor"
+.tracker-content {
+  --background: #f8fafc;
+
+  &.status-bg-waiting { --background: #f8fafc; }
+  &.status-bg-called  { --background: #faf5ff; } // soft purple tint
+  &.status-bg-serving { --background: #f0fdf8; } // soft emerald tint
+  &.status-bg-served  { --background: #f0fdf8; }
+  &.status-bg-noshow  { --background: #fef2f2; }
+}
+
+.safe-top {
+  height: calc(env(safe-area-inset-top) + 1rem);
+}
+
+// ── Loading / Error ───────────────────────────────────────────
+.loading-state,
+.error-state {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  min-height:      60vh;
+  gap:             1rem;
+  padding:         2rem;
+  text-align:      center;
+
+  p         { color: #64748b; font-size: 0.875rem; margin: 0; }
+  ion-icon  { font-size: 2.5rem; color: #94a3b8; }
+}
+
+.load-spin { --color: #6366f1; width: 40px; height: 40px; }
+
+// ── Status Header ─────────────────────────────────────────────
+.status-header {
+  display:     flex;
+  align-items: center;
+  gap:         0.85rem;
+  margin:      0 1.25rem 1.25rem;
+  padding:     1rem 1.1rem;
+  border-radius: 18px;
+  background:  #fff;
+  border:      1px solid #e8edf3;
+  box-shadow:  0 2px 12px rgba(15, 23, 42, 0.07);
+  transition:  border-color 0.4s ease, box-shadow 0.4s ease;
+
+  // Subtle colour shift when called
+  &.called {
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow:   0 4px 20px rgba(99, 102, 241, 0.12);
+    animation:    headerPulse 2s ease-in-out infinite;
+  }
+  &.serving {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow:   0 4px 20px rgba(16, 185, 129, 0.12);
+  }
+}
+
+@keyframes headerPulse {
+  0%, 100% { box-shadow: 0 2px 12px rgba(99, 102, 241, 0.08); }
+  50%       { box-shadow: 0 4px 22px rgba(99, 102, 241, 0.22); }
+}
+
+.status-icon-wrap {
+  width:           44px;
+  height:          44px;
+  border-radius:   14px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-shrink:     0;
+
+  ion-icon { font-size: 1.4rem; }
+
+  &.waiting { background: rgba(245, 158, 11, 0.1); ion-icon { color: #d97706; } }
+  &.called  {
+    background: rgba(99, 102, 241, 0.1);
+    ion-icon { color: #6366f1; }
+    animation: iconBounce 0.6s ease;
+  }
+  &.serving { background: rgba(16, 185, 129, 0.1); ion-icon { color: #059669; } }
+  &.served  { background: rgba(16, 185, 129, 0.1); ion-icon { color: #059669; } }
+  &.noshow  { background: rgba(239, 68, 68, 0.1);  ion-icon { color: #dc2626; } }
+}
+
+@keyframes iconBounce {
+  0%   { transform: scale(1);    }
+  30%  { transform: scale(1.25); }
+  60%  { transform: scale(0.92); }
+  100% { transform: scale(1);    }
+}
+
+.status-info {
+  flex:     1;
+  display:  flex;
+  flex-direction: column;
+  gap:      0.15rem;
+  min-width: 0;
+}
+
+.status-label {
+  font-size:   0.95rem;
+  font-weight: 700;
+  color:       #0f172a;
+}
+
+.status-shop {
+  font-size: 0.775rem;
+  color:     #94a3b8;
+}
+
+.live-dot-wrap { flex-shrink: 0; }
+
+.live-dot {
+  display:       block;
+  width:         10px;
+  height:        10px;
+  border-radius: 50%;
+
+  &.waiting { background: #f59e0b; animation: pulseWarning 1.5s infinite; }
+  &.called  { background: #6366f1; animation: pulsePrimary 1.2s infinite; }
+}
+
+// ── Token Card ────────────────────────────────────────────────
+.token-card {
+  background:    #fff;
+  border:        1px solid #e8edf3;
+  border-radius: 24px;
+  margin:        0 1.25rem 1.25rem;
+  padding:       2rem 1.5rem 1.75rem;
+  display:       flex;
+  flex-direction: column;
+  align-items:   center;
+  gap:           0.75rem;
+  box-shadow:    0 4px 24px rgba(15, 23, 42, 0.08);
+  text-align:    center;
+  transition:    border-color 0.4s, box-shadow 0.4s, transform 0.3s;
+
+  &.pulsing {
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow:   0 4px 28px rgba(99, 102, 241, 0.18);
+    animation:    cardPulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes cardPulse {
+  0%, 100% {
+    transform:  translateY(0);
+    box-shadow: 0 4px 24px rgba(99, 102, 241, 0.12);
+  }
+  50% {
+    transform:  translateY(-3px);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25);
+  }
+}
+
+.token-label {
+  font-size:      0.7rem;
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color:          #94a3b8;
+}
+
+.token-number {
+  font-size:            5rem;
+  font-weight:          900;
+  letter-spacing:       -6px;
+  line-height:          1;
+  font-variant-numeric: tabular-nums;
+  transition:           color 0.4s, transform 0.3s;
+
+  &.token-waiting { color: #4f46e5; }
+  &.token-called  {
+    background:              linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip:         text;
+    animation:               tokenAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  &.token-serving { color: #059669; }
+  &.token-served  { color: #10b981; }
+  &.token-noshow  { color: #94a3b8; }
+}
+
+@keyframes tokenAppear {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.token-sub {
+  display:     flex;
+  align-items: center;
+  gap:         0.35rem;
+  font-size:   0.875rem;
+  color:       #64748b;
+
+  ion-icon { font-size: 1rem; }
+  strong   { color: #0f172a; }
+
+  &.called-pulse {
+    color:       #6366f1;
+    font-weight: 600;
+    font-size:   0.9rem;
+    animation:   fadeIn 0.5s ease;
+  }
+}
+
+// ── Stats Row ─────────────────────────────────────────────────
+.stats-row {
+  display:       flex;
+  align-items:   center;
+  background:    #fff;
+  border:        1px solid #e8edf3;
+  border-radius: 20px;
+  margin:        0 1.25rem 1.25rem;
+  padding:       1.1rem 1rem;
+  box-shadow:    0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
+.stat-card {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.3rem;
+}
+
+.stat-icon {
+  width:           36px;
+  height:          36px;
+  border-radius:   10px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  margin-bottom:   0.25rem;
+
+  ion-icon { font-size: 1.1rem; }
+
+  &.wait-icon { background: rgba(245, 158, 11, 0.1);  ion-icon { color: #d97706; } }
+  &.pos-icon  { background: rgba(99, 102, 241, 0.1);  ion-icon { color: #6366f1; } }
+  &.now-icon  { background: rgba(16, 185, 129, 0.1);  ion-icon { color: #059669; } }
+}
+
+.stat-body {
+  display:     flex;
+  align-items: baseline;
+  gap:         0.2rem;
+}
+
+.stat-value {
+  font-size:      1.4rem;
+  font-weight:    800;
+  color:          #0f172a;
+  letter-spacing: -0.03em;
+  line-height:    1;
+}
+
+.stat-unit {
+  font-size:   0.75rem;
+  font-weight: 600;
+  color:       #64748b;
+}
+
+.stat-label {
+  font-size:   0.7rem;
+  color:       #94a3b8;
+  font-weight: 500;
+  text-align:  center;
+}
+
+.stat-divider {
+  width:        1px;
+  height:       44px;
+  background:   #f1f5f9;
+  flex-shrink:  0;
+}
+
+// ── Progress Bar ──────────────────────────────────────────────
+.progress-section {
+  margin:        0 1.25rem 1.25rem;
+  background:    #fff;
+  border:        1px solid #e8edf3;
+  border-radius: 18px;
+  padding:       1.1rem 1.25rem;
+  box-shadow:    0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
+.progress-head {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  margin-bottom:   0.65rem;
+}
+
+.progress-label {
+  font-size:   0.8rem;
+  font-weight: 600;
+  color:       #475569;
+}
+
+.progress-pct {
+  font-size:   0.8rem;
+  font-weight: 700;
+  color:       #6366f1;
+}
+
+.progress-track {
+  height:        10px;
+  background:    #f1f5f9;
+  border-radius: 999px;
+  overflow:      hidden;
+}
+
+.progress-fill {
+  height:        100%;
+  border-radius: 999px;
+  transition:    width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &.waiting { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  &.called  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  &.serving { background: linear-gradient(90deg, #10b981, #34d399); }
+  &.served  { background: linear-gradient(90deg, #10b981, #34d399); }
+  &.noshow  { background: #e2e8f0; }
+}
+
+.progress-foot {
+  display:         flex;
+  justify-content: space-between;
+  margin-top:      0.4rem;
+  font-size:       0.7rem;
+  color:           #94a3b8;
+}
+
+// ── Timeline ──────────────────────────────────────────────────
+.timeline {
+  margin:        0 1.25rem 1rem;
+  background:    #fff;
+  border:        1px solid #e8edf3;
+  border-radius: 18px;
+  padding:       1.1rem 1.25rem;
+  box-shadow:    0 2px 10px rgba(15, 23, 42, 0.05);
+  display:       flex;
+  align-items:   center;
+}
+
+.tl-step {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.4rem;
+  flex:           0 0 auto;
+}
+
+.tl-dot {
+  width:         14px;
+  height:        14px;
+  border-radius: 50%;
+  background:    #e2e8f0;
+  border:        2px solid #e2e8f0;
+  transition:    all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  .tl-step.done & {
+    background:    #10b981;
+    border-color:  #10b981;
+  }
+  .tl-step.active & {
+    background:    #6366f1;
+    border-color:  #6366f1;
+    box-shadow:    0 0 0 4px rgba(99, 102, 241, 0.22);
+    animation:     dotPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+  50%       { box-shadow: 0 0 0 7px rgba(99, 102, 241, 0.08); }
+}
+
+.tl-info {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.1rem;
+}
+
+.tl-title {
+  font-size:   0.7rem;
+  font-weight: 600;
+  color:       #94a3b8;
+  white-space: nowrap;
+
+  .tl-step.done &,
+  .tl-step.active & { color: #0f172a; }
+}
+
+.tl-sub {
+  font-size:   0.625rem;
+  color:       #cbd5e1;
+  white-space: nowrap;
+
+  .tl-step.done &,
+  .tl-step.active & { color: #94a3b8; }
+}
+
+.tl-line {
+  flex:         1;
+  height:       2px;
+  background:   #e2e8f0;
+  margin:       0 0.25rem;
+  margin-bottom: 1.8rem;
+  transition:   background 0.5s ease;
+  border-radius: 2px;
+
+  &.done { background: linear-gradient(90deg, #10b981, #34d399); }
+}
+
+// ── Bottom Actions ────────────────────────────────────────────
+.bottom-actions {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin:          0 1.25rem;
+  padding:         0 0.25rem;
+}
+
+.leave-btn {
+  --color: #94a3b8;
+  font-size:   0.825rem;
+  font-weight: 500;
+}
+
+.update-info {
+  display:     flex;
+  align-items: center;
+  gap:         0.35rem;
+  font-size:   0.75rem;
+  color:       #94a3b8;
+
+  ion-icon {
+    font-size: 0.875rem;
+    animation: spin 2.5s linear infinite;
+  }
+}

@@ -8,6 +8,8 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
+import { BadgeModule } from 'primeng/badge';
 
 @NgModule({
   imports: [
@@ -17,8 +19,9 @@ import { CardModule } from 'primeng/card';
     ButtonModule,
     TagModule,
     CardModule,
+    TooltipModule,
+    BadgeModule,
   ],
   declarations: [QueueListPageComponent, LiveQueuePageComponent, QueueDetailsPageComponent],
 })
 export class QueueModule {}
-

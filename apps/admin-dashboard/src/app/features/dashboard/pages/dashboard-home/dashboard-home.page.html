@@ -1,45 +1,327 @@
-<div class="dashboard-main">
-  <div class="dashboard-header">
-    <div>
-      <p class="eyebrow">Analytics</p>
-      <h1>Dashboard overview</h1>
-      <p class="subtext">Live queue insights and revenue trends for your shop.</p>
+<div class="dashboard">
+
+  <!-- ════════════ PAGE HEADER ════════════ -->
+  <div class="dash-header">
+    <div class="dash-header-text">
+      <div class="dash-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Analytics &nbsp;·&nbsp; {{ today | date:'EEEE, MMMM d' }}
+      </div>
+      <h1 class="dash-title">Dashboard Overview</h1>
+      <p class="dash-sub">Live queue insights for Mike's Barber Shop</p>
     </div>
-    <button pButton label="+ New service" class="p-button-outlined p-button-plain"></button>
+    <div class="dash-actions">
+      <button pButton label="Export" icon="pi pi-download"
+        class="p-button-outlined p-button-sm"></button>
+      <button pButton label="New Service" icon="pi pi-plus"
+        class="p-button-sm btn-primary-grad"></button>
+    </div>
   </div>
 
+  <!-- ════════════ KPI CARDS ════════════ -->
   <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">Total Customers Today</div>
-      <div class="kpi-value">{{ kpis?.totalCustomersToday ?? 0 }}</div>
-      <div class="kpi-meta">Compared to yesterday: +8%</div>
+
+    <!-- Customers Today -->
+    <div class="kpi-card kpi-card--blue">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-wrap kpi-blue">
+          <i class="pi pi-users"></i>
+        </div>
+        <span class="kpi-delta positive">
+          <i class="pi pi-arrow-up-right"></i>&nbsp;12%
+        </span>
+      </div>
+      <span class="kpi-value">{{ kpis?.totalCustomersToday ?? 48 }}</span>
+      <span class="kpi-label">Total Customers Today</span>
+      <div class="kpi-sparkline">
+        <span class="spark"        style="height:35%"></span>
+        <span class="spark"        style="height:50%"></span>
+        <span class="spark"        style="height:42%"></span>
+        <span class="spark"        style="height:68%"></span>
+        <span class="spark"        style="height:58%"></span>
+        <span class="spark"        style="height:80%"></span>
+        <span class="spark active" style="height:100%"></span>
+      </div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Active Queue</div>
-      <div class="kpi-value">{{ kpis?.activeQueueCount ?? 0 }}</div>
-      <div class="kpi-meta">Now serving</div>
+
+    <!-- Active Queue -->
+    <div class="kpi-card kpi-card--indigo">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-wrap kpi-indigo">
+          <i class="pi pi-list"></i>
+        </div>
+        <span class="kpi-delta live">
+          <span class="live-micro-dot"></span> Live
+        </span>
+      </div>
+      <span class="kpi-value">{{ kpis?.activeQueueCount ?? 7 }}</span>
+      <span class="kpi-label">Active Queue</span>
+      <div class="kpi-sparkline">
+        <span class="spark indigo"        style="height:50%"></span>
+        <span class="spark indigo"        style="height:65%"></span>
+        <span class="spark indigo"        style="height:40%"></span>
+        <span class="spark indigo"        style="height:78%"></span>
+        <span class="spark indigo"        style="height:55%"></span>
+        <span class="spark indigo"        style="height:70%"></span>
+        <span class="spark indigo active" style="height:88%"></span>
+      </div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Revenue Today</div>
-      <div class="kpi-value">${{ kpis?.revenueToday ?? 0 }}</div>
-      <div class="kpi-meta">Estimated</div>
+
+    <!-- Avg Wait Time -->
+    <div class="kpi-card kpi-card--amber">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-wrap kpi-amber">
+          <i class="pi pi-clock"></i>
+        </div>
+        <span class="kpi-delta negative">
+          <i class="pi pi-arrow-up-right"></i>&nbsp;+2 min
+        </span>
+      </div>
+      <span class="kpi-value">14&thinsp;<small>min</small></span>
+      <span class="kpi-label">Avg Wait Time</span>
+      <div class="kpi-sparkline">
+        <span class="spark amber"        style="height:30%"></span>
+        <span class="spark amber"        style="height:48%"></span>
+        <span class="spark amber"        style="height:62%"></span>
+        <span class="spark amber"        style="height:50%"></span>
+        <span class="spark amber"        style="height:74%"></span>
+        <span class="spark amber"        style="height:58%"></span>
+        <span class="spark amber active" style="height:90%"></span>
+      </div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Completed Services</div>
-      <div class="kpi-value">{{ kpis?.completedServicesToday ?? 0 }}</div>
-      <div class="kpi-meta">Today</div>
+
+    <!-- Completed Services -->
+    <div class="kpi-card kpi-card--emerald">
+      <div class="kpi-card-top">
+        <div class="kpi-icon-wrap kpi-emerald">
+          <i class="pi pi-check-circle"></i>
+        </div>
+        <span class="kpi-delta positive">
+          <i class="pi pi-arrow-up-right"></i>&nbsp;8%
+        </span>
+      </div>
+      <span class="kpi-value">{{ kpis?.completedServicesToday ?? 31 }}</span>
+      <span class="kpi-label">Completed Services</span>
+      <div class="kpi-sparkline">
+        <span class="spark emerald"        style="height:25%"></span>
+        <span class="spark emerald"        style="height:42%"></span>
+        <span class="spark emerald"        style="height:58%"></span>
+        <span class="spark emerald"        style="height:72%"></span>
+        <span class="spark emerald"        style="height:65%"></span>
+        <span class="spark emerald"        style="height:88%"></span>
+        <span class="spark emerald active" style="height:100%"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════ CHART + STATUS ROW ════════════ -->
+  <div class="charts-row">
+
+    <!-- ── Line Chart ── -->
+    <div class="chart-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Queue Trend</h3>
+          <p class="card-sub">Customers served &amp; avg wait throughout the day</p>
+        </div>
+        <div class="chip-group">
+          <button class="chip active">Today</button>
+          <button class="chip">Week</button>
+          <button class="chip">Month</button>
+        </div>
+      </div>
+      <div class="chart-area">
+        <p-chart
+          type="line"
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          height="260px"
+        ></p-chart>
+      </div>
+    </div>
+
+    <!-- ── Status Breakdown ── -->
+    <div class="status-card">
+
+      <div class="card-head">
+        <h3 class="card-title">Queue Breakdown</h3>
+      </div>
+
+      <!-- Status bars -->
+      <div class="status-list">
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot waiting"></span>
+            <span class="status-name">Waiting</span>
+          </div>
+          <div class="status-right">
+            <span class="status-count">{{ kpis?.activeQueueCount ?? 5 }}</span>
+            <div class="status-bar-wrap">
+              <div class="status-bar waiting" style="width:50%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot serving"></span>
+            <span class="status-name">Serving</span>
+          </div>
+          <div class="status-right">
+            <span class="status-count">2</span>
+            <div class="status-bar-wrap">
+              <div class="status-bar serving" style="width:20%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot completed"></span>
+            <span class="status-name">Completed</span>
+          </div>
+          <div class="status-right">
+            <span class="status-count">{{ kpis?.completedServicesToday ?? 31 }}</span>
+            <div class="status-bar-wrap">
+              <div class="status-bar completed" style="width:85%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="status-left">
+            <span class="status-dot noshow"></span>
+            <span class="status-name">No-show</span>
+          </div>
+          <div class="status-right">
+            <span class="status-count">3</span>
+            <div class="status-bar-wrap">
+              <div class="status-bar noshow" style="width:15%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barber Activity -->
+      <div class="barber-activity">
+        <span class="barber-activity-label">Active Barbers</span>
+        <div class="barber-row">
+          <div class="barber-avatar ba-indigo">M</div>
+          <div class="barber-info">
+            <span class="barber-name">Mike</span>
+            <div class="barber-bar-wrap">
+              <div class="barber-bar" style="width:72%"></div>
+            </div>
+          </div>
+          <span class="barber-count">18 served</span>
+        </div>
+        <div class="barber-row">
+          <div class="barber-avatar ba-emerald">J</div>
+          <div class="barber-info">
+            <span class="barber-name">James</span>
+            <div class="barber-bar-wrap">
+              <div class="barber-bar emerald" style="width:52%"></div>
+            </div>
+          </div>
+          <span class="barber-count">13 served</span>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="quick-stats">
+        <div class="qstat">
+          <span class="qstat-value">{{ kpis?.revenueToday ?? '$0' }}</span>
+          <span class="qstat-label">Revenue Today</span>
+        </div>
+        <div class="qstat-divider"></div>
+        <div class="qstat">
+          <span class="qstat-value">2</span>
+          <span class="qstat-label">Barbers Active</span>
+        </div>
+        <div class="qstat-divider"></div>
+        <div class="qstat">
+          <span class="qstat-value">94%</span>
+          <span class="qstat-label">Satisfaction</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <div class="line-grid">
-    <div class="line-card">
-      <div class="line-title">Queue Status</div>
-      <p-chart type="doughnut" [data]="queueChartData" [options]="queueChartOptions"></p-chart>
+  <!-- ════════════ RECENT QUEUE TABLE ════════════ -->
+  <div class="table-card">
+    <div class="card-head">
+      <div>
+        <h3 class="card-title">Recent Queue Entries</h3>
+        <p class="card-sub">Latest activity across all barbers</p>
+      </div>
+      <a routerLink="/queue" class="view-all-link">
+        View Queue Monitor&nbsp;<i class="pi pi-arrow-right"></i>
+      </a>
     </div>
-    <div class="line-card">
-      <div class="line-title">Activity Feed</div>
-      <div class="activity-list"><p class="muted">Add reports and events here.</p></div>
-    </div>
+
+    <p-table
+      [value]="recentEntries"
+      [rowHover]="true"
+      styleClass="p-datatable-sm queue-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Token</th>
+          <th>Customer</th>
+          <th>Service</th>
+          <th>Barber</th>
+          <th>Wait</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-entry>
+        <tr>
+          <!-- Token -->
+          <td>
+            <span class="token-badge">{{ entry.token }}</span>
+          </td>
+
+          <!-- Customer with avatar -->
+          <td>
+            <div class="customer-cell">
+              <div class="cust-avatar">{{ entry.customer.charAt(0) }}</div>
+              <span class="cust-name">{{ entry.customer }}</span>
+            </div>
+          </td>
+
+          <!-- Service -->
+          <td>
+            <span class="service-chip">{{ entry.service }}</span>
+          </td>
+
+          <!-- Barber -->
+          <td class="barber-cell">{{ entry.barber }}</td>
+
+          <!-- Wait -->
+          <td class="wait-cell">{{ entry.wait }}</td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-chip"
+              [ngClass]="'s-' + entry.status.toLowerCase().replace('_', '-')">
+              {{ entry.status }}
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-msg">
+            <i class="pi pi-inbox"></i>
+            <span>No recent entries found.</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   </div>
+
 </div>
-

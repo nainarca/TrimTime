@@ -1,26 +1,51 @@
 import { Component } from '@angular/core';
-import { PanelMenuModule } from 'primeng/panelmenu';
-import { MenuItem } from 'primeng/api';
+import { NgFor, NgIf } from '@angular/common';
 import { RouterModule } from '@angular/router';
+
+interface NavItem {
+  label: string;
+  icon: string;
+  route: string;
+  badge?: number;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
 
 @Component({
   selector: 'tt-sidebar',
   standalone: true,
-  imports: [PanelMenuModule, RouterModule],
+  imports: [NgFor, NgIf, RouterModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent {
-  items: MenuItem[] = [
-    { label: 'Dashboard', icon: 'pi pi-home', routerLink: ['/dashboard'] },
-    { label: 'Queue', icon: 'pi pi-list', routerLink: ['/queue'] },
-    { label: 'Bookings', icon: 'pi pi-calendar', routerLink: ['/bookings'] },
-    { label: 'Customers', icon: 'pi pi-users', routerLink: ['/customers'] },
-    { label: 'Staff', icon: 'pi pi-id-card', routerLink: ['/staff'] },
-    { label: 'Services', icon: 'pi pi-briefcase', routerLink: ['/services'] },
-    { label: 'Finance', icon: 'pi pi-wallet', routerLink: ['/finance'] },
-    { label: 'Reports', icon: 'pi pi-chart-bar', routerLink: ['/reports'] },
-    { label: 'Settings', icon: 'pi pi-cog', routerLink: ['/settings'] },
+  // Live badge count — in production feed this from QueueSocketService
+  queueBadge = 7;
+
+  navGroups: NavGroup[] = [
+    {
+      label: 'Main',
+      items: [
+        { label: 'Dashboard',     icon: 'pi pi-home',      route: '/dashboard' },
+        { label: 'Queue Monitor', icon: 'pi pi-list',      route: '/queue', badge: this.queueBadge },
+      ],
+    },
+    {
+      label: 'Manage',
+      items: [
+        { label: 'Barbers',   icon: 'pi pi-id-card',    route: '/staff'    },
+        { label: 'Services',  icon: 'pi pi-briefcase',  route: '/services' },
+        { label: 'Reports',   icon: 'pi pi-chart-bar',  route: '/reports'  },
+      ],
+    },
+    {
+      label: 'System',
+      items: [
+        { label: 'Settings', icon: 'pi pi-cog', route: '/settings' },
+      ],
+    },
   ];
 }
-

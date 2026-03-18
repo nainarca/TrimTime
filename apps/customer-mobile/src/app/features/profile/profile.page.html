@@ -1,0 +1,231 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="profile-toolbar">
+    <ion-title class="profile-title">Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" class="edit-btn">
+        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="profile-content">
+
+  <!-- ── Hero Card ── -->
+  <div class="profile-hero animate-in">
+    <div class="avatar-wrap">
+      <div class="avatar">{{ initials }}</div>
+      <div class="avatar-edit">
+        <ion-icon name="camera-outline"></ion-icon>
+      </div>
+    </div>
+    <div class="profile-meta">
+      <h1 class="profile-name">{{ userName }}</h1>
+      <p class="profile-phone">{{ userPhone }}</p>
+      <div class="profile-since">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Member since {{ joined }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-grid animate-in" style="animation-delay: 0.06s">
+    <div class="stat-box">
+      <span class="stat-num">{{ totalVisits }}</span>
+      <span class="stat-lbl">Visits</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-box">
+      <span class="stat-num">${{ totalSpent }}</span>
+      <span class="stat-lbl">Total Spent</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-box">
+      <span class="stat-num">{{ avgWait }}<small>m</small></span>
+      <span class="stat-lbl">Avg Wait</span>
+    </div>
+  </div>
+
+  <!-- ── Loyalty Card ── -->
+  <div class="loyalty-card animate-in" style="animation-delay: 0.12s">
+    <!-- Shine overlay -->
+    <div class="loyalty-shine"></div>
+
+    <div class="loyalty-top">
+      <div class="loyalty-left">
+        <div class="loyalty-streak">
+          <span class="streak-flame">🔥</span>
+          <span class="streak-count">{{ currentStreak }}</span>
+          <span class="streak-label">visit streak</span>
+        </div>
+        <p class="loyalty-next">
+          <span class="loyalty-next-em">{{ rewardGoal - rewardProgress }}</span>
+          more visit{{ rewardGoal - rewardProgress === 1 ? '' : 's' }} to unlock
+        </p>
+      </div>
+      <div class="loyalty-reward-badge">
+        <ion-icon name="gift-outline"></ion-icon>
+        <span>{{ rewardLabel }}</span>
+      </div>
+    </div>
+
+    <!-- Step dots -->
+    <div class="loyalty-steps">
+      <div
+        *ngFor="let filled of rewardSteps; let i = index"
+        class="loyalty-step"
+        [class.filled]="filled"
+        [class.next]="!filled && i === rewardProgress"
+      >
+        <ion-icon *ngIf="filled" name="checkmark"></ion-icon>
+        <span *ngIf="!filled && i === rewardProgress" class="step-next-dot"></span>
+      </div>
+      <div class="loyalty-step-line">
+        <div
+          class="loyalty-step-fill"
+          [style.width.%]="rewardProgressPct"
+        ></div>
+      </div>
+    </div>
+
+    <div class="loyalty-foot">
+      <span class="loyalty-prog-txt">{{ rewardProgress }}/{{ rewardGoal }} visits</span>
+      <span class="loyalty-prog-pct">{{ rewardProgressPct }}%</span>
+    </div>
+  </div>
+
+  <!-- ── Recent History ── -->
+  <div class="section animate-in" style="animation-delay: 0.18s">
+    <div class="section-head">
+      <h2 class="section-title">Recent Visits</h2>
+      <a routerLink="/history" class="see-all">See all</a>
+    </div>
+    <div class="history-list">
+      <div
+        *ngFor="let item of history; let i = index"
+        class="history-item animate-in"
+        [style.animation-delay]="(0.22 + i * 0.06) + 's'"
+      >
+        <div class="hist-icon">
+          <ion-icon name="cut-outline"></ion-icon>
+        </div>
+        <div class="hist-body">
+          <span class="hist-service">{{ item.service }}</span>
+          <span class="hist-meta">{{ item.shop }} · {{ item.date }}</span>
+        </div>
+        <div class="hist-right">
+          <span class="hist-price">{{ item.price }}</span>
+          <span class="hist-status" [class.completed]="item.status === 'Completed'">
+            {{ item.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Settings: Preferences ── -->
+  <div class="section animate-in" style="animation-delay: 0.28s">
+    <h2 class="section-title settings-group-title">Preferences</h2>
+    <div class="settings-list">
+
+      <div class="settings-item">
+        <div class="setting-icon notif">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+        <div class="setting-label">
+          Push Notifications
+          <span class="setting-sub">Queue alerts &amp; updates</span>
+        </div>
+        <ion-toggle [(ngModel)]="notificationsOn" class="setting-toggle"></ion-toggle>
+      </div>
+
+      <div class="settings-item">
+        <div class="setting-icon sms">
+          <ion-icon name="chatbubble-outline"></ion-icon>
+        </div>
+        <div class="setting-label">
+          SMS Alerts
+          <span class="setting-sub">Text when it's your turn</span>
+        </div>
+        <ion-toggle [(ngModel)]="smsAlertsOn" class="setting-toggle"></ion-toggle>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Settings: Account ── -->
+  <div class="section animate-in" style="animation-delay: 0.32s">
+    <h2 class="section-title settings-group-title">Account</h2>
+    <div class="settings-list">
+
+      <div class="settings-item">
+        <div class="setting-icon edit">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <div class="setting-label">Edit Profile</div>
+        <ion-icon name="chevron-forward-outline" class="setting-arrow"></ion-icon>
+      </div>
+
+      <div class="settings-item">
+        <div class="setting-icon qr">
+          <ion-icon name="qr-code-outline"></ion-icon>
+        </div>
+        <div class="setting-label">
+          My QR Code
+          <span class="setting-sub">Share with friends</span>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="setting-arrow"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Settings: Legal & Support ── -->
+  <div class="section animate-in" style="animation-delay: 0.36s">
+    <h2 class="section-title settings-group-title">Legal &amp; Support</h2>
+    <div class="settings-list">
+
+      <div class="settings-item">
+        <div class="setting-icon privacy">
+          <ion-icon name="shield-outline"></ion-icon>
+        </div>
+        <div class="setting-label">Privacy Policy</div>
+        <ion-icon name="chevron-forward-outline" class="setting-arrow"></ion-icon>
+      </div>
+
+      <div class="settings-item">
+        <div class="setting-icon help">
+          <ion-icon name="help-circle-outline"></ion-icon>
+        </div>
+        <div class="setting-label">Help &amp; FAQ</div>
+        <ion-icon name="chevron-forward-outline" class="setting-arrow"></ion-icon>
+      </div>
+
+      <div class="settings-item">
+        <div class="setting-icon about">
+          <ion-icon name="information-circle-outline"></ion-icon>
+        </div>
+        <div class="setting-label">About QueueCut</div>
+        <ion-icon name="chevron-forward-outline" class="setting-arrow"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Sign Out ── -->
+  <div class="sign-out-wrap animate-in" style="animation-delay: 0.4s">
+    <button class="sign-out-btn">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Sign Out
+    </button>
+  </div>
+
+  <!-- ── Version ── -->
+  <div class="version-note animate-in">
+    QueueCut v1.0.0 · Made with ❤️
+  </div>
+
+  <div style="height: calc(env(safe-area-inset-bottom) + 32px);"></div>
+
+</ion-content>

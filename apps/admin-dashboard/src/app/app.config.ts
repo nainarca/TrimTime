@@ -15,6 +15,7 @@ import { InMemoryCache } from '@apollo/client/core';
 import { routes } from './app.routes';
 import { AuthTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       return {
-        link: httpLink.create({ uri: 'http://localhost:3000/graphql' }),
+        link: httpLink.create({ uri: environment.graphqlUrl }),
         cache: new InMemoryCache(),
       };
     }),

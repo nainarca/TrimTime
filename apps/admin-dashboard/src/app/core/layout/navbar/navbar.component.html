@@ -1,18 +1,77 @@
 <nav class="tt-topbar">
+
+  <!-- Left: Search -->
   <div class="topbar-left">
-    <div class="brand">QueueCut</div>
     <div class="search-wrap">
-      <i class="pi pi-search"></i>
-      <input type="text" placeholder="Search dashboard" />
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search customers, queue, barbers…"
+      />
+      <kbd class="search-kbd">⌘K</kbd>
     </div>
   </div>
+
+  <!-- Right: Actions + Profile -->
   <div class="topbar-right">
-    <button pButton type="button" icon="pi pi-bell" class="p-button-text p-button-rounded"></button>
-    <button pButton type="button" icon="pi pi-envelope" class="p-button-text p-button-rounded"></button>
-    <div class="profile-pill">
-      <span>Owner</span>
-      <i class="pi pi-user"></i>
+
+    <!-- Notification Bell -->
+    <button class="icon-btn" pTooltip="Notifications" tooltipPosition="bottom">
+      <i class="pi pi-bell"></i>
+      <span class="badge-dot" *ngIf="notificationCount > 0">
+        {{ notificationCount }}
+      </span>
+    </button>
+
+    <!-- Messages -->
+    <button class="icon-btn" pTooltip="Messages" tooltipPosition="bottom">
+      <i class="pi pi-envelope"></i>
+    </button>
+
+    <!-- Help -->
+    <button class="icon-btn" pTooltip="Help" tooltipPosition="bottom">
+      <i class="pi pi-question-circle"></i>
+    </button>
+
+    <div class="nav-divider"></div>
+
+    <!-- Profile Button -->
+    <div class="profile-btn" (click)="toggleProfile()">
+      <div class="profile-avatar">
+        <span>MO</span>
+      </div>
+      <div class="profile-info">
+        <span class="profile-name">Mike Owner</span>
+        <span class="profile-role">Shop Owner</span>
+      </div>
+      <i class="pi pi-chevron-down profile-chevron" [class.rotated]="profileOpen"></i>
     </div>
+
+    <!-- Profile Dropdown -->
+    <div class="profile-dropdown" *ngIf="profileOpen">
+      <div class="dropdown-header">
+        <div class="dropdown-avatar">MO</div>
+        <div>
+          <div class="dropdown-name">Mike Owner</div>
+          <div class="dropdown-email">mike@barbershop.com</div>
+        </div>
+      </div>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item">
+        <i class="pi pi-user"></i> My Profile
+      </button>
+      <button class="dropdown-item">
+        <i class="pi pi-building"></i> Shop Settings
+      </button>
+      <button class="dropdown-item">
+        <i class="pi pi-credit-card"></i> Billing
+      </button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item danger">
+        <i class="pi pi-sign-out"></i> Sign Out
+      </button>
+    </div>
+
   </div>
 </nav>
-

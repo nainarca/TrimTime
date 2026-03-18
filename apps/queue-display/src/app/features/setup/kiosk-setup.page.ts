@@ -1,30 +1,32 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'app-kiosk-setup',
-  imports: [CommonModule],
-  template: `
-    <main style="padding: 1rem;">
-      <h1>Kiosk Setup</h1>
-      <p>Enter your shop ID to start queue display.</p>
-      <label style="display:block; margin-top:0.5rem;">
-        Shop ID
-        <input #shopId style="margin-left:0.5rem;" />
-      </label>
-      <button style="margin-top:1rem;" (click)="go(shopId.value)">Open Queue Display</button>
-    </main>
-  `,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './kiosk-setup.page.html',
+  styleUrls: ['./kiosk-setup.page.scss'],
 })
 export class KioskSetupPage {
+  shopId   = '';
+  branchId = '';
+  error    = '';
+
   constructor(private readonly router: Router) {}
 
-  go(shopId: string) {
-    if (!shopId?.trim()) {
+  activate(): void {
+    const id = this.shopId.trim();
+    if (!id) {
+      this.error = 'Shop ID is required.';
       return;
     }
-    this.router.navigate(['/display', shopId.trim()]);
+    this.error = '';
+    const path = this.branchId.trim()
+      ? ['/display', id, this.branchId.trim()]
+      : ['/display', id];
+    this.router.navigate(path);
   }
 }

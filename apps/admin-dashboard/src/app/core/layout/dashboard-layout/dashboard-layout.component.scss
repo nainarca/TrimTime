@@ -1,23 +1,49 @@
 .tt-layout {
-  background: #f5f7fb;
+  background: #f0f2f8;
   color: #0f172a;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  /* Subtle diagonal mesh pattern */
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.04) 0%, transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.03) 0%, transparent 60%);
 }
 
 .tt-sidebar {
-  width: 260px;
-  background: #0f172a;
-  border: 0;
-  box-shadow: 2px 0 18px rgba(15, 23, 42, 0.19);
+  width: 236px;
+  min-width: 236px;
+  background: #0b0f1a;
+  flex-shrink: 0;
+  position: relative;
+
+  /* Subtle glow on right edge */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(99, 102, 241, 0.25) 40%,
+      rgba(139, 92, 246, 0.2) 60%,
+      transparent 100%
+    );
+  }
 }
 
 .tt-content {
   overflow-y: auto;
-  background: #f5f7fb;
-  padding: 1rem 1.2rem;
+  background: transparent;
+  padding: 1.75rem 2rem;
+  flex: 1;
 }
 
 @media (max-width: 992px) {
   .tt-sidebar { display: none; }
+  .tt-content  { padding: 1rem; }
 }
-

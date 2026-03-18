@@ -1,0 +1,147 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="jq-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/scan" text="" icon="chevron-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="jq-title">Join Queue</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="jq-content">
+
+  <!-- ── Invalid State ── -->
+  <div *ngIf="!shopId || !branchId" class="invalid-state animate-in">
+    <div class="invalid-icon">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </div>
+    <h3>No shop selected</h3>
+    <p>Please scan a shop QR code or enter a shop code to join the queue.</p>
+    <ion-button shape="round" class="scan-btn" (click)="goBack()">
+      <ion-icon name="qr-code-outline" slot="start"></ion-icon>
+      Scan QR Code
+    </ion-button>
+  </div>
+
+  <!-- ── Join Form ── -->
+  <ng-container *ngIf="shopId && branchId">
+
+    <!-- Shop Info Header -->
+    <div class="shop-info-card animate-in">
+      <div class="shop-info-icon">
+        <ion-icon name="cut-outline"></ion-icon>
+      </div>
+      <div class="shop-info-text">
+        <span class="shop-info-name">{{ shopName || 'Shop' }}</span>
+        <span class="shop-info-branch">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ branchName || 'Main Branch' }}
+        </span>
+      </div>
+      <div class="shop-info-badge">Open</div>
+    </div>
+
+    <!-- Service Selection -->
+    <div class="section animate-in" style="animation-delay: 0.08s">
+      <h3 class="section-label">Choose Service</h3>
+      <div class="service-grid">
+        <div
+          *ngFor="let svc of services"
+          class="svc-option"
+          [class.selected]="selectedService?.id === svc.id"
+          (click)="selectService(svc)"
+        >
+          <div class="svc-opt-icon">
+            <ion-icon [name]="svc.icon"></ion-icon>
+          </div>
+          <div class="svc-opt-body">
+            <span class="svc-opt-name">{{ svc.name }}</span>
+            <span class="svc-opt-meta">{{ svc.duration }} · {{ svc.price }}</span>
+          </div>
+          <ion-icon
+            class="svc-check"
+            [name]="selectedService?.id === svc.id ? 'checkmark-circle' : 'ellipse-outline'"
+          ></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guest Details -->
+    <div class="section animate-in" style="animation-delay: 0.14s">
+      <h3 class="section-label">Your Details</h3>
+      <div class="form-fields">
+
+        <div class="field-wrap" [class.has-value]="guestName.length > 0">
+          <div class="field-icon">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <div class="field-body">
+            <label class="field-label">Name</label>
+            <input
+              type="text"
+              class="field-input"
+              [(ngModel)]="guestName"
+              placeholder="Your first name"
+              autocorrect="off"
+            />
+          </div>
+        </div>
+
+        <div class="field-wrap" [class.has-value]="guestPhone.length > 0">
+          <div class="field-icon">
+            <ion-icon name="call-outline"></ion-icon>
+          </div>
+          <div class="field-body">
+            <label class="field-label">Phone</label>
+            <input
+              type="tel"
+              class="field-input"
+              [(ngModel)]="guestPhone"
+              placeholder="+1 234 567 8900"
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Privacy Note -->
+    <div class="privacy-note animate-in" style="animation-delay: 0.18s">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      <span>Your info is only used to notify you when it's your turn.</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg animate-in" *ngIf="error">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      {{ error }}
+    </div>
+
+    <!-- Bottom spacer -->
+    <div style="height: 120px;"></div>
+
+  </ng-container>
+
+</ion-content>
+
+<!-- ── Confirm Button ── -->
+<ion-footer *ngIf="shopId && branchId" class="jq-footer">
+  <div class="footer-inner">
+    <div class="summary-row" *ngIf="selectedService">
+      <span class="sum-label">{{ selectedService.name }}</span>
+      <span class="sum-price">{{ selectedService.price }}</span>
+    </div>
+    <ion-button
+      expand="block"
+      shape="round"
+      class="confirm-btn"
+      [disabled]="loading || !guestName.trim()"
+      (click)="join()"
+    >
+      <ion-spinner *ngIf="loading" name="crescent" class="btn-spinner"></ion-spinner>
+      <span *ngIf="!loading">
+        <ion-icon name="enter-outline" slot="start"></ion-icon>
+        Confirm &amp; Join
+      </span>
+    </ion-button>
+  </div>
+</ion-footer>

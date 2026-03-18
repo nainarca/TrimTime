@@ -1,37 +1,54 @@
 import { Routes } from '@angular/router';
 
 /**
- * TrimTime Customer App Routes
+ * QueueCut Customer App Routes
  *
- * /                     → redirect to /scan
- * /scan                 → QrScannerPage
- * /shop/:slug           → ShopLandingPage (public)
- * /join-queue           → JoinQueuePage
- * /queue/:entryId       → LiveQueueTrackerPage  ← MAIN SCREEN
- * /queue/:entryId/done  → ServedPage (review prompt)
- * /auth/login           → PhoneLoginPage
- * /auth/verify          → OtpVerifyPage
- * /profile              → CustomerProfilePage
- * /history              → VisitHistoryPage
- * /appointments         → MyAppointmentsPage
+ * /tabs/scan          → ScannerPage         (Tab 1 — home)
+ * /tabs/profile       → ProfilePage         (Tab 2)
+ * /shop/:slug         → ShopLandingPage     (push, outside tabs)
+ * /join-queue         → JoinQueuePage       (push, outside tabs)
+ * /queue/:entryId     → LiveTrackerPage     (push, MAIN SCREEN)
+ * /queue/:entryId/done → ServedPage         (push)
+ * /history            → HistoryPage         (push)
+ * /auth/...           → auth stubs
  */
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'scan',
+    redirectTo: 'tabs/scan',
     pathMatch: 'full',
   },
   {
     path: 'scan',
+    redirectTo: 'tabs/scan',
+    pathMatch: 'full',
+  },
+  {
+    path: 'tabs',
     loadComponent: () =>
-      import('./features/scanner/scanner.page').then((m) => m.ScannerPage),
+      import('./tabs/tabs.page').then((m) => m.TabsPage),
+    children: [
+      {
+        path: 'scan',
+        loadComponent: () =>
+          import('./features/scanner/scanner.page').then((m) => m.ScannerPage),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.page').then((m) => m.ProfilePage),
+      },
+      {
+        path: '',
+        redirectTo: 'scan',
+        pathMatch: 'full',
+      },
+    ],
   },
   {
     path: 'shop/:slug',
     loadComponent: () =>
-      import('./features/shop/shop-landing.page').then(
-        (m) => m.ShopLandingPage,
-      ),
+      import('./features/shop/shop-landing.page').then((m) => m.ShopLandingPage),
   },
   {
     path: 'join-queue',
@@ -41,9 +58,7 @@ export const routes: Routes = [
   {
     path: 'queue/:entryId',
     loadComponent: () =>
-      import('./features/queue/live-tracker.page').then(
-        (m) => m.LiveTrackerPage,
-      ),
+      import('./features/queue/live-tracker.page').then((m) => m.LiveTrackerPage),
   },
   {
     path: 'queue/:entryId/done',
@@ -51,24 +66,17 @@ export const routes: Routes = [
       import('./features/queue/served.page').then((m) => m.ServedPage),
   },
   {
+    path: 'history',
+    loadComponent: () =>
+      import('./features/profile/history.page').then((m) => m.HistoryPage),
+  },
+  {
     path: 'auth',
     loadChildren: () =>
       import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
-    path: 'profile',
-    loadComponent: () =>
-      import('./features/profile/profile.page').then((m) => m.ProfilePage),
-    // canActivate: [AuthGuard]
-  },
-  {
-    path: 'history',
-    loadComponent: () =>
-      import('./features/profile/history.page').then((m) => m.HistoryPage),
-    // canActivate: [AuthGuard]
-  },
-  {
     path: '**',
-    redirectTo: 'scan',
+    redirectTo: 'tabs/scan',
   },
 ];

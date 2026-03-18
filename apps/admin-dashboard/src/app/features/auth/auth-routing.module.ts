@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginPageComponent } from './pages/login/login.page';
-import { LoginSelectionPageComponent } from './pages/login-selection/login-selection.page';
 import { CustomerLoginPageComponent } from './pages/customer-login/customer-login.page';
 import { ForgotPasswordPageComponent } from './pages/forgot-password/forgot-password.page';
 import { ResetPasswordPageComponent } from './pages/reset-password/reset-password.page';
@@ -9,12 +8,8 @@ import { ResetPasswordPageComponent } from './pages/reset-password/reset-passwor
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login-selection',
+    redirectTo: 'login',
     pathMatch: 'full',
-  },
-  {
-    path: 'login-selection',
-    component: LoginSelectionPageComponent,
   },
   {
     path: 'login',

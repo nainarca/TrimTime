@@ -5,62 +5,39 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { QueueApiService } from './services/queue-api.service';
 
+export interface ServiceOption {
+  id: string;
+  name: string;
+  duration: string;
+  price: string;
+  icon: string;
+}
+
 @Component({
   standalone: true,
   selector: 'tt-join-queue-page',
   imports: [CommonModule, FormsModule, IonicModule],
-  template: `
-    <ion-header translucent>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/shop"></ion-back-button></ion-buttons>
-        <ion-title>Join Queue</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding custom-bg">
-      <div *ngIf="!shopId || !branchId" class="error-panel">
-        <p>Please start from the shop QR scan to join the queue.</p>
-        <ion-button expand="full" shape="round" (click)="goToScan()">Scan Shop</ion-button>
-      </div>
-      <div *ngIf="shopId && branchId" class="join-panel">
-        <div class="hero-row">
-          <div>
-            <div class="eyebrow">{{ shopName || 'Your Shop' }}</div>
-            <h2>Branch: {{ branchName || 'Main Branch' }}</h2>
-          </div>
-          <ion-badge color="primary">Ready</ion-badge>
-        </div>
-
-        <ion-item>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input [(ngModel)]="guestName" placeholder="Enter your name"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Phone</ion-label>
-          <ion-input [(ngModel)]="guestPhone" placeholder="+11234567890"></ion-input>
-        </ion-item>
-
-        <ion-button expand="full" shape="round" [disabled]="loading" (click)="join()">{{ loading ? 'Joining...' : 'Join Queue' }}</ion-button>
-        <ion-text color="danger" *ngIf="error">{{ error }}</ion-text>
-      </div>
-    </ion-content>
-  `,
-  styles: [
-    `
-      .error-card {
-        margin-top: 1rem;
-      }
-    `,
-  ],
+  templateUrl: './join-queue.page.html',
+  styleUrls: ['./join-queue.page.scss'],
 })
 export class JoinQueuePage implements OnInit {
-  shopId: string | null = null;
-  branchId: string | null = null;
-  shopName = '';
+  shopId: string | null    = null;
+  branchId: string | null  = null;
+  shopName   = '';
   branchName = '';
-  guestName = 'Guest';
-  guestPhone = '+11234567890';
-  loading = false;
-  error = '';
+  guestName  = '';
+  guestPhone = '';
+  loading    = false;
+  error      = '';
+
+  selectedService?: ServiceOption;
+
+  services: ServiceOption[] = [
+    { id: 's1', name: 'Haircut',         duration: '30 min', price: '$25', icon: 'cut-outline'          },
+    { id: 's2', name: 'Beard Trim',      duration: '20 min', price: '$15', icon: 'color-filter-outline' },
+    { id: 's3', name: 'Haircut + Beard', duration: '45 min', price: '$35', icon: 'sparkles-outline'     },
+    { id: 's4', name: 'Hair Wash',       duration: '15 min', price: '$10', icon: 'water-outline'        },
+  ];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -69,10 +46,23 @@ export class JoinQueuePage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.shopId = this.route.snapshot.queryParamMap.get('shopId');
-    this.branchId = this.route.snapshot.queryParamMap.get('branchId');
-    this.shopName = this.route.snapshot.queryParamMap.get('shopName') || '';
+    this.shopId     = this.route.snapshot.queryParamMap.get('shopId');
+    this.branchId   = this.route.snapshot.queryParamMap.get('branchId');
+    this.shopName   = this.route.snapshot.queryParamMap.get('shopName')   || '';
     this.branchName = this.route.snapshot.queryParamMap.get('branchName') || '';
+  }
+
+  selectService(svc: ServiceOption): void {
+    this.selectedService = svc;
+  }
+
+  get isFormValid(): boolean {
+    return !!(
+      this.shopId &&
+      this.branchId &&
+      this.guestName.trim() &&
+      this.guestPhone.trim()
+    );
   }
 
   join(): void {
@@ -80,17 +70,21 @@ export class JoinQueuePage implements OnInit {
       this.error = 'Invalid shop or branch. Please scan again.';
       return;
     }
+    if (!this.guestName.trim()) {
+      this.error = 'Please enter your name.';
+      return;
+    }
     this.loading = true;
-    this.error = '';
+    this.error   = '';
 
     this.queueApi
       .joinQueue({
-        shopId: this.shopId,
-        branchId: this.branchId,
-        entryType: 'WALK_IN',
-        priority: 1,
-        guestName: this.guestName || 'Guest',
-        guestPhone: this.guestPhone,
+        shopId:     this.shopId,
+        branchId:   this.branchId,
+        entryType:  'WALK_IN',
+        priority:   1,
+        guestName:  this.guestName.trim(),
+        guestPhone: this.guestPhone.trim(),
       })
       .subscribe({
         next: (entry) => {
@@ -99,13 +93,12 @@ export class JoinQueuePage implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          this.error = err.message || 'Could not join queue right now.';
+          this.error = err.message || 'Could not join queue. Please try again.';
         },
       });
   }
 
-  goToScan(): void {
-    this.router.navigate(['/scan']);
+  goBack(): void {
+    this.router.navigate(['/tabs/scan']);
   }
 }
-

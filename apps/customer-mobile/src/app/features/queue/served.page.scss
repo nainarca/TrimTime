@@ -1,0 +1,164 @@
+// ── Content ───────────────────────────────────────────────────
+.served-content {
+  --background: linear-gradient(180deg, #f0fdf4 0%, #f8fafc 50%);
+}
+
+// ── Layout ────────────────────────────────────────────────────
+.served-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding: calc(env(safe-area-inset-top) + 3.5rem) 1.75rem
+           calc(env(safe-area-inset-bottom) + 2rem);
+  gap: 2rem;
+  text-align: center;
+}
+
+// ── Success Ring ──────────────────────────────────────────────
+.success-ring {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseSuccess 2s ease-in-out infinite;
+}
+
+.success-circle {
+  width: 88px;
+  height: 88px;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+.check-icon {
+  font-size: 2.75rem;
+  color: #fff;
+}
+
+// ── Message ───────────────────────────────────────────────────
+.served-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.served-title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.05em;
+}
+
+.served-sub {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+// ── Summary Card ──────────────────────────────────────────────
+.summary-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e8edf3;
+  border-radius: 20px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+}
+
+.sum-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.825rem;
+  color: #94a3b8;
+  font-weight: 500;
+
+  ion-icon { font-size: 0.875rem; }
+}
+
+.sum-val {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.summary-divider {
+  height: 1px;
+  background: #f8fafc;
+}
+
+// ── Rating ────────────────────────────────────────────────────
+.rating-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rating-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.stars {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.star {
+  font-size: 2rem;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+
+  &.filled { color: #f59e0b; }
+
+  &:hover { transform: scale(1.2); }
+  &:active { transform: scale(0.95); }
+}
+
+// ── Actions ───────────────────────────────────────────────────
+.served-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scan-again-btn {
+  --background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --background-activated: #4f46e5;
+  --color: #ffffff;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+  font-weight: 700;
+  font-size: 1rem;
+  height: 54px;
+}
+
+.profile-link-btn {
+  --color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+}

@@ -1,0 +1,120 @@
+<ion-content [fullscreen]="true" class="scanner-content">
+
+  <div class="scanner-layout">
+
+    <!-- ── Logo ── -->
+    <div class="scanner-logo animate-in">
+      <div class="logo-mark">
+        <ion-icon name="cut-outline"></ion-icon>
+      </div>
+      <h1 class="logo-title">QueueCut</h1>
+      <p class="logo-tagline">Skip the line, not the style</p>
+    </div>
+
+    <!-- ── Camera Viewfinder / Scan Zone ── -->
+    <div class="scan-zone animate-in" style="animation-delay: 0.1s">
+
+      <!-- Outer pulse rings (visible only when not scanning) -->
+      <div class="pulse-rings" *ngIf="!scanning">
+        <span class="pulse-ring r1"></span>
+        <span class="pulse-ring r2"></span>
+        <span class="pulse-ring r3"></span>
+      </div>
+
+      <div
+        class="scan-ring"
+        [class.scanning]="scanning"
+        (click)="simulateScan()"
+      >
+        <!-- Camera-feel: dark vignette overlay -->
+        <div class="cam-vignette"></div>
+
+        <!-- Corner markers -->
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+
+        <!-- Scan beam animation -->
+        <div class="scan-beam" *ngIf="scanning"></div>
+
+        <!-- Inner content -->
+        <div class="scan-inner">
+          <div class="scan-icon-wrap" [class.scanning]="scanning">
+            <ion-icon
+              [name]="scanning ? 'radio-button-on-outline' : 'qr-code-outline'"
+              class="scan-icon"
+            ></ion-icon>
+          </div>
+          <span class="scan-cta">{{ scanning ? 'Scanning…' : 'Tap to Scan' }}</span>
+          <span class="scan-hint">Point at a QR code</span>
+        </div>
+      </div>
+
+      <!-- Status label below ring -->
+      <div class="scan-status">
+        <span class="scan-status-dot" [class.active]="scanning"></span>
+        <span>{{ scanning ? 'Camera active' : 'Ready to scan' }}</span>
+      </div>
+
+    </div>
+
+    <!-- ── Divider ── -->
+    <div class="divider-row animate-in" style="animation-delay: 0.2s">
+      <span class="divider-line"></span>
+      <span class="divider-text">or enter shop code</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <!-- ── Manual Slug Input ── -->
+    <div class="slug-section animate-in" style="animation-delay: 0.25s">
+      <div class="slug-field" [class.filled]="shopSlug.length > 0">
+        <ion-icon name="storefront-outline" class="field-icon"></ion-icon>
+        <input
+          type="text"
+          class="slug-input"
+          [(ngModel)]="shopSlug"
+          placeholder="mikes-barber-shop"
+          (keyup.enter)="goToShop()"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        />
+        <ion-icon
+          *ngIf="shopSlug.length > 0"
+          name="close-circle"
+          class="clear-icon"
+          (click)="shopSlug = ''"
+        ></ion-icon>
+      </div>
+
+      <ion-button
+        expand="block"
+        class="go-btn"
+        [disabled]="!shopSlug.trim()"
+        (click)="goToShop()"
+      >
+        Continue
+        <ion-icon name="arrow-forward" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- ── Quick Tips ── -->
+    <div class="tips-row animate-in" style="animation-delay: 0.3s">
+      <div class="tip-chip">
+        <ion-icon name="flash-outline"></ion-icon>
+        Instant join
+      </div>
+      <div class="tip-chip">
+        <ion-icon name="notifications-outline"></ion-icon>
+        SMS alerts
+      </div>
+      <div class="tip-chip">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        No account needed
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

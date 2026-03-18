@@ -1,0 +1,106 @@
+<!-- ═══════════════════════════════════════════════════════════
+     QueueCut — Kiosk Setup Screen
+     ═══════════════════════════════════════════════════════════ -->
+
+<div class="setup-root">
+
+  <!-- Background grid -->
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- Glow orb -->
+  <div class="glow-orb" aria-hidden="true"></div>
+
+  <div class="setup-card">
+
+    <!-- Logo -->
+    <div class="setup-logo">
+      <div class="logo-mark">
+        <span aria-hidden="true">✂</span>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">QueueCut</span>
+        <span class="logo-sub">TV / Kiosk Setup</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="card-rule" aria-hidden="true"></div>
+
+    <!-- Heading -->
+    <h1 class="setup-heading">Activate Display</h1>
+    <p class="setup-sub">Enter your shop credentials to launch the live queue screen.</p>
+
+    <!-- Form -->
+    <div class="setup-form">
+
+      <!-- Shop ID -->
+      <div class="field-group" [class.has-error]="error">
+        <label class="field-label" for="shopId">
+          <span class="label-icon" aria-hidden="true">◈</span>
+          Shop ID
+          <span class="required-star" aria-hidden="true">*</span>
+        </label>
+        <div class="input-wrap">
+          <input
+            id="shopId"
+            class="setup-input"
+            type="text"
+            placeholder="e.g. mikes-barber-shop"
+            [(ngModel)]="shopId"
+            (input)="error = ''"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <span class="input-icon" aria-hidden="true">◈</span>
+        </div>
+        <div class="field-error" *ngIf="error" role="alert">
+          <span aria-hidden="true">⚠</span> {{ error }}
+        </div>
+      </div>
+
+      <!-- Branch ID (optional) -->
+      <div class="field-group">
+        <label class="field-label" for="branchId">
+          <span class="label-icon" aria-hidden="true">⊕</span>
+          Branch ID
+          <span class="optional-tag">optional</span>
+        </label>
+        <div class="input-wrap">
+          <input
+            id="branchId"
+            class="setup-input"
+            type="text"
+            placeholder="e.g. main-branch"
+            [(ngModel)]="branchId"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <span class="input-icon" aria-hidden="true">⊕</span>
+        </div>
+      </div>
+
+      <!-- Activate button -->
+      <button
+        class="activate-btn"
+        [class.disabled]="!shopId.trim()"
+        (click)="activate()"
+        type="button"
+      >
+        <span class="btn-icon" aria-hidden="true">▶</span>
+        Launch Queue Display
+      </button>
+
+    </div>
+
+    <!-- Footer note -->
+    <p class="setup-note">
+      <span aria-hidden="true">ℹ</span>
+      The display will connect automatically and refresh every 30 seconds.
+    </p>
+
+  </div>
+
+  <!-- Version tag -->
+  <div class="version-tag" aria-hidden="true">QueueCut v1.0</div>
+
+</div>

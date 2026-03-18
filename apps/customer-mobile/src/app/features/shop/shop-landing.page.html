@@ -1,0 +1,152 @@
+<ion-header class="ion-no-border shop-header">
+  <ion-toolbar class="shop-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/scan" text="" icon="chevron-back-outline"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" class="share-btn">
+        <ion-icon name="share-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="shop-content">
+
+  <!-- ── Loading Skeleton ── -->
+  <ng-container *ngIf="loading">
+    <div class="hero-skeleton skeleton-shimmer"></div>
+    <div class="skeleton-body">
+      <div class="sk-line w70 skeleton-shimmer"></div>
+      <div class="sk-line w45 skeleton-shimmer"></div>
+      <div class="sk-cards-row">
+        <div class="sk-card skeleton-shimmer"></div>
+        <div class="sk-card skeleton-shimmer"></div>
+        <div class="sk-card skeleton-shimmer"></div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── Error State ── -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon-wrap">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+    </div>
+    <h3>Shop Not Found</h3>
+    <p>{{ error }}</p>
+    <ion-button shape="round" (click)="goBack()">Go Back</ion-button>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <ng-container *ngIf="!loading && !error">
+
+    <!-- Hero -->
+    <div class="shop-hero">
+      <div class="hero-bg"></div>
+      <div class="hero-body">
+        <div class="shop-avatar">
+          <ion-icon name="cut-outline"></ion-icon>
+        </div>
+        <div class="hero-verified">
+          <ion-icon name="checkmark-circle"></ion-icon>
+          Verified
+        </div>
+        <h1 class="hero-name">{{ shopName }}</h1>
+        <p class="hero-desc">{{ description }}</p>
+        <div class="hero-meta">
+          <span class="meta-chip" *ngIf="cityDisplay">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ cityDisplay }}
+          </span>
+          <span class="meta-chip">
+            <ion-icon name="star"></ion-icon>
+            4.8
+          </span>
+          <span class="meta-chip">
+            <ion-icon name="people-outline"></ion-icon>
+            {{ branches.length }} location{{ branches.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div class="section animate-in">
+      <div class="section-head">
+        <h2 class="section-title">Services</h2>
+        <span class="section-badge">{{ services.length }} available</span>
+      </div>
+      <div class="services-scroll">
+        <div *ngFor="let svc of services" class="svc-card">
+          <div class="svc-icon">
+            <ion-icon [name]="svc.icon"></ion-icon>
+          </div>
+          <div class="svc-name">{{ svc.name }}</div>
+          <div class="svc-meta">
+            <span>{{ svc.duration }}</span>
+            <span class="svc-dot">·</span>
+            <span class="svc-price">{{ svc.price }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Selection -->
+    <div class="section animate-in" style="animation-delay: 0.1s" *ngIf="branches.length > 0">
+      <div class="section-head">
+        <h2 class="section-title">Select Location</h2>
+      </div>
+      <div class="branches-list">
+        <div
+          *ngFor="let branch of branches"
+          class="branch-card"
+          [class.selected]="selectedBranch?.id === branch.id"
+          (click)="selectBranch(branch)"
+        >
+          <div class="branch-left">
+            <div class="branch-dot"></div>
+            <div class="branch-info">
+              <span class="branch-name">{{ branch.name }}</span>
+              <span class="branch-addr" *ngIf="branch.address">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ branch.address }}
+              </span>
+            </div>
+          </div>
+          <div class="branch-right">
+            <span class="main-tag" *ngIf="branch.isMain">Main</span>
+            <ion-icon
+              class="branch-check"
+              [name]="selectedBranch?.id === branch.id ? 'checkmark-circle' : 'ellipse-outline'"
+            ></ion-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom spacer for footer -->
+    <div style="height: 110px;"></div>
+
+  </ng-container>
+
+</ion-content>
+
+<!-- ── Sticky Footer ── -->
+<ion-footer *ngIf="!loading && !error" class="shop-footer">
+  <div class="footer-inner">
+    <div class="footer-wait" *ngIf="selectedBranch">
+      <ion-icon name="time-outline"></ion-icon>
+      <span>Est. 5–15 min wait</span>
+    </div>
+    <ion-button
+      expand="block"
+      shape="round"
+      class="join-btn"
+      [disabled]="!selectedBranch"
+      (click)="joinQueue()"
+    >
+      <ion-icon name="people-outline" slot="start"></ion-icon>
+      Join Queue
+    </ion-button>
+  </div>
+</ion-footer>

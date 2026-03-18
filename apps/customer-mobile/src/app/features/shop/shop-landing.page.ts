@@ -4,41 +4,19 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { QueueApiService, ShopBranch } from '../queue/services/queue-api.service';
 
+export interface ServiceCard {
+  name: string;
+  duration: string;
+  price: string;
+  icon: string;
+}
+
 @Component({
   standalone: true,
   selector: 'tt-shop-landing-page',
   imports: [CommonModule, IonicModule],
-  template: `
-    <ion-header translucent>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/scan"></ion-back-button></ion-buttons>
-        <ion-title>{{ shopName || 'Shop' }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding custom-bg">
-      <div class="banner">
-        <div>
-          <div class="badge">Barber Queue</div>
-          <h1>{{ shopName || 'Your shop' }}</h1>
-          <p class="desc">{{ description || 'Join queue and get notified when it’s your turn.' }}</p>
-        </div>
-        <div class="meta">{{ cityDisplay }}</div>
-      </div>
-
-      <ion-list lines="none">
-        <ion-list-header>
-          <ion-label>Branches</ion-label>
-        </ion-list-header>
-        <ion-item *ngFor="let branch of branches" button (click)="joinQueue(branch)">
-          <ion-label>
-            <h3>{{ branch.name }}</h3>
-            <p class="muted">{{ branch.address || 'No address available' }}</p>
-          </ion-label>
-          <ion-note slot="end">Join</ion-note>
-        </ion-item>
-      </ion-list>
-    </ion-content>
-  `,
+  templateUrl: './shop-landing.page.html',
+  styleUrls: ['./shop-landing.page.scss'],
 })
 export class ShopLandingPage implements OnInit {
   shopName = '';
@@ -47,7 +25,16 @@ export class ShopLandingPage implements OnInit {
   loading = true;
   error = '';
   branches: ShopBranch[] = [];
+  selectedBranch?: ShopBranch;
   slug = '';
+
+  // Placeholder services (wire to API in Phase 2)
+  services: ServiceCard[] = [
+    { name: 'Haircut',          duration: '30 min', price: '$25', icon: 'cut-outline'          },
+    { name: 'Beard Trim',       duration: '20 min', price: '$15', icon: 'color-filter-outline' },
+    { name: 'Haircut + Beard',  duration: '45 min', price: '$35', icon: 'sparkles-outline'     },
+    { name: 'Hair Wash',        duration: '15 min', price: '$10', icon: 'water-outline'        },
+  ];
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -70,9 +57,9 @@ export class ShopLandingPage implements OnInit {
           this.loading = false;
           return;
         }
-        this.shopName = shop.name;
-        this.description = shop.description || 'View queue and join now.';
-        this.cityDisplay = `${shop.country}`;
+        this.shopName    = shop.name;
+        this.description = shop.description || 'Join queue and get notified when it\'s your turn.';
+        this.cityDisplay = shop.country;
       },
       error: (err) => {
         this.error = err.message || 'Could not load shop';
@@ -82,6 +69,7 @@ export class ShopLandingPage implements OnInit {
     this.queueApi.getShopBranchesBySlug(this.slug).subscribe({
       next: (branches) => {
         this.branches = branches;
+        if (branches.length > 0) this.selectedBranch = branches[0];
         this.loading = false;
       },
       error: (err) => {
@@ -91,19 +79,23 @@ export class ShopLandingPage implements OnInit {
     });
   }
 
-  joinQueue(branch: ShopBranch): void {
+  selectBranch(branch: ShopBranch): void {
+    this.selectedBranch = branch;
+  }
+
+  joinQueue(): void {
+    if (!this.selectedBranch) return;
     this.router.navigate(['/join-queue'], {
       queryParams: {
-        shopId: branch.shopId || '',
-        branchId: branch.id,
-        shopName: this.shopName,
-        branchName: branch.name,
+        shopId:     this.selectedBranch.shopId || '',
+        branchId:   this.selectedBranch.id,
+        shopName:   this.shopName,
+        branchName: this.selectedBranch.name,
       },
     });
   }
 
   goBack(): void {
-    this.router.navigate(['/scan']);
+    this.router.navigate(['/tabs/scan']);
   }
 }
-

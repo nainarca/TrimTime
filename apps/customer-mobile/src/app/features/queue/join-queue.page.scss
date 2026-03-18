@@ -1,0 +1,327 @@
+// ── Header ────────────────────────────────────────────────────
+.jq-toolbar {
+  --background: #ffffff;
+}
+
+.jq-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+// ── Content ───────────────────────────────────────────────────
+.jq-content {
+  --background: #f8fafc;
+}
+
+// ── Invalid State ─────────────────────────────────────────────
+.invalid-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 2rem 2rem;
+  text-align: center;
+  gap: 0.75rem;
+
+  h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+  p  { margin: 0; color: #64748b; font-size: 0.875rem; line-height: 1.55; }
+}
+
+.invalid-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  ion-icon { font-size: 2.2rem; color: #6366f1; }
+}
+
+.scan-btn {
+  --background: var(--tt-gradient);
+  --color: #ffffff;
+  margin-top: 0.5rem;
+}
+
+// ── Shop Info Card ────────────────────────────────────────────
+.shop-info-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+  margin: 1rem 1.25rem;
+  border-radius: 20px;
+  padding: 1rem 1.1rem;
+}
+
+.shop-info-icon {
+  width: 46px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon { font-size: 1.4rem; color: #fff; }
+}
+
+.shop-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-info-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.shop-info-branch {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.775rem;
+  color: rgba(255, 255, 255, 0.65);
+
+  ion-icon { font-size: 0.75rem; }
+}
+
+.shop-info-badge {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+// ── Section ───────────────────────────────────────────────────
+.section {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.section-label {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 0.75rem;
+}
+
+// ── Service Options ───────────────────────────────────────────
+.service-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.svc-option {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+  &.selected {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.03);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+}
+
+.svc-opt-icon {
+  width: 42px;
+  height: 42px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon { font-size: 1.2rem; color: #6366f1; }
+}
+
+.svc-opt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.svc-opt-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.svc-opt-meta {
+  font-size: 0.775rem;
+  color: #64748b;
+}
+
+.svc-check {
+  font-size: 1.4rem;
+  color: #e2e8f0;
+  flex-shrink: 0;
+  transition: color 0.15s;
+
+  .svc-option.selected & { color: #6366f1; }
+}
+
+// ── Form Fields ───────────────────────────────────────────────
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.field-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within,
+  &.has-value {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+}
+
+.field-icon {
+  flex-shrink: 0;
+  ion-icon { font-size: 1.1rem; color: #94a3b8; }
+}
+
+.field-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 0.15rem;
+}
+
+.field-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-family: inherit;
+  width: 100%;
+
+  &::placeholder { color: #cbd5e1; }
+}
+
+// ── Privacy Note ──────────────────────────────────────────────
+.privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 1.25rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(99, 102, 241, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  font-size: 0.775rem;
+  color: #475569;
+  line-height: 1.5;
+
+  ion-icon {
+    font-size: 1rem;
+    color: #6366f1;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+}
+
+// ── Error ────────────────────────────────────────────────────
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.75rem 1.25rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  font-size: 0.825rem;
+  color: #dc2626;
+
+  ion-icon { font-size: 1rem; flex-shrink: 0; }
+}
+
+// ── Footer ───────────────────────────────────────────────────
+.jq-footer {
+  --background: #ffffff;
+  --border-width: 0;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.footer-inner {
+  padding: 0.75rem 1.25rem calc(env(safe-area-inset-bottom) + 0.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.825rem;
+}
+
+.sum-label { color: #475569; font-weight: 500; }
+
+.sum-price {
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.confirm-btn {
+  --background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --background-activated: #4f46e5;
+  --color: #ffffff;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);
+  font-weight: 700;
+  font-size: 1rem;
+  height: 54px;
+}
+
+.btn-spinner {
+  --color: #ffffff;
+  width: 22px;
+  height: 22px;
+}

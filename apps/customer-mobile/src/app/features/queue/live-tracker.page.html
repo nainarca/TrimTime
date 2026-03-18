@@ -1,0 +1,157 @@
+<!-- Toast portal — fixed overlay, renders above ion-content -->
+<tt-notification-toast></tt-notification-toast>
+
+<ion-content [fullscreen]="true" class="tracker-content" [class]="'status-bg-' + statusColor">
+
+  <!-- ── Loading ── -->
+  <div *ngIf="loading" class="loading-state">
+    <ion-spinner name="crescent" class="load-spin"></ion-spinner>
+    <p>Loading your queue status…</p>
+  </div>
+
+  <!-- ── Error ── -->
+  <div *ngIf="error && !loading" class="error-state">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ error }}</p>
+    <ion-button shape="round" (click)="goToScan()">Back to Scanner</ion-button>
+  </div>
+
+  <!-- ── Live Tracker ── -->
+  <ng-container *ngIf="entry && !loading">
+
+    <!-- Top safe area filler -->
+    <div class="safe-top"></div>
+
+    <!-- Status Header -->
+    <div class="status-header animate-in" [class]="statusColor">
+      <div class="status-icon-wrap" [class]="statusColor">
+        <ion-icon [name]="statusIcon"></ion-icon>
+      </div>
+      <div class="status-info">
+        <span class="status-label">{{ statusLabel }}</span>
+        <span class="status-shop">Mike's Barber Shop</span>
+      </div>
+      <div class="live-dot-wrap" *ngIf="entry.status === 'WAITING' || entry.status === 'CALLED'">
+        <span class="live-dot" [class]="statusColor"></span>
+      </div>
+    </div>
+
+    <!-- Token Card -->
+    <div class="token-card animate-in" style="animation-delay: 0.08s" [class.pulsing]="entry.status === 'CALLED'">
+      <div class="token-label">Your Token</div>
+      <div class="token-number" [class]="'token-' + statusColor">
+        {{ entry.ticketDisplay }}
+      </div>
+      <div class="token-sub" *ngIf="entry.status === 'WAITING'">
+        Position <strong>#{{ entry.position }}</strong> in queue
+      </div>
+      <div class="token-sub called-pulse" *ngIf="entry.status === 'CALLED'">
+        <ion-icon name="megaphone-outline"></ion-icon>
+        Please proceed to the barber!
+      </div>
+      <div class="token-sub" *ngIf="entry.status === 'SERVING'">
+        <ion-icon name="cut-outline"></ion-icon>
+        Service in progress
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row animate-in" style="animation-delay: 0.14s">
+
+      <div class="stat-card">
+        <div class="stat-icon wait-icon">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ waitDisplay }}</span>
+          <span class="stat-unit" *ngIf="entry.estimatedWaitMins != null && entry.estimatedWaitMins >= 1">min</span>
+        </div>
+        <span class="stat-label">Est. Wait</span>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <div class="stat-card">
+        <div class="stat-icon pos-icon">
+          <ion-icon name="list-outline"></ion-icon>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">#{{ entry.position }}</span>
+        </div>
+        <span class="stat-label">Your Position</span>
+      </div>
+
+      <div class="stat-divider"></div>
+
+      <div class="stat-card">
+        <div class="stat-icon now-icon">
+          <ion-icon name="cut-outline"></ion-icon>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ currentServing }}</span>
+        </div>
+        <span class="stat-label">Now Serving</span>
+      </div>
+
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section animate-in" style="animation-delay: 0.2s">
+      <div class="progress-head">
+        <span class="progress-label">Queue Progress</span>
+        <span class="progress-pct">{{ progressWidth }}%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" [class]="statusColor" [style.width.%]="progressWidth"></div>
+      </div>
+      <div class="progress-foot">
+        <span>Start</span>
+        <span>Your Turn</span>
+      </div>
+    </div>
+
+    <!-- Timeline Steps -->
+    <div class="timeline animate-in" style="animation-delay: 0.24s">
+      <div class="tl-step" [class.done]="true" [class.active]="entry.status === 'WAITING'">
+        <div class="tl-dot"></div>
+        <div class="tl-info">
+          <span class="tl-title">In Queue</span>
+          <span class="tl-sub">{{ entry.joinedAt | date:'shortTime' }}</span>
+        </div>
+      </div>
+      <div class="tl-line" [class.done]="entry.status === 'CALLED' || entry.status === 'SERVING' || entry.status === 'SERVED'"></div>
+      <div class="tl-step" [class.done]="entry.status === 'CALLED' || entry.status === 'SERVING' || entry.status === 'SERVED'" [class.active]="entry.status === 'CALLED'">
+        <div class="tl-dot"></div>
+        <div class="tl-info">
+          <span class="tl-title">Called</span>
+          <span class="tl-sub">Proceed to barber</span>
+        </div>
+      </div>
+      <div class="tl-line" [class.done]="entry.status === 'SERVING' || entry.status === 'SERVED'"></div>
+      <div class="tl-step" [class.done]="entry.status === 'SERVED'" [class.active]="entry.status === 'SERVING'">
+        <div class="tl-dot"></div>
+        <div class="tl-info">
+          <span class="tl-title">Being Served</span>
+          <span class="tl-sub">In the chair</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions animate-in" style="animation-delay: 0.28s">
+      <ion-button fill="clear" class="leave-btn" (click)="goToScan()">
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Leave Queue
+      </ion-button>
+      <div class="update-info">
+        <ion-icon name="sync-outline"></ion-icon>
+        Updates in real-time
+      </div>
+    </div>
+
+    <!-- Safe area bottom -->
+    <div style="height: 32px;"></div>
+
+  </ng-container>
+
+</ion-content>

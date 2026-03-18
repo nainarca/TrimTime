@@ -5,14 +5,14 @@ export declare class BarbersResolver {
     private readonly barbersService;
     constructor(barbersService: BarbersService);
     barbers(shopId: string, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         avatarUrl: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        branchId: string;
         displayName: string;
         bio: string;
         avgServiceDurationMins: number;
@@ -21,14 +21,14 @@ export declare class BarbersResolver {
         maxQueueSize: number;
     }[]>;
     upsertBarber(input: BarberInput, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         avatarUrl: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        branchId: string;
         displayName: string;
         bio: string;
         avgServiceDurationMins: number;

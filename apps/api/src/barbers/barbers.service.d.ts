@@ -4,14 +4,14 @@ export declare class BarbersService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     listBarbers(shopId: string, allowedShopIds?: string[]): Promise<{
-        id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         avatarUrl: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        branchId: string;
         displayName: string;
         bio: string;
         avgServiceDurationMins: number;
@@ -20,14 +20,14 @@ export declare class BarbersService {
         maxQueueSize: number;
     }[]>;
     upsertBarber(input: BarberInput, allowedShopIds?: string[]): Promise<{
-        id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
+        id: string;
         avatarUrl: string;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
+        branchId: string;
         displayName: string;
         bio: string;
         avgServiceDurationMins: number;

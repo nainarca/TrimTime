@@ -1,0 +1,103 @@
+/* ════════════════════════════════════════════
+   Bottom Tab Bar  ·  QueueCut Customer App
+   ════════════════════════════════════════════ */
+
+.tt-tab-bar {
+  // Floats above content with a card shadow + safe area
+  --background:    transparent;
+  --border:        none;
+
+  position:        relative;
+  height:          auto;
+  padding:         0 0 calc(env(safe-area-inset-bottom) + 8px);
+  background:      transparent;
+  border-top:      none;
+
+  // Inner floating card
+  &::before {
+    content:       '';
+    position:      absolute;
+    inset:         4px 12px calc(env(safe-area-inset-bottom) + 4px);
+    background:    #ffffff;
+    border-radius: 24px;
+    box-shadow:    0 -2px 0 rgba(226, 232, 240, 0.5),
+                   0 8px 32px rgba(15, 23, 42, 0.12),
+                   0 2px 8px  rgba(15, 23, 42, 0.06);
+    z-index:       -1;
+  }
+}
+
+/* ── Tab button base ── */
+.tt-tab-btn {
+  --color:          #94a3b8;
+  --color-selected: #6366f1;
+
+  flex:             1;
+  padding:          10px 0 8px;
+  gap:              3px;
+  font-size:        0.58rem;
+  font-weight:      600;
+  letter-spacing:   0.02em;
+  transition:       color 0.2s;
+}
+
+/* ── Icon pip container ── */
+.tab-pip {
+  width:         44px;
+  height:        36px;
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  border-radius: 14px;
+  transition:    background 0.2s, transform 0.2s;
+}
+
+.tab-icon-svg {
+  font-size:  1.35rem;
+  transition: transform 0.2s;
+}
+
+/* ── Selected state — filled pill ── */
+ion-tab-button.tab-selected {
+  .tab-pip {
+    background: linear-gradient(135deg, rgba(99,102,241,0.14), rgba(139,92,246,0.1));
+    transform:  scale(1.05);
+  }
+
+  .tab-icon-svg {
+    transform: scale(1.1);
+  }
+}
+
+/* ── Centre FAB tab ── */
+.tt-tab-center {
+  flex: 0 0 72px;
+  pointer-events: none; // decorative; real scan is on the scan tab
+  padding-bottom: 0;
+}
+
+.tab-fab {
+  width:      52px;
+  height:     52px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 18px;
+  display:    flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -18px; // lifts above the bar
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45),
+              0 2px 6px  rgba(99, 102, 241, 0.3);
+
+  ion-icon {
+    font-size: 1.5rem;
+    color:     #fff;
+  }
+}
+
+/* ── ion-label sizing ── */
+ion-tab-button ion-label {
+  font-size:     0.58rem !important;
+  margin-top:    2px;
+  font-weight:   600;
+  letter-spacing: 0.01em;
+}

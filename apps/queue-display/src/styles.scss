@@ -1,41 +1,186 @@
 // ============================================================
-// TrimTime Queue Display — Kiosk Screen Styles
+// QueueCut — TV / Kiosk Display  ·  Global Styles
 // ============================================================
-:root {
-  --tt-bg:      #0f172a;
-  --tt-surface: #1e293b;
-  --tt-primary: #4f46e5;
-  --tt-accent:  #f59e0b;
-  --tt-text:    #f1f5f9;
-  --tt-muted:   #94a3b8;
 
-  // Kiosk-specific large typography
-  --tt-display-font-size: clamp(48px, 8vw, 120px);
-  --tt-title-font-size:   clamp(24px, 4vw, 56px);
-  --tt-body-font-size:    clamp(16px, 2vw, 28px);
+// ── Design tokens ─────────────────────────────────────────────
+:root {
+  // Backgrounds
+  --tt-bg:          #040c18;
+  --tt-bg-2:        #060f1f;
+  --tt-surface:     rgba(255, 255, 255, 0.04);
+  --tt-surface-hi:  rgba(255, 255, 255, 0.08);
+  --tt-border:      rgba(255, 255, 255, 0.07);
+  --tt-border-hi:   rgba(255, 255, 255, 0.14);
+
+  // Neon palette
+  --tt-amber:       #fcd34d;
+  --tt-amber-dim:   rgba(252, 211, 77, 0.3);
+  --tt-amber-lo:    rgba(252, 211, 77, 0.1);
+  --tt-amber-hi:    rgba(252, 211, 77, 0.55);
+  --tt-cyan:        #67e8f9;
+  --tt-cyan-dim:    rgba(103, 232, 249, 0.3);
+  --tt-cyan-lo:     rgba(103, 232, 249, 0.1);
+  --tt-indigo:      #818cf8;
+  --tt-indigo-dim:  rgba(129, 140, 248, 0.3);
+  --tt-green:       #4ade80;
+  --tt-green-dim:   rgba(74, 222, 128, 0.3);
+  --tt-red:         #f87171;
+  --tt-red-dim:     rgba(248, 113, 113, 0.25);
+
+  // Text
+  --tt-text:        #f1f5f9;
+  --tt-text-dim:    #94a3b8;
+  --tt-text-faint:  #334155;
+
+  // TV-scale responsive typography
+  --tt-size-hero:    clamp(7rem,  22vw, 22rem);  // NOW SERVING
+  --tt-size-next:    clamp(2.8rem, 8vw, 8rem);   // NEXT ticket
+  --tt-size-display: clamp(1.4rem, 3vw,  3rem);  // Section headings
+  --tt-size-body:    clamp(0.9rem, 1.5vw, 1.4rem);
+  --tt-size-small:   clamp(0.65rem, 1vw, 0.9rem);
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin:     0;
+  padding:    0;
 }
 
 html, body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--tt-bg);
-  color: var(--tt-text);
-  font-family: 'Inter', sans-serif;
-  overflow: hidden; // Kiosk — no scroll
-  height: 100vh;
-  width: 100vw;
+  width:      100vw;
+  height:     100vh;
+  overflow:   hidden;
+  background: var(--tt-bg);
+  color:      var(--tt-text);
+  font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: none; // Kiosk mode: hide cursor
 }
 
-// Now serving ticker
-.now-serving {
-  font-size: var(--tt-display-font-size);
-  font-weight: 900;
-  color: var(--tt-accent);
-  letter-spacing: -3px;
+// ══════════════════════════════════════════════════════════════
+// KEYFRAME ANIMATIONS
+// ══════════════════════════════════════════════════════════════
+
+// Pulsing live dot
+@keyframes livePulse {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(0.82); }
 }
 
-// Queue list items
-.queue-ticket {
-  font-size: var(--tt-title-font-size);
-  font-weight: 700;
+// Breathing glow on hero/next numbers
+@keyframes neonBreathe {
+  0%, 100% { opacity: 0.82; filter: brightness(0.92); }
+  50%       { opacity: 1;    filter: brightness(1.08); }
+}
+
+// Ticket change: drop out / slam in from below
+@keyframes ticketChange {
+  0%   { transform: translateY(0)     scale(1);    opacity: 1;  }
+  18%  { transform: translateY(-18px) scale(0.92); opacity: 0;  }
+  38%  { transform: translateY(26px)  scale(0.92); opacity: 0;  }
+  68%  { transform: translateY(0)     scale(1.05); opacity: 1;  }
+  100% { transform: translateY(0)     scale(1);    opacity: 1;  }
+}
+
+// Horizontal CRT scan beam sweeping down
+@keyframes scanDown {
+  0%   { top: -3px; }
+  100% { top: 100%; }
+}
+
+// Seamless ticker scroll (50% duplicate trick)
+@keyframes tickerScroll {
+  0%   { transform: translateX(0);    }
+  100% { transform: translateX(-50%); }
+}
+
+// Flash in (used for new entries)
+@keyframes flashIn {
+  0%   { opacity: 0; transform: scale(0.92); }
+  55%  { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1);    }
+}
+
+// Amber border glow pulse
+@keyframes borderGlowAmber {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(252, 211, 77, 0.1),
+                0 0 24px rgba(252, 211, 77, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(252, 211, 77, 0.35),
+                0 0 44px rgba(252, 211, 77, 0.18);
+  }
+}
+
+// Cyan border glow pulse
+@keyframes borderGlowCyan {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.1),
+                0 0 24px rgba(103, 232, 249, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.3),
+                0 0 40px rgba(103, 232, 249, 0.14);
+  }
+}
+
+// Slide in from below
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// NEON GLOW UTILITIES
+// ══════════════════════════════════════════════════════════════
+
+.glow-amber {
+  text-shadow:
+    0 0  6px  var(--tt-amber),
+    0 0  14px var(--tt-amber),
+    0 0  30px var(--tt-amber-dim),
+    0 0  60px var(--tt-amber-lo);
+}
+
+.glow-cyan {
+  text-shadow:
+    0 0  6px  var(--tt-cyan),
+    0 0  14px var(--tt-cyan),
+    0 0  28px var(--tt-cyan-dim);
+}
+
+.glow-indigo {
+  text-shadow:
+    0 0  8px  var(--tt-indigo),
+    0 0  20px var(--tt-indigo-dim);
+}
+
+.glow-green {
+  text-shadow:
+    0 0  6px  var(--tt-green),
+    0 0  14px var(--tt-green-dim);
+}
+
+// ── Surface card ─────────────────────────────────────────────
+.surface-card {
+  background:    var(--tt-surface);
+  border:        1px solid var(--tt-border);
+  border-radius: 16px;
+}
+
+// ── Uppercase label ───────────────────────────────────────────
+.tt-label {
+  font-size:      var(--tt-size-small);
+  font-weight:    800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color:          var(--tt-text-dim);
 }

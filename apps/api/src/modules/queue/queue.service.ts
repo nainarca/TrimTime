@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { JoinQueueInput } from './dto/join-queue.input';
@@ -19,6 +20,7 @@ import {
 import { formatTicket } from '@trimtime/queue-engine';
 import { calculateEwt } from '@trimtime/queue-engine';
 import { QueueStatus } from '@trimtime/shared-types';
+import { NOTIFICATION_EVENTS } from '../notifications/types/notification.types';
 
 const DEFAULT_AVG_DURATION = 20; // minutes fallback
 
@@ -29,6 +31,7 @@ export class QueueService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ── Join queue ─────────────────────────────────────────────────────────────
@@ -172,12 +175,19 @@ export class QueueService {
       data: { status: input.newStatus, ...timestampUpdate },
     });
 
-    // Recalculate queue after status change
-    if (!isTerminalStatus(input.newStatus)) {
-      await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
-    } else {
-      await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
+    // ── Notification: barber explicitly called this customer ──────────────────
+    if (input.newStatus === 'CALLED') {
+      this.eventEmitter.emit(NOTIFICATION_EVENTS.QUEUE_CALLED, {
+        entryId:      updated.id,
+        shopId:       updated.shopId,
+        ticketDisplay: updated.ticketDisplay,
+        guestPhone:   updated.guestPhone,
+        guestName:    updated.guestName,
+      });
     }
+
+    // Recalculate queue after status change
+    await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
 
     return updated;
   }
@@ -217,6 +227,10 @@ export class QueueService {
       return;
     }
 
+    // ── Snapshot current positions BEFORE recalculation ───────────────────────
+    // Used to detect movement and fire position-change notifications.
+    const positionSnapshot = new Map(rawEntries.map((e) => [e.id, e.position]));
+
     // Sort using queue-engine
     const sortableEntries = rawEntries.map((e) => ({
       id: e.id,
@@ -252,26 +266,73 @@ export class QueueService {
       ? (Date.now() - servingEntry.servingAt.getTime()) / 60000
       : 0;
 
-    // Bulk update positions + EWT
+    // ── Bulk update positions + EWT ───────────────────────────────────────────
+    // Collect notification candidates while building the update tasks.
+    interface NotifCandidate {
+      entryId: string; ticketDisplay: string;
+      guestPhone: string | null; guestName: string | null;
+      oldPosition: number; newPosition: number;
+      estimatedWaitMins: number | null;
+    }
+    const notifCandidates: NotifCandidate[] = [];
+
     await Promise.all(
       rawEntries.map((entry) => {
-        const position = positions.get(entry.id) ?? 0;
+        const newPos = positions.get(entry.id) ?? 0;
         const ewtResult = calculateEwt({
-          position,
+          position: newPos,
           avgServiceDurationMins: avgDuration,
           currentlyServing: !!servingEntry,
           currentServiceElapsedMins: currentElapsedMins,
           bufferPercent: 15,
         });
+
+        // Track position movement for notifications
+        const oldPos = positionSnapshot.get(entry.id) ?? 0;
+        if (oldPos !== 0 && oldPos !== newPos) {
+          notifCandidates.push({
+            entryId:           entry.id,
+            ticketDisplay:     entry.ticketDisplay,
+            guestPhone:        entry.guestPhone,
+            guestName:         entry.guestName,
+            oldPosition:       oldPos,
+            newPosition:       newPos,
+            estimatedWaitMins: ewtResult.estimatedMins,
+          });
+        }
+
         return this.prisma.queueEntry.update({
           where: { id: entry.id },
-          data: {
-            position,
-            estimatedWaitMins: ewtResult.estimatedMins,
-          },
+          data:  { position: newPos, estimatedWaitMins: ewtResult.estimatedMins },
         });
       }),
     );
+
+    // ── Emit position-change notifications (after DB writes complete) ─────────
+    for (const c of notifCandidates) {
+      this.eventEmitter.emit(NOTIFICATION_EVENTS.POSITION_CHANGED, {
+        entryId:           c.entryId,
+        shopId,
+        ticketDisplay:     c.ticketDisplay,
+        guestPhone:        c.guestPhone,
+        guestName:         c.guestName,
+        oldPosition:       c.oldPosition,
+        newPosition:       c.newPosition,
+        estimatedWaitMins: c.estimatedWaitMins,
+      });
+
+      // "You're next!" — position just became 1
+      if (c.newPosition === 1) {
+        this.eventEmitter.emit(NOTIFICATION_EVENTS.NEXT_IN_LINE, {
+          entryId:           c.entryId,
+          shopId,
+          ticketDisplay:     c.ticketDisplay,
+          guestPhone:        c.guestPhone,
+          guestName:         c.guestName,
+          estimatedWaitMins: c.estimatedWaitMins,
+        });
+      }
+    }
 
     // Fetch updated entries for subscription broadcast
     const updatedEntries = await this.getActiveQueue(shopId, barberId);
@@ -287,14 +348,20 @@ export class QueueService {
     entry: unknown,
     activeEntries: unknown[],
   ) {
+    const payload = {
+      shopId,
+      barberId: barberId ?? null,
+      type,
+      entry,
+      activeEntries,
+    };
+
+    // GraphQL subscription (Apollo PubSub)
     await pubSub.publish(QUEUE_EVENTS.QUEUE_UPDATED, {
-      queueUpdated: {
-        shopId,
-        barberId: barberId ?? null,
-        type,
-        entry,
-        activeEntries,
-      },
+      queueUpdated: payload,
     });
+
+    // WebSocket broadcast (socket.io via EventEmitter → QueueGateway)
+    this.eventEmitter.emit('queue.updated', payload);
   }
 }

@@ -1,0 +1,376 @@
+/* ════════════════════════════════════════════
+   Scanner Page  ·  QueueCut Customer App
+   ════════════════════════════════════════════ */
+
+// ── Background gradient ────────────────────────────────────────
+.scanner-content {
+  --background: linear-gradient(
+    160deg,
+    #0f0c29 0%,
+    #1e1b4b 30%,
+    #302b63 65%,
+    #6366f1 100%
+  );
+}
+
+// ── Layout ────────────────────────────────────────────────────
+.scanner-layout {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  min-height:      100%;
+  padding:         calc(env(safe-area-inset-top) + 3.5rem) 1.75rem
+                   calc(env(safe-area-inset-bottom) + 2.5rem);
+  gap:             2rem;
+}
+
+// ── Logo ──────────────────────────────────────────────────────
+.scanner-logo {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.4rem;
+}
+
+.logo-mark {
+  width:           58px;
+  height:          58px;
+  background:      rgba(255, 255, 255, 0.12);
+  border:          1px solid rgba(255, 255, 255, 0.18);
+  border-radius:   18px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  margin-bottom:   0.5rem;
+  box-shadow:      0 8px 24px rgba(0, 0, 0, 0.2),
+                   inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+  ion-icon { font-size: 1.85rem; color: #fff; }
+}
+
+.logo-title {
+  font-size:      2rem;
+  font-weight:    800;
+  color:          #fff;
+  letter-spacing: -0.05em;
+  margin:         0;
+}
+
+.logo-tagline {
+  font-size: 0.825rem;
+  color:     rgba(255, 255, 255, 0.45);
+  margin:    0;
+}
+
+// ── Scan Zone ─────────────────────────────────────────────────
+.scan-zone {
+  position:       relative;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1.25rem;
+}
+
+// Outer expanding pulse rings (idle state)
+.pulse-rings {
+  position:        absolute;
+  top:             50%;
+  left:            50%;
+  transform:       translate(-50%, -50%);
+  pointer-events:  none;
+  z-index:         0;
+}
+
+.pulse-ring {
+  position:     absolute;
+  top:          50%;
+  left:         50%;
+  transform:    translate(-50%, -50%);
+  border:       1.5px solid rgba(99, 102, 241, 0.4);
+  border-radius: 50%;
+  animation:    ringExpand 3s ease-out infinite;
+
+  &.r1 { width: 210px; height: 210px; animation-delay: 0s;    }
+  &.r2 { width: 210px; height: 210px; animation-delay: 1s;    }
+  &.r3 { width: 210px; height: 210px; animation-delay: 2s;    }
+}
+
+@keyframes ringExpand {
+  0%   { width: 210px; height: 210px; opacity: 0.6; }
+  100% { width: 340px; height: 340px; opacity: 0;   }
+}
+
+// ── Main viewfinder ring ──────────────────────────────────────
+.scan-ring {
+  position:        relative;
+  width:           220px;
+  height:          220px;
+  border-radius:   28px;
+  background:      rgba(0, 0, 0, 0.35);
+  border:          1.5px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(4px);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  cursor:          pointer;
+  overflow:        hidden;
+  z-index:         1;
+  transition:      transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  -webkit-user-select: none;
+  user-select:     none;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.scanning {
+    background:    rgba(99, 102, 241, 0.18);
+    border-color:  rgba(255, 255, 255, 0.45);
+    animation:     pulsePrimary 1.4s ease-in-out infinite;
+  }
+}
+
+// Dark vignette inside the viewfinder (camera feel)
+.cam-vignette {
+  position:  absolute;
+  inset:     0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+// Corner bracket markers
+.corner {
+  position: absolute;
+  width:    26px;
+  height:   26px;
+  z-index:  2;
+
+  &.tl {
+    top: 14px; left: 14px;
+    border-top:  2.5px solid rgba(255, 255, 255, 0.95);
+    border-left: 2.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: 5px 0 0 0;
+  }
+  &.tr {
+    top: 14px; right: 14px;
+    border-top:   2.5px solid rgba(255, 255, 255, 0.95);
+    border-right: 2.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: 0 5px 0 0;
+  }
+  &.bl {
+    bottom: 14px; left: 14px;
+    border-bottom: 2.5px solid rgba(255, 255, 255, 0.95);
+    border-left:   2.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: 0 0 0 5px;
+  }
+  &.br {
+    bottom: 14px; right: 14px;
+    border-bottom: 2.5px solid rgba(255, 255, 255, 0.95);
+    border-right:  2.5px solid rgba(255, 255, 255, 0.95);
+    border-radius: 0 0 5px 0;
+  }
+}
+
+// Animated green scanning beam
+.scan-beam {
+  position:   absolute;
+  left:       14px;
+  right:      14px;
+  height:     2px;
+  background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+  border-radius: 2px;
+  z-index:    3;
+  animation:  scanLine 1.4s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+// Inner icon + text
+.scan-inner {
+  position:       relative;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.5rem;
+  z-index:        2;
+}
+
+.scan-icon-wrap {
+  width:           68px;
+  height:          68px;
+  border-radius:   20px;
+  background:      rgba(255, 255, 255, 0.12);
+  border:          1px solid rgba(255, 255, 255, 0.2);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  transition:      background 0.2s;
+  backdrop-filter: blur(4px);
+
+  &.scanning {
+    background: rgba(99, 102, 241, 0.3);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.scan-icon {
+  font-size: 2.4rem;
+  color:     rgba(255, 255, 255, 0.95);
+
+  .scanning & { animation: spin 1.8s linear infinite; }
+}
+
+.scan-cta {
+  font-size:      1rem;
+  font-weight:    700;
+  color:          #fff;
+  letter-spacing: -0.01em;
+}
+
+.scan-hint {
+  font-size: 0.725rem;
+  color:     rgba(255, 255, 255, 0.45);
+}
+
+// Status line below the ring
+.scan-status {
+  display:     flex;
+  align-items: center;
+  gap:         0.45rem;
+  font-size:   0.775rem;
+  color:       rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.scan-status-dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    rgba(255, 255, 255, 0.3);
+  transition:    background 0.3s;
+
+  &.active {
+    background: #10b981;
+    animation:  pulseSuccess 1.5s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+}
+
+// ── Divider ──────────────────────────────────────────────────
+.divider-row {
+  display:     flex;
+  align-items: center;
+  gap:         0.75rem;
+  width:       100%;
+  max-width:   300px;
+}
+
+.divider-line {
+  flex:       1;
+  height:     1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.divider-text {
+  font-size:   0.72rem;
+  color:       rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Slug Input ────────────────────────────────────────────────
+.slug-section {
+  width:      100%;
+  max-width:  300px;
+  display:    flex;
+  flex-direction: column;
+  gap:        0.7rem;
+}
+
+.slug-field {
+  display:        flex;
+  align-items:    center;
+  gap:            0.65rem;
+  background:     rgba(255, 255, 255, 0.08);
+  border:         1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius:  16px;
+  padding:        0.85rem 1rem;
+  backdrop-filter: blur(10px);
+  transition:     border-color 0.2s, background 0.2s;
+
+  &:focus-within,
+  &.filled {
+    border-color: rgba(255, 255, 255, 0.4);
+    background:   rgba(255, 255, 255, 0.13);
+  }
+}
+
+.field-icon {
+  font-size:   1.1rem;
+  color:       rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.slug-input {
+  flex:        1;
+  background:  transparent;
+  border:      none;
+  outline:     none;
+  color:       #fff;
+  font-size:   0.88rem;
+  font-family: inherit;
+  min-width:   0;
+
+  &::placeholder { color: rgba(255, 255, 255, 0.3); }
+}
+
+.clear-icon {
+  font-size:   1.1rem;
+  color:       rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  cursor:      pointer;
+  transition:  color 0.15s;
+
+  &:hover { color: rgba(255, 255, 255, 0.7); }
+}
+
+.go-btn {
+  --background:           #ffffff;
+  --background-activated: #f1f5f9;
+  --color:                #4f46e5;
+  --border-radius:        16px;
+  --box-shadow:           0 4px 18px rgba(0, 0, 0, 0.25);
+  font-weight: 700;
+  font-size:   0.95rem;
+  height:      52px;
+}
+
+// ── Quick Tips ────────────────────────────────────────────────
+.tips-row {
+  display:         flex;
+  gap:             0.5rem;
+  flex-wrap:       wrap;
+  justify-content: center;
+}
+
+.tip-chip {
+  display:         flex;
+  align-items:     center;
+  gap:             0.35rem;
+  background:      rgba(255, 255, 255, 0.08);
+  border:          1px solid rgba(255, 255, 255, 0.12);
+  border-radius:   999px;
+  padding:         0.3rem 0.75rem;
+  font-size:       0.72rem;
+  color:           rgba(255, 255, 255, 0.6);
+  font-weight:     500;
+  backdrop-filter: blur(8px);
+
+  ion-icon { font-size: 0.85rem; }
+}

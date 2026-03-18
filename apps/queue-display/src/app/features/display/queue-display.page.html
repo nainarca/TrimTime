@@ -1,38 +1,209 @@
-<div class="queue-display-shell">
-  <div class="top-row">
-    <div>
-      <div class="label">Now Serving</div>
-      <div class="now-serving-number">{{ current?.ticketDisplay || '--' }}</div>
-      <div class="sub">Please keep your seat until your number appears.</div>
-    </div>
-    <div class="shop-meta">
-      <div class="shop-name">QueueCut Premium</div>
-      <div class="shop-note">Branch: Main Floor</div>
-    </div>
-  </div>
+<!-- ═══════════════════════════════════════════════════════════
+     QueueCut TV / Kiosk Display  —  Centered TV Layout
+     ═══════════════════════════════════════════════════════════ -->
 
-  <div class="queue-panels">
-    <section class="panel current-card">
-      <div class="panel-title">Current</div>
-      <div class="ticket">{{ current?.ticketDisplay || '---' }}</div>
-      <div class="status">
-        Status: <span>{{ current?.status || 'WAITING' }}</span>
+<div class="display-root" [class.no-queue]="!currentServing">
+
+  <!-- ── Ambient background layers ── -->
+  <div class="bg-grid"        aria-hidden="true"></div>
+  <div class="scanline-overlay" aria-hidden="true"></div>
+  <div class="scan-beam"      aria-hidden="true"></div>
+
+  <!-- ── Radial glow blobs ── -->
+  <div class="glow-blob amber-blob" aria-hidden="true"></div>
+  <div class="glow-blob cyan-blob"  aria-hidden="true"></div>
+
+  <!-- ═════════════════════════ TOP BAR ═════════════════════════ -->
+  <header class="top-bar">
+
+    <div class="shop-identity">
+      <div class="shop-logo-mark" aria-hidden="true">✂</div>
+      <div class="shop-meta">
+        <span class="shop-name">QueueCut</span>
+        <span class="shop-branch">Mike's Barber Shop · Main Branch</span>
       </div>
-    </section>
+    </div>
 
-    <section class="panel next-card">
-      <div class="panel-title">Next up</div>
-      <div class="next-list">
-        <ng-container *ngFor="let entry of next; let i=index">
-          <div class="next-item">
-            <div class="next-pos">#{{ i + 2 }}</div>
-            <div class="next-ticket">{{ entry.ticketDisplay }}</div>
-            <div class="next-wait">Est. {{ entry.estimatedWaitMins ?? '--' }} min</div>
-          </div>
+    <div class="top-center">
+      <div class="live-badge" [class.disconnected]="!isConnected">
+        <span class="live-dot"></span>
+        <span class="live-label">{{ isConnected ? 'LIVE' : 'OFFLINE' }}</span>
+      </div>
+    </div>
+
+    <div class="clock-block">
+      <div class="clock-time">{{ currentTime }}</div>
+      <div class="clock-date">{{ currentDate }}</div>
+    </div>
+
+  </header>
+
+  <div class="header-rule" aria-hidden="true"></div>
+
+  <!-- ══════════════════════ CENTER STAGE ═══════════════════════ -->
+  <main class="center-stage">
+
+    <!-- ─── NOW SERVING ──────────────────────────────────────── -->
+    <section class="serving-section">
+
+      <!-- Corner brackets -->
+      <span class="bracket tl" aria-hidden="true"></span>
+      <span class="bracket tr" aria-hidden="true"></span>
+      <span class="bracket bl" aria-hidden="true"></span>
+      <span class="bracket br" aria-hidden="true"></span>
+
+      <!-- Section label -->
+      <div class="section-label amber-label">
+        <span class="label-bar"></span>
+        NOW SERVING
+        <span class="label-bar"></span>
+      </div>
+
+      <!-- THE NUMBER -->
+      <div
+        class="hero-number"
+        [class.animating]="ticketAnimating"
+        role="status"
+        [attr.aria-label]="'Now serving ticket ' + (currentServing?.ticketDisplay || 'none')"
+      >
+        <ng-container *ngIf="currentServing; else noTicket">
+          {{ currentServing.ticketDisplay }}
         </ng-container>
-        <div *ngIf="!next.length" class="empty">No customers waiting</div>
+        <ng-template #noTicket>
+          <span class="hero-empty">- - -</span>
+        </ng-template>
       </div>
-    </section>
-  </div>
-</div>
 
+      <!-- Status + instruction row -->
+      <div class="serving-meta-row">
+        <span class="serving-status-pill">
+          <span class="status-dot amber-dot"></span>
+          {{ currentServing?.status || 'WAITING' }}
+        </span>
+        <span class="serving-divider" aria-hidden="true"></span>
+        <span class="serving-instruction">
+          ▶&nbsp;Please proceed to your barber
+        </span>
+      </div>
+
+    </section>
+
+    <!-- ─── Center horizontal divider ──────────────────────────── -->
+    <div class="h-divider" aria-hidden="true">
+      <div class="h-divider-line"></div>
+      <span class="h-divider-icon">◆</span>
+      <div class="h-divider-line"></div>
+    </div>
+
+    <!-- ─── NEXT + STATS ─────────────────────────────────────── -->
+    <section class="lower-section">
+
+      <!-- NEXT number block -->
+      <div class="next-block">
+        <div class="section-label cyan-label">
+          <span class="label-bar cyan-bar"></span>
+          UP NEXT
+          <span class="label-bar cyan-bar"></span>
+        </div>
+
+        <div
+          class="next-number"
+          *ngIf="nextEntry; else emptyNext"
+        >
+          {{ nextEntry.ticketDisplay }}
+        </div>
+        <ng-template #emptyNext>
+          <div class="next-number next-empty">- - -</div>
+        </ng-template>
+
+        <div class="next-sub" *ngIf="nextEntry">
+          Position&nbsp;<strong>#{{ nextEntry.position }}</strong>
+          &nbsp;·&nbsp;
+          Est.&nbsp;<strong>{{ nextEntry.estimatedWaitMins ?? '--' }}&nbsp;min</strong>
+        </div>
+      </div>
+
+      <!-- Stats pill row -->
+      <div class="stats-pill-row">
+
+        <div class="stat-pill">
+          <span class="stat-pill-num">{{ totalWaiting }}</span>
+          <span class="stat-pill-lbl">Waiting</span>
+        </div>
+
+        <div class="stat-pill-sep"></div>
+
+        <div class="stat-pill">
+          <span class="stat-pill-num">
+            {{ currentServing?.estimatedWaitMins ?? '--' }}
+          </span>
+          <span class="stat-pill-lbl">Est. Min</span>
+        </div>
+
+        <div class="stat-pill-sep"></div>
+
+        <div class="stat-pill">
+          <span class="stat-pill-num">#{{ currentServing?.position ?? '--' }}</span>
+          <span class="stat-pill-lbl">Position</span>
+        </div>
+
+      </div>
+
+      <!-- Upcoming compact list (max 4 chips) -->
+      <div class="upcoming-chips" *ngIf="upcomingList.length > 0">
+        <span class="upcoming-chips-label">COMING UP</span>
+        <div class="chips-row">
+          <span
+            *ngFor="let e of upcomingList; let i = index"
+            class="upcoming-chip"
+            [style.opacity]="1 - i * 0.18"
+          >
+            {{ e.ticketDisplay }}
+          </span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <div class="footer-rule" aria-hidden="true"></div>
+
+  <!-- ════════════════════════ BOTTOM TICKER ════════════════════ -->
+  <footer class="bottom-ticker">
+
+    <div class="ticker-tag">
+      <span class="ticker-tag-icon" aria-hidden="true">◉</span>
+      <span>WAITING</span>
+    </div>
+
+    <!-- Scrolling track -->
+    <div class="ticker-body" *ngIf="showTicker; else tickerEmpty">
+      <div class="ticker-track-wrap">
+        <div
+          class="ticker-track"
+          [style.animation-duration]="tickerDuration"
+        >
+          <ng-container *ngFor="let entry of waitingTicker">
+            <span class="ticker-chip">{{ entry.ticketDisplay }}</span>
+          </ng-container>
+          <!-- Duplicate for seamless loop -->
+          <ng-container *ngFor="let entry of waitingTicker">
+            <span class="ticker-chip">{{ entry.ticketDisplay }}</span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #tickerEmpty>
+      <div class="ticker-empty">Queue is clear — no one waiting</div>
+    </ng-template>
+
+    <div class="ticker-count">
+      <span class="count-num">{{ waitingTicker.length }}</span>
+      <span class="count-lbl">in queue</span>
+    </div>
+
+  </footer>
+
+</div>

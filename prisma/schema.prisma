@@ -75,6 +75,7 @@ enum SubscriptionStatus {
 }
 
 enum NotificationChannel {
+  IN_APP
   SMS
   EMAIL
   PUSH
