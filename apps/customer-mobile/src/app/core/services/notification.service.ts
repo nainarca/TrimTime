@@ -86,7 +86,7 @@ export class NotificationService implements OnDestroy {
 
     // Subscribe to NOTIFICATION events from the socket
     this.notifSub = this.queueSocket.notification$.subscribe((payload) => {
-      this.zone.run(() => this.handle(payload as AppNotification));
+      this.zone.run(() => this.handle(payload as unknown as AppNotification));
     });
   }
 

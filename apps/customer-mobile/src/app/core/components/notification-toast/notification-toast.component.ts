@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -19,10 +20,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationToastComponent {
+  private readonly notifService = inject(NotificationService);
+
   /** Exposed so the template can subscribe with the async pipe */
   readonly toasts$ = this.notifService.toasts$;
-
-  constructor(readonly notifService: NotificationService) {}
 
   dismiss(id: string): void {
     this.notifService.dismiss(id);
