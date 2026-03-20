@@ -44,6 +44,19 @@ export class CustomersPageComponent implements OnInit {
     });
   }
 
+  get activeCustomers(): number { return this.customers.filter(c => c.isActive).length; }
+  get phoneCustomers(): number  { return this.customers.filter(c => c.phone && !c.email).length; }
+
+  initials(c: Customer): string {
+    const name = c.name || c.phone || c.email || '?';
+    return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  get visitInitials(): string {
+    if (!this.selectedCustomer) return '?';
+    return this.initials(this.selectedCustomer);
+  }
+
   viewHistory(customer: Customer): void {
     this.selectedCustomer = customer;
     this.visitDialogVisible = true;

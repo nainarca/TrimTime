@@ -8,9 +8,16 @@
       <p class="page-sub">Live queue status for all barbers</p>
     </div>
     <div class="header-actions">
-      <div class="live-badge" [class.disconnected]="!socketConnected">
+      <div class="live-badge"
+           [class.disconnected]="connectionState.status === 'disconnected'"
+           [class.reconnecting]="connectionState.status === 'reconnecting'">
         <span class="live-dot"></span>
-        {{ socketConnected ? 'Live' : 'Reconnecting…' }}
+        <ng-container [ngSwitch]="connectionState.status">
+          <span *ngSwitchCase="'connected'">Live</span>
+          <span *ngSwitchCase="'reconnecting'">Retry {{ connectionState.attempt }}</span>
+          <span *ngSwitchCase="'connecting'">Connecting…</span>
+          <span *ngSwitchDefault>Offline</span>
+        </ng-container>
       </div>
       <button
         pButton
@@ -25,32 +32,54 @@
 
   <!-- ── Status Bar ── -->
   <div class="status-bar">
-    <div class="stat-pill">
+
+    <!-- Stat pills -->
+    <div class="stat-pill stat-pill--waiting">
       <span class="stat-dot waiting"></span>
       <span class="stat-label">Waiting</span>
       <span class="stat-val">{{ countByStatus('WAITING') }}</span>
     </div>
-    <div class="stat-pill">
+    <div class="stat-pill stat-pill--called">
       <span class="stat-dot called"></span>
       <span class="stat-label">Called</span>
       <span class="stat-val">{{ countByStatus('CALLED') }}</span>
     </div>
-    <div class="stat-pill">
+    <div class="stat-pill stat-pill--serving">
       <span class="stat-dot serving"></span>
       <span class="stat-label">Serving</span>
       <span class="stat-val">{{ countByStatus('SERVING') }}</span>
     </div>
+    <div class="stat-pill stat-pill--served">
+      <span class="stat-dot served"></span>
+      <span class="stat-label">Done</span>
+      <span class="stat-val">{{ countByStatus('SERVED') }}</span>
+    </div>
+
     <div class="stat-sep"></div>
-    <div class="now-serving" *ngIf="currentServing; else noServing">
+
+    <!-- Now Serving — [class.ns-changing] triggers the scale+glow burst -->
+    <div class="now-serving" *ngIf="currentServing; else noServing"
+         [class.ns-changing]="servingChanging">
+      <div class="ns-pulse-ring">
+        <span class="ns-pulse-dot"></span>
+      </div>
       <span class="ns-label">Now Serving</span>
-      <span class="ns-token">{{ currentServing.ticketDisplay }}</span>
+      <!-- [class.ns-token-flash] triggers the flip-in animation -->
+      <span class="ns-token" [class.ns-token-flash]="tokenFlashing">
+        {{ currentServing.ticketDisplay }}
+      </span>
+      <span class="ns-customer">{{ getCustomerName(currentServing) }}</span>
       <span class="ns-eta" *ngIf="currentServing.estimatedWaitMins">
-        ~&nbsp;{{ currentServing.estimatedWaitMins }} min
+        <i class="pi pi-clock"></i>&nbsp;{{ currentServing.estimatedWaitMins }} min
       </span>
     </div>
     <ng-template #noServing>
-      <span class="no-serving-text">No customer being served</span>
+      <span class="no-serving-text">
+        <i class="pi pi-inbox"></i> No customer being served
+      </span>
     </ng-template>
+
+    <!-- Actions -->
     <div class="status-bar-actions">
       <button
         pButton
@@ -72,41 +101,68 @@
   </div>
 
   <!-- ── Queue Table ── -->
-  <div class="table-card">
+  <div class="table-card qm-card">
     <p-table
       [value]="entries"
       [loading]="loading"
       [rowHover]="true"
+      [dataKey]="'id'"
+      [scrollable]="true"
+      [scrollHeight]="'calc(100vh - 370px)'"
       styleClass="p-datatable-sm qm-table"
     >
-      <!-- Header -->
       <ng-template pTemplate="header">
         <tr>
-          <th>Token</th>
-          <th>Customer Name</th>
-          <th>Service</th>
-          <th>Position</th>
-          <th>ETA</th>
-          <th>Status</th>
-          <th class="actions-header">Actions</th>
+          <th style="width:110px">Token</th>
+          <th>Customer</th>
+          <th style="width:130px">Service</th>
+          <th style="width:80px">Position</th>
+          <th style="width:90px">ETA</th>
+          <th style="width:120px">Status</th>
+          <th style="width:110px" class="actions-header">Actions</th>
         </tr>
       </ng-template>
 
-      <!-- Body -->
       <ng-template pTemplate="body" let-entry>
-        <tr>
+        <!--
+          row-serving / row-called / row-served / row-no-show  — status highlight
+          row-flash   — brief outline pulse when this row's status just changed
+          row-new     — green left-bar slide-in for brand-new queue entries
+        -->
+        <tr
+          [class.row-serving]="entry.status === 'SERVING'"
+          [class.row-called]="entry.status === 'CALLED'"
+          [class.row-served]="entry.status === 'SERVED'"
+          [class.row-no-show]="entry.status === 'NO_SHOW'"
+          [class.row-flash]="flashingIds.has(entry.id)"
+          [class.row-called-flash]="calledFlashIds.has(entry.id)"
+          [class.row-serving-flash]="servingFlashIds.has(entry.id)"
+          [class.row-new]="newEntryIds.has(entry.id)"
+        >
 
           <!-- Token -->
           <td>
-            <span class="token-badge">{{ entry.ticketDisplay }}</span>
+            <div class="token-cell">
+              <span class="token-badge">{{ entry.ticketDisplay }}</span>
+              <span class="serving-live-dot" *ngIf="entry.status === 'SERVING'"></span>
+            </div>
           </td>
 
           <!-- Customer -->
           <td>
             <div class="customer-wrap">
-              <div class="customer-avatar">{{ getInitial(entry) }}</div>
+              <div class="customer-avatar"
+                   [class.avatar-serving]="entry.status === 'SERVING'"
+                   [class.avatar-called]="entry.status === 'CALLED'">
+                {{ getInitial(entry) }}
+              </div>
               <div class="customer-info">
-                <span class="customer-name">{{ getCustomerName(entry) }}</span>
+                <div class="customer-name-row">
+                  <span class="customer-name">{{ getCustomerName(entry) }}</span>
+                  <span class="ns-inline-badge" *ngIf="entry.status === 'SERVING'">
+                    <i class="pi pi-scissors"></i> Now Serving
+                  </span>
+                </div>
                 <span class="customer-phone" *ngIf="entry.guestPhone">
                   {{ entry.guestPhone }}
                 </span>
@@ -114,13 +170,15 @@
             </div>
           </td>
 
-          <!-- Service (placeholder — real data from appointment) -->
-          <td>
-            <span class="service-chip">Haircut</span>
-          </td>
+          <!-- Service -->
+          <td><span class="service-chip">Haircut</span></td>
 
           <!-- Position -->
-          <td class="pos-cell">#{{ entry.position }}</td>
+          <td>
+            <span class="pos-cell" [class.pos-active]="entry.status === 'SERVING'">
+              #{{ entry.position }}
+            </span>
+          </td>
 
           <!-- ETA -->
           <td class="eta-cell">
@@ -132,8 +190,8 @@
 
           <!-- Status -->
           <td>
-            <span class="status-chip" [ngClass]="'s-' + entry.status.toLowerCase()">
-              {{ entry.status }}
+            <span class="status-chip qm-chip" [ngClass]="'s-' + entry.status.toLowerCase()">
+              {{ statusLabel(entry.status) }}
             </span>
           </td>
 
@@ -177,12 +235,20 @@
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="7">
-            <div class="empty-state">
-              <i class="pi pi-inbox"></i>
-              <p class="empty-title">Queue is empty</p>
-              <p class="empty-sub">
-                Customers appear here as they join via QR scan.
+            <div class="queue-empty-state">
+              <div class="qes-icon-ring">
+                <div class="qes-icon-inner">
+                  <i class="pi pi-inbox"></i>
+                </div>
+              </div>
+              <h3 class="qes-title">Queue is empty</h3>
+              <p class="qes-sub">
+                Customers appear here as they scan the QR code at your shop entrance.
               </p>
+              <div class="qes-hints">
+                <span class="qes-hint"><i class="pi pi-qrcode"></i> Share your QR code</span>
+                <span class="qes-hint"><i class="pi pi-refresh"></i> Auto-refreshes live</span>
+              </div>
             </div>
           </td>
         </tr>

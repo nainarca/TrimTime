@@ -1,12 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'tt-reports-page',
   templateUrl: './reports.page.html',
   styleUrls: ['./reports.page.scss'],
 })
-export class ReportsPageComponent {
+export class ReportsPageComponent implements OnInit {
+  loading = true;
   dateRange: Date[] | null = null;
+
+  ngOnInit(): void {
+    setTimeout(() => { this.loading = false; }, 700);
+  }
 
   revenueChartData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -66,10 +71,35 @@ export class ReportsPageComponent {
     ],
   };
 
+  barChartOptions = {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#64748b' } },
+      y: { ticks: { color: '#64748b' } },
+    },
+  };
+
+  doughnutOptions = {
+    plugins: {
+      legend: { display: false },
+    },
+    cutout: '70%',
+  };
+
+  transactions = [
+    { token: 'A-001', customer: 'James Carter',   service: 'Haircut',        barber: 'Mike',   duration: 30, amount: 35, date: 'Today, 9:10 AM'   },
+    { token: 'A-002', customer: 'Lena Brown',     service: 'Beard Trim',     barber: 'Carlos', duration: 20, amount: 20, date: 'Today, 9:40 AM'   },
+    { token: 'A-003', customer: 'Marcus Davis',   service: 'Haircut+Beard',  barber: 'James',  duration: 45, amount: 50, date: 'Today, 10:05 AM'  },
+    { token: 'A-004', customer: 'Priya Patel',    service: 'Haircut',        barber: 'Mike',   duration: 30, amount: 35, date: 'Today, 10:35 AM'  },
+    { token: 'A-005', customer: 'Tyler Johnson',  service: 'Beard Trim',     barber: 'Carlos', duration: 20, amount: 20, date: 'Today, 11:00 AM'  },
+    { token: 'A-006', customer: 'Aisha Nguyen',   service: 'Haircut',        barber: 'James',  duration: 30, amount: 35, date: 'Today, 11:30 AM'  },
+    { token: 'A-007', customer: 'Omar Hassan',    service: 'Haircut+Beard',  barber: 'Mike',   duration: 45, amount: 50, date: 'Today, 12:00 PM'  },
+    { token: 'A-008', customer: 'Sofia Garcia',   service: 'Haircut',        barber: 'Carlos', duration: 30, amount: 35, date: 'Today, 12:30 PM'  },
+    { token: 'A-009', customer: 'Ben Mitchell',   service: 'Beard Trim',     barber: 'James',  duration: 20, amount: 20, date: 'Today, 1:00 PM'   },
+    { token: 'A-010', customer: 'Chloe Turner',   service: 'Haircut',        barber: 'Mike',   duration: 30, amount: 35, date: 'Today, 1:30 PM'   },
+  ];
+
   exportReport(type: string): void {
-    // TODO: implement CSV / Excel export
-    // Placeholder to show button wiring
-    // eslint-disable-next-line no-console
     console.log(`Exporting ${type} report`);
   }
 }

@@ -2,18 +2,24 @@
      QueueCut TV / Kiosk Display  —  Centered TV Layout
      ═══════════════════════════════════════════════════════════ -->
 
-<div class="display-root" [class.no-queue]="!currentServing">
+<div class="display-root" [class.no-queue]="!currentServing" [class.screen-glow]="screenGlowing">
+
+  <!-- ── Notification toast banner (slides in from top-right) ── -->
+  <tt-notification-toast></tt-notification-toast>
+
+  <!-- ── Full-screen glow overlay — plays when serving ticket changes ── -->
+  <div class="screen-glow-overlay" aria-hidden="true"></div>
 
   <!-- ── Ambient background layers ── -->
-  <div class="bg-grid"        aria-hidden="true"></div>
+  <div class="bg-grid"         aria-hidden="true"></div>
   <div class="scanline-overlay" aria-hidden="true"></div>
-  <div class="scan-beam"      aria-hidden="true"></div>
+  <div class="scan-beam"       aria-hidden="true"></div>
 
   <!-- ── Radial glow blobs ── -->
   <div class="glow-blob amber-blob" aria-hidden="true"></div>
   <div class="glow-blob cyan-blob"  aria-hidden="true"></div>
 
-  <!-- ═════════════════════════ TOP BAR ═════════════════════════ -->
+  <!-- ═══════════════════════ TOP BAR ════════════════════════ -->
   <header class="top-bar">
 
     <div class="shop-identity">
@@ -25,9 +31,17 @@
     </div>
 
     <div class="top-center">
-      <div class="live-badge" [class.disconnected]="!isConnected">
+      <div class="live-badge"
+           [class.disconnected]="connectionState.status === 'disconnected'"
+           [class.reconnecting]="connectionState.status === 'reconnecting'">
         <span class="live-dot"></span>
-        <span class="live-label">{{ isConnected ? 'LIVE' : 'OFFLINE' }}</span>
+        <span class="live-label" *ngIf="connectionState.status === 'connected'">LIVE</span>
+        <span class="live-label" *ngIf="connectionState.status === 'reconnecting'">
+          RETRY · {{ connectionState.attempt }}
+        </span>
+        <span class="live-label" *ngIf="connectionState.status === 'disconnected' || connectionState.status === 'connecting'">
+          {{ connectionState.status === 'connecting' ? 'CONNECTING' : 'OFFLINE' }}
+        </span>
       </div>
     </div>
 
@@ -40,11 +54,15 @@
 
   <div class="header-rule" aria-hidden="true"></div>
 
-  <!-- ══════════════════════ CENTER STAGE ═══════════════════════ -->
+  <!-- ════════════════════ CENTER STAGE ═════════════════════ -->
   <main class="center-stage">
 
-    <!-- ─── NOW SERVING ──────────────────────────────────────── -->
-    <section class="serving-section">
+    <!-- ─── NOW SERVING ─────────────────────────────────── -->
+    <!--
+      [class.serving-glow]  → intensifies the radial amber glow behind the
+                               hero number whenever the ticket changes.
+    -->
+    <section class="serving-section" [class.serving-glow]="servingGlowing">
 
       <!-- Corner brackets -->
       <span class="bracket tl" aria-hidden="true"></span>
@@ -59,10 +77,14 @@
         <span class="label-bar"></span>
       </div>
 
-      <!-- THE NUMBER -->
+      <!-- THE NUMBER
+           [class.animating]     → plays ticketChange keyframe (flip-in)
+           [class.glow-burst]    → plays an extra text-shadow burst on change
+      -->
       <div
         class="hero-number"
         [class.animating]="ticketAnimating"
+        [class.glow-burst]="servingGlowing"
         role="status"
         [attr.aria-label]="'Now serving ticket ' + (currentServing?.ticketDisplay || 'none')"
       >
@@ -88,14 +110,14 @@
 
     </section>
 
-    <!-- ─── Center horizontal divider ──────────────────────────── -->
+    <!-- ─── Center horizontal divider ──────────────────── -->
     <div class="h-divider" aria-hidden="true">
       <div class="h-divider-line"></div>
       <span class="h-divider-icon">◆</span>
       <div class="h-divider-line"></div>
     </div>
 
-    <!-- ─── NEXT + STATS ─────────────────────────────────────── -->
+    <!-- ─── NEXT + STATS ──────────────────────────────── -->
     <section class="lower-section">
 
       <!-- NEXT number block -->
@@ -109,6 +131,7 @@
         <div
           class="next-number"
           *ngIf="nextEntry; else emptyNext"
+          [class.animating]="nextChanging"
         >
           {{ nextEntry.ticketDisplay }}
         </div>
@@ -127,14 +150,14 @@
       <div class="stats-pill-row">
 
         <div class="stat-pill">
-          <span class="stat-pill-num">{{ totalWaiting }}</span>
+          <span class="stat-pill-num" [class.pop]="statsPopping">{{ totalWaiting }}</span>
           <span class="stat-pill-lbl">Waiting</span>
         </div>
 
         <div class="stat-pill-sep"></div>
 
         <div class="stat-pill">
-          <span class="stat-pill-num">
+          <span class="stat-pill-num" [class.pop]="statsPopping">
             {{ currentServing?.estimatedWaitMins ?? '--' }}
           </span>
           <span class="stat-pill-lbl">Est. Min</span>
@@ -143,18 +166,20 @@
         <div class="stat-pill-sep"></div>
 
         <div class="stat-pill">
-          <span class="stat-pill-num">#{{ currentServing?.position ?? '--' }}</span>
+          <span class="stat-pill-num" [class.pop]="statsPopping">#{{ currentServing?.position ?? '--' }}</span>
           <span class="stat-pill-lbl">Position</span>
         </div>
 
       </div>
 
-      <!-- Upcoming compact list (max 4 chips) -->
+      <!-- Upcoming compact list (max 5 chips)
+           trackBy prevents existing chips from being recreated;
+           only genuinely new entries play the chipEnter animation. -->
       <div class="upcoming-chips" *ngIf="upcomingList.length > 0">
         <span class="upcoming-chips-label">COMING UP</span>
         <div class="chips-row">
           <span
-            *ngFor="let e of upcomingList; let i = index"
+            *ngFor="let e of upcomingList; let i = index; trackBy: trackById"
             class="upcoming-chip"
             [style.opacity]="1 - i * 0.18"
           >
@@ -169,7 +194,7 @@
 
   <div class="footer-rule" aria-hidden="true"></div>
 
-  <!-- ════════════════════════ BOTTOM TICKER ════════════════════ -->
+  <!-- ══════════════════════ BOTTOM TICKER ══════════════════ -->
   <footer class="bottom-ticker">
 
     <div class="ticker-tag">
@@ -177,18 +202,19 @@
       <span>WAITING</span>
     </div>
 
-    <!-- Scrolling track -->
+    <!-- Scrolling track
+         trackBy keeps the ticker chips stable; only new arrivals animate in. -->
     <div class="ticker-body" *ngIf="showTicker; else tickerEmpty">
       <div class="ticker-track-wrap">
         <div
           class="ticker-track"
           [style.animation-duration]="tickerDuration"
         >
-          <ng-container *ngFor="let entry of waitingTicker">
+          <ng-container *ngFor="let entry of waitingTicker; trackBy: trackById">
             <span class="ticker-chip">{{ entry.ticketDisplay }}</span>
           </ng-container>
           <!-- Duplicate for seamless loop -->
-          <ng-container *ngFor="let entry of waitingTicker">
+          <ng-container *ngFor="let entry of waitingTicker; trackBy: trackById">
             <span class="ticker-chip">{{ entry.ticketDisplay }}</span>
           </ng-container>
         </div>

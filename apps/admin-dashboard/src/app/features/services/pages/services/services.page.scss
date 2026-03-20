@@ -1,4 +1,102 @@
-:host {
-  display: block;
+/* ═══════════════════════════════════════════
+   Services Page — page-specific styles only
+   (shared patterns live in styles.scss)
+   ═══════════════════════════════════════════ */
+
+.services-page {
+  color: var(--tt-text);
+  max-width: 1400px;
 }
 
+/* ── Service name cell ── */
+.service-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.service-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--tt-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.service-name {
+  font-size: var(--tt-fs-body);
+  font-weight: 600;
+  color: var(--tt-text-2);
+}
+
+/* ── Category chips ── */
+.category-chip {
+  display: inline-block;
+  border-radius: var(--tt-radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &.cat-hair      { background: rgba(59, 130, 246, 0.1);  color: #2563eb; }
+  &.cat-beard     { background: rgba(245, 158, 11, 0.1);  color: var(--tt-warning-dark); }
+  &.cat-package   { background: rgba(99, 102, 241, 0.1);  color: var(--tt-primary); }
+  &.cat-treatment { background: rgba(16, 185, 129, 0.1);  color: var(--tt-success-dark); }
+  &.cat-other     { background: var(--tt-surface-2);      color: var(--tt-text-muted); }
+}
+
+/* ── Duration ── */
+.duration-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--tt-text-dim);
+
+  i { color: var(--tt-text-faint); font-size: 0.75rem; }
+}
+
+/* ── Price ── */
+.price-value {
+  font-size: var(--tt-fs-md);
+  font-weight: 700;
+  color: var(--tt-success-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mini bar ── */
+.bookings-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bookings-count {
+  font-size: var(--tt-fs-body);
+  font-weight: 700;
+  color: var(--tt-text);
+  min-width: 20px;
+  text-align: right;
+}
+
+.mini-bar {
+  height: 4px;
+  width: 60px;
+  background: var(--tt-surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.mini-bar-fill {
+  height: 100%;
+  background: var(--tt-grad);
+  border-radius: 99px;
+  min-width: 4px;
+  max-width: 100%;
+  transition: width 0.4s;
+}

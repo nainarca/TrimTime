@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -v '^[[:space:]]*$')"
+      "Bash(grep -v '^[[:space:]]*$')",
+      "Bash(find d:/Project/Queuecut/apps/admin-dashboard/src/app/features/queue -type f -name *.ts)",
+      "Bash(find d:/Project/Queuecut/apps/customer-mobile/src/app/features/queue -type f -name *.ts)",
+      "Bash(find d:/Project/Queuecut/apps/queue-display/src/app/core/services -type f -name *.ts)",
+      "Bash(find /d/Project/Queuecut/apps/api/src/modules -name \"*.service.ts\" ! -name \"*.d.ts\" -exec wc -l {} +)",
+      "Bash(find /d/Project/Queuecut/apps/api/src -name \"*.resolver.ts\" ! -name \"*.d.ts\" -exec wc -l {} +)",
+      "Bash(npx nx:*)",
+      "Bash(npm install:*)",
+      "Bash(grep -E \"libs/[^/]+$\")",
+      "Bash(for lib:*)",
+      "Bash(do echo:*)",
+      "Read(//d/Project/Queuecut/libs/$lib/**)",
+      "Bash(done)"
     ]
   }
 }

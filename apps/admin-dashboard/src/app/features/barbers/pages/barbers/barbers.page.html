@@ -1,0 +1,239 @@
+<div class="barbers-page">
+
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Team</p>
+      <h1 class="page-title">Barbers</h1>
+      <p class="page-sub">Manage your team, specialties and queue assignment</p>
+    </div>
+    <div class="header-actions">
+      <button pButton label="Add Barber" icon="pi pi-plus" class="btn-grad" (click)="openNew()"></button>
+    </div>
+  </div>
+
+  <!-- ── Summary Strip Skeleton ── -->
+  <div class="summary-strip" *ngIf="loading">
+    <div class="summary-card" *ngFor="let i of [1,2,3,4]">
+      <span class="skel skel-icon"></span>
+      <div class="sc-body">
+        <span class="skel skel-value" style="width:48px"></span>
+        <span class="skel skel-label" style="width:72px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Summary Strip ── -->
+  <div class="summary-strip" *ngIf="!loading">
+    <div class="summary-card">
+      <span class="sc-icon blue"><i class="pi pi-users"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ barbers.length }}</span>
+        <span class="sc-label">Total Barbers</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon green"><i class="pi pi-check-circle"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ totalActive }}</span>
+        <span class="sc-label">Active</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon amber"><i class="pi pi-chart-bar"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ totalServed }}</span>
+        <span class="sc-label">Served Today</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon indigo"><i class="pi pi-star-fill"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ avgRating }}</span>
+        <span class="sc-label">Avg Rating</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Barbers Table Skeleton ── -->
+  <div class="table-card" *ngIf="loading">
+    <div class="skel-row" *ngFor="let i of [1,2,3,4,5]">
+      <span class="skel skel-icon" style="border-radius:10px;flex-shrink:0"></span>
+      <span class="skel skel-text" style="flex:1"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-chip"></span>
+    </div>
+  </div>
+
+  <!-- ── Barbers Table ── -->
+  <div class="table-card" *ngIf="!loading">
+    <p-table
+      [value]="barbers"
+      [rowHover]="true"
+      styleClass="p-datatable-sm barbers-table"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Barber</th>
+          <th>Contact</th>
+          <th>Specialties</th>
+          <th>Today</th>
+          <th>Rating</th>
+          <th>Queue</th>
+          <th>Status</th>
+          <th class="actions-header">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-b>
+        <tr>
+
+          <!-- Barber identity -->
+          <td>
+            <div class="barber-wrap">
+              <div class="barber-avatar" [class.inactive-avatar]="b.status === 'INACTIVE'">
+                {{ b.initials }}
+              </div>
+              <div class="barber-info">
+                <span class="barber-name">{{ b.name }}</span>
+                <span class="barber-role">Barber</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Contact -->
+          <td>
+            <div class="contact-stack">
+              <span class="contact-phone"><i class="pi pi-phone"></i> {{ b.phone }}</span>
+              <span class="contact-email"><i class="pi pi-envelope"></i> {{ b.email }}</span>
+            </div>
+          </td>
+
+          <!-- Specialties -->
+          <td>
+            <div class="tag-row">
+              <span *ngFor="let s of b.specialties" class="specialty-tag">{{ s }}</span>
+            </div>
+          </td>
+
+          <!-- Today served -->
+          <td>
+            <span class="served-count">{{ b.todayServed }}</span>
+            <span class="served-label"> served</span>
+          </td>
+
+          <!-- Rating -->
+          <td>
+            <div class="rating-wrap">
+              <span class="rating-val">{{ b.rating }}</span>
+              <i class="pi pi-star-fill rating-star"></i>
+            </div>
+          </td>
+
+          <!-- Queue size -->
+          <td>
+            <span class="queue-badge" [class.queue-empty]="b.queueSize === 0">
+              {{ b.queueSize === 0 ? 'Empty' : b.queueSize + ' waiting' }}
+            </span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-chip" [ngClass]="b.status === 'ACTIVE' ? 's-active' : 's-inactive'">
+              {{ b.status }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="actions-wrap">
+              <button
+                pButton icon="pi pi-pencil"
+                class="p-button-text p-button-sm qaction"
+                pTooltip="Edit" tooltipPosition="top"
+                (click)="editBarber(b)"
+              ></button>
+              <button
+                pButton [icon]="b.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-play'"
+                class="p-button-text p-button-sm qaction"
+                [pTooltip]="b.status === 'ACTIVE' ? 'Deactivate' : 'Activate'"
+                tooltipPosition="top"
+                (click)="toggleStatus(b)"
+              ></button>
+              <button
+                pButton icon="pi pi-trash"
+                class="p-button-text p-button-sm qaction qaction-danger"
+                pTooltip="Delete" tooltipPosition="top"
+                (click)="deleteConfirmId = b.id"
+              ></button>
+            </div>
+
+            <!-- Inline delete confirm -->
+            <div class="delete-confirm" *ngIf="deleteConfirmId === b.id">
+              <span>Remove {{ b.name }}?</span>
+              <button pButton label="Yes" class="p-button-danger p-button-sm p-button-text" (click)="deleteBarber(b)"></button>
+              <button pButton label="No" class="p-button-text p-button-sm" (click)="deleteConfirmId = null"></button>
+            </div>
+          </td>
+
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-icon-wrap"><i class="pi pi-users"></i></div>
+              <p class="empty-title">No barbers yet</p>
+              <p class="empty-sub">Add your first team member to start managing queue assignments and performance.</p>
+              <button pButton label="Add Barber" icon="pi pi-plus" class="btn-grad" style="margin-top:0.75rem" (click)="openNew()"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── Add / Edit Dialog ── -->
+  <p-dialog
+    [(visible)]="dialogVisible"
+    [header]="editingId ? 'Edit Barber' : 'Add Barber'"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="tt-dialog"
+    [style]="{ width: '460px' }"
+  >
+    <div class="dialog-form">
+
+      <div class="form-field">
+        <label>Full Name *</label>
+        <input pInputText [(ngModel)]="form.name" placeholder="Mike Johnson" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Phone</label>
+          <input pInputText [(ngModel)]="form.phone" placeholder="+1 555-0100" />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input pInputText [(ngModel)]="form.email" placeholder="name&#64;shop.com" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Specialties <span class="form-hint">(comma-separated)</span></label>
+        <input pInputText [(ngModel)]="form.specialties" placeholder="Haircut, Beard Trim" />
+      </div>
+
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Cancel" class="p-button-text" (click)="dialogVisible = false"></button>
+      <button pButton [label]="editingId ? 'Save Changes' : 'Add Barber'" class="btn-grad" (click)="saveBarber()" [disabled]="!form.name.trim()"></button>
+    </ng-template>
+  </p-dialog>
+
+</div>

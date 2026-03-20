@@ -1,176 +1,224 @@
-<div class="row g-3">
-  <div class="col-12">
-    <h1 class="h4 mb-3">Reports</h1>
-  </div>
+<div class="reports-page">
 
-  <div class="col-12 mb-2">
-    <div class="card shadow-sm">
-      <div class="card-body d-flex flex-wrap align-items-center gap-3">
-        <div class="fw-semibold me-2">Date range</div>
-        <p-calendar
-          [(ngModel)]="dateRange"
-          selectionMode="range"
-          [showIcon]="true"
-          [showButtonBar]="true"
-        ></p-calendar>
-      </div>
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Analytics</p>
+      <h1 class="page-title">Reports</h1>
+      <p class="page-sub">Business performance overview and trends</p>
+    </div>
+    <div class="header-actions">
+      <p-calendar
+        [(ngModel)]="dateRange"
+        selectionMode="range"
+        [showIcon]="true"
+        [showButtonBar]="true"
+        placeholder="Select date range"
+        styleClass="date-picker"
+      ></p-calendar>
+      <button pButton label="Export CSV" icon="pi pi-download" class="p-button-outlined p-button-sm" (click)="exportReport('csv')"></button>
     </div>
   </div>
 
-  <!-- Revenue Report -->
-  <div class="col-12 col-xl-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h2 class="h5 mb-1">Revenue report</h2>
-            <p class="text-muted mb-0">Daily revenue over the selected period.</p>
-          </div>
-          <button
-            pButton
-            type="button"
-            label="Export"
-            icon="pi pi-download"
-            class="p-button-text p-button-sm"
-            (click)="exportReport('revenue')"
-          ></button>
+  <!-- ── KPI Strip Skeleton ── -->
+  <div class="kpi-strip" *ngIf="loading">
+    <div class="kpi-card" *ngFor="let i of [1,2,3,4]">
+      <div class="skel skel-icon" style="border-radius:12px;flex-shrink:0"></div>
+      <div class="kpi-body" style="flex:1">
+        <span class="skel skel-value" style="width:64px"></span>
+        <span class="skel skel-label" style="width:96px"></span>
+      </div>
+      <span class="skel skel-chip" style="width:44px"></span>
+    </div>
+  </div>
+
+  <!-- ── KPI Strip ── -->
+  <div class="kpi-strip" *ngIf="!loading">
+    <div class="kpi-card">
+      <div class="kpi-icon green"><i class="pi pi-dollar"></i></div>
+      <div class="kpi-body">
+        <span class="kpi-value">$2,840</span>
+        <span class="kpi-label">Revenue This Week</span>
+      </div>
+      <span class="kpi-delta positive"><i class="pi pi-arrow-up"></i> 12%</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="pi pi-users"></i></div>
+      <div class="kpi-body">
+        <span class="kpi-value">112</span>
+        <span class="kpi-label">Customers Served</span>
+      </div>
+      <span class="kpi-delta positive"><i class="pi pi-arrow-up"></i> 8%</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon amber"><i class="pi pi-clock"></i></div>
+      <div class="kpi-body">
+        <span class="kpi-value">18 min</span>
+        <span class="kpi-label">Avg Wait Time</span>
+      </div>
+      <span class="kpi-delta negative"><i class="pi pi-arrow-down"></i> 5%</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon indigo"><i class="pi pi-check-circle"></i></div>
+      <div class="kpi-body">
+        <span class="kpi-value">94%</span>
+        <span class="kpi-label">Completion Rate</span>
+      </div>
+      <span class="kpi-delta positive"><i class="pi pi-arrow-up"></i> 3%</span>
+    </div>
+  </div>
+
+  <!-- ── Charts Skeleton ── -->
+  <div class="charts-grid" *ngIf="loading">
+    <div class="chart-card chart-wide">
+      <div class="skel-chart-head">
+        <div>
+          <span class="skel skel-text" style="width:120px"></span>
+          <span class="skel skel-label" style="width:180px;margin-top:4px"></span>
         </div>
-
-        <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions"></p-chart>
-
-        <table class="table table-sm mt-3 mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Revenue</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let label of revenueChartData.labels; let i = index">
-              <td>{{ label }}</td>
-              <td>{{ revenueChartData.datasets[0].data[i] | currency : 'USD' }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
+      <div class="skel" style="height:220px;border-radius:12px"></div>
+    </div>
+    <div class="chart-card">
+      <div class="skel-chart-head">
+        <span class="skel skel-text" style="width:120px"></span>
+      </div>
+      <div class="skel" style="height:220px;border-radius:12px"></div>
+    </div>
+    <div class="chart-card">
+      <div class="skel-chart-head">
+        <span class="skel skel-text" style="width:140px"></span>
+      </div>
+      <div class="skel" style="height:220px;border-radius:12px"></div>
+    </div>
+    <div class="chart-card chart-narrow">
+      <div class="skel-chart-head">
+        <span class="skel skel-text" style="width:100px"></span>
+      </div>
+      <div class="skel" style="height:180px;border-radius:50%;width:180px;margin:0 auto"></div>
     </div>
   </div>
 
-  <!-- Staff Performance -->
-  <div class="col-12 col-xl-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h2 class="h5 mb-1">Staff performance</h2>
-            <p class="text-muted mb-0">Completed services per staff member.</p>
-          </div>
-          <button
-            pButton
-            type="button"
-            label="Export"
-            icon="pi pi-download"
-            class="p-button-text p-button-sm"
-            (click)="exportReport('staff')"
-          ></button>
+  <!-- ── Charts Row ── -->
+  <div class="charts-grid" *ngIf="!loading">
+
+    <!-- Revenue Trend -->
+    <div class="chart-card chart-wide">
+      <div class="chart-head">
+        <div>
+          <p class="chart-title">Revenue Trend</p>
+          <p class="chart-sub">Daily revenue for the past 7 days</p>
         </div>
-
-        <p-chart type="bar" [data]="staffPerformanceData"></p-chart>
-
-        <table class="table table-sm mt-3 mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Completed services</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let name of staffPerformanceData.labels; let i = index">
-              <td>{{ name }}</td>
-              <td>{{ staffPerformanceData.datasets[0].data[i] }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Customer Analytics -->
-  <div class="col-12 col-xl-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h2 class="h5 mb-1">Customer analytics</h2>
-            <p class="text-muted mb-0">New vs returning customers.</p>
-          </div>
-          <button
-            pButton
-            type="button"
-            label="Export"
-            icon="pi pi-download"
-            class="p-button-text p-button-sm"
-            (click)="exportReport('customers')"
-          ></button>
+        <div class="chart-total">
+          <span class="chart-total-val">$2,840</span>
+          <span class="chart-total-label">this week</span>
         </div>
-
-        <p-chart type="doughnut" [data]="customerAnalyticsData"></p-chart>
-
-        <table class="table table-sm mt-3 mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Segment</th>
-              <th>Share</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let label of customerAnalyticsData.labels; let i = index">
-              <td>{{ label }}</td>
-              <td>{{ customerAnalyticsData.datasets[0].data[i] }}%</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
+      <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions" height="220"></p-chart>
     </div>
-  </div>
 
-  <!-- Service Popularity -->
-  <div class="col-12 col-xl-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h2 class="h5 mb-1">Service popularity</h2>
-            <p class="text-muted mb-0">Most booked services.</p>
-          </div>
-          <button
-            pButton
-            type="button"
-            label="Export"
-            icon="pi pi-download"
-            class="p-button-text p-button-sm"
-            (click)="exportReport('services')"
-          ></button>
+    <!-- Staff Performance -->
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <p class="chart-title">Staff Performance</p>
+          <p class="chart-sub">Completed services per barber</p>
         </div>
+      </div>
+      <p-chart type="bar" [data]="staffPerformanceData" [options]="barChartOptions" height="220"></p-chart>
+    </div>
 
-        <p-chart type="bar" [data]="servicePopularityData"></p-chart>
+    <!-- Service Popularity -->
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <p class="chart-title">Service Popularity</p>
+          <p class="chart-sub">Bookings by service type</p>
+        </div>
+      </div>
+      <p-chart type="bar" [data]="servicePopularityData" [options]="barChartOptions" height="220"></p-chart>
+    </div>
 
-        <table class="table table-sm mt-3 mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>Bookings</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let label of servicePopularityData.labels; let i = index">
-              <td>{{ label }}</td>
-              <td>{{ servicePopularityData.datasets[0].data[i] }}</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Customer Split -->
+    <div class="chart-card chart-narrow">
+      <div class="chart-head">
+        <div>
+          <p class="chart-title">Customer Types</p>
+          <p class="chart-sub">New vs returning</p>
+        </div>
+      </div>
+      <div class="doughnut-wrap">
+        <p-chart type="doughnut" [data]="customerAnalyticsData" [options]="doughnutOptions" height="180"></p-chart>
+      </div>
+      <div class="doughnut-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#0ea5e9"></span> New (60%)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span> Returning (40%)</div>
       </div>
     </div>
+
   </div>
+
+  <!-- ── Transactions Table Skeleton ── -->
+  <div class="table-card" *ngIf="loading">
+    <div class="table-head">
+      <div>
+        <span class="skel skel-text" style="width:160px"></span>
+        <span class="skel skel-label" style="width:200px;margin-top:4px"></span>
+      </div>
+    </div>
+    <div class="skel-row" *ngFor="let i of [1,2,3,4,5]">
+      <span class="skel skel-chip" style="width:52px"></span>
+      <span class="skel skel-text" style="flex:2"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-text" style="flex:1"></span>
+      <span class="skel skel-chip" style="width:44px"></span>
+      <span class="skel skel-chip" style="width:44px"></span>
+    </div>
+  </div>
+
+  <!-- ── Recent Transactions Table ── -->
+  <div class="table-card" *ngIf="!loading">
+    <div class="table-head">
+      <div>
+        <p class="chart-title">Recent Transactions</p>
+        <p class="chart-sub">Last 10 completed services</p>
+      </div>
+    </div>
+    <p-table [value]="transactions" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Token</th>
+          <th>Customer</th>
+          <th>Service</th>
+          <th>Barber</th>
+          <th>Duration</th>
+          <th>Amount</th>
+          <th>Date</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-t>
+        <tr>
+          <td><span class="token-badge">{{ t.token }}</span></td>
+          <td><span class="customer-name">{{ t.customer }}</span></td>
+          <td><span class="service-chip">{{ t.service }}</span></td>
+          <td class="muted-cell">{{ t.barber }}</td>
+          <td class="muted-cell">{{ t.duration }} min</td>
+          <td><span class="amount-val">${{ t.amount }}</span></td>
+          <td class="muted-cell">{{ t.date }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-icon-wrap"><i class="pi pi-receipt"></i></div>
+              <p class="empty-title">No transactions yet</p>
+              <p class="empty-sub">Completed services will appear here once customers are served.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
 </div>
-

@@ -64,6 +64,21 @@ export class BookingsPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  get confirmedCount(): number { return this.bookings.filter(b => b.status === 'CONFIRMED').length; }
+  get pendingCount(): number   { return this.bookings.filter(b => b.status === 'PENDING').length; }
+  get cancelledCount(): number { return this.bookings.filter(b => b.status === 'CANCELLED').length; }
+
+  bookingStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      CONFIRMED: 's-active',
+      PENDING:   's-waiting',
+      CANCELLED: 's-inactive',
+      COMPLETED: 's-served',
+      NO_SHOW:   's-no-show',
+    };
+    return map[status] ?? 's-waiting';
+  }
+
   createBooking(): void {
     if (!this.shopId) return;
     this.createDialogVisible = true;

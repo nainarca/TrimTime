@@ -50,6 +50,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'barbers',
+        loadChildren: () =>
+          import('./features/barbers/barbers.module').then((m) => m.BarbersModule),
+        data: { roles: ['OWNER', 'ADMIN'] },
+        canActivate: [RoleGuard],
+      },
+      {
         path: 'staff',
         loadChildren: () =>
           import('./features/staff/staff.module').then((m) => m.StaffModule),

@@ -168,6 +168,27 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return `ticket_counter:${shopId}:${date}`;
   }
 
+  /**
+   * Dedup key for NEXT_IN_LINE notifications.
+   * Set atomically via SETNX; auto-expires after `ttlSeconds` so a re-queued
+   * customer can be notified again on their next visit.
+   *
+   * Returns true if this is the first notification (caller should emit),
+   * false if a notification was already sent within the TTL window.
+   */
+  async claimNextInLineNotif(entryId: string, ttlSeconds = 600): Promise<boolean> {
+    // SET NX EX — only sets if key does not exist
+    const result = await this.client.set(
+      `notif:next:${entryId}`, '1', 'EX', ttlSeconds, 'NX',
+    );
+    return result === 'OK';
+  }
+
+  /** Clear the NEXT_IN_LINE dedup key when the entry advances past position 1. */
+  async clearNextInLineNotif(entryId: string): Promise<void> {
+    await this.del(`notif:next:${entryId}`);
+  }
+
   /** Live queue state for a shop/branch/barber */
   queueStateKey(shopId: string, branchId?: string, barberId?: string): string {
     if (branchId) {

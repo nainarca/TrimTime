@@ -2,36 +2,58 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { NotificationPayload } from '../types/notification.types';
 
 /**
- * In-app channel — delivers notifications instantly over the existing
- * socket.io /queue namespace by emitting to the entry's personal room.
+ * InAppChannel — delivers notifications instantly over the existing
+ * socket.io /queue namespace by emitting to the customer's personal entry room.
  *
- * The actual socket.io emission is done by QueueGateway to avoid a
- * circular dependency.  This service acts as a thin wrapper that lets
- * NotificationService call one method without knowing about socket.io.
+ * Architecture:
+ *   NotificationService calls InAppChannel.send(payload).
+ *   InAppChannel delegates to QueueGateway.broadcastToEntry(), which knows
+ *   which socket.io room to target.
+ *
+ * The gateway is injected lazily (via setGateway) rather than in the
+ * constructor so that InAppChannel has no compile-time dependency on
+ * QueueGateway.  This keeps the channel independently testable: in unit tests
+ * you can pass any object that implements { broadcastToEntry }.
+ *
+ * Wiring happens in NotificationModule.onModuleInit() — guaranteed to run
+ * after all providers in QueueModule are constructed.
  */
 @Injectable()
 export class InAppChannel {
   private readonly logger = new Logger(InAppChannel.name);
 
-  // Injected lazily to break the circular dep:
-  //   NotificationModule → QueueModule → NotificationModule
-  private gateway?: { broadcastToEntry(entryId: string, payload: NotificationPayload): void };
+  private gateway: { broadcastToEntry(entryId: string, payload: NotificationPayload): void } | null = null;
 
-  /** Called by NotificationModule once QueueGateway is available. */
-  setGateway(gw: {
-    broadcastToEntry(entryId: string, payload: NotificationPayload): void;
-  }): void {
+  // ── Gateway injection ─────────────────────────────────────────────────────
+
+  /**
+   * Called once by NotificationModule.onModuleInit().
+   * Accepts any object that implements broadcastToEntry so this channel
+   * remains decoupled from QueueGateway's concrete type.
+   */
+  setGateway(gw: { broadcastToEntry(entryId: string, payload: NotificationPayload): void }): void {
     this.gateway = gw;
+    this.logger.log('Gateway registered — InAppChannel is live');
   }
+
+  // ── Delivery ──────────────────────────────────────────────────────────────
 
   async send(payload: NotificationPayload): Promise<void> {
     if (!this.gateway) {
-      this.logger.warn('InAppChannel: gateway not yet wired — dropping notification');
+      // This should never happen in production: setGateway() is called during
+      // module init, before any queue event can fire.  If it does happen it
+      // means onModuleInit() didn't run — likely a test or misconfiguration.
+      this.logger.error(
+        `[IN-APP] Gateway not wired — notification dropped. ` +
+        `type:${payload.type} queueId:${payload.queueId}`,
+      );
       return;
     }
+
     this.gateway.broadcastToEntry(payload.entryId, payload);
+
     this.logger.debug(
-      `[IN-APP] → entry:${payload.entryId} | ${payload.type} | "${payload.title}"`,
+      `[IN-APP] ✓ entry:${payload.entryId} | ${payload.type} | "${payload.title}"`,
     );
   }
 }

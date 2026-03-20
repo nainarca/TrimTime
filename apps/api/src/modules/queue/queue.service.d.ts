@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { JoinQueueInput } from './dto/join-queue.input';
@@ -5,8 +6,9 @@ import { UpdateQueueStatusInput } from './dto/update-queue-status.input';
 export declare class QueueService {
     private readonly prisma;
     private readonly redis;
+    private readonly eventEmitter;
     private readonly logger;
-    constructor(prisma: PrismaService, redis: RedisService);
+    constructor(prisma: PrismaService, redis: RedisService, eventEmitter: EventEmitter2);
     joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]): Promise<{
         shopId: string;
         id: string;

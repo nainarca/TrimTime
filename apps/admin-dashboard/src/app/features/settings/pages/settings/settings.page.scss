@@ -1,4 +1,193 @@
-:host {
-  display: block;
+/* ═══════════════════════════════════════════
+   Settings Page — page-specific styles only
+   (shared patterns live in styles.scss)
+   ═══════════════════════════════════════════ */
+
+.settings-page {
+  color: var(--tt-text);
+  max-width: 1400px;
 }
 
+/* ── Grid ── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 1000px) { grid-template-columns: 1fr; }
+}
+
+/* ── Card ── */
+.settings-card {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border-soft);
+  border-radius: var(--tt-radius-lg);
+  box-shadow: var(--tt-shadow-sm);
+  overflow: hidden;
+}
+
+.card-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--tt-surface-2);
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+
+  &.indigo { background: rgba(99, 102, 241, 0.1);  color: var(--tt-primary); }
+  &.blue   { background: rgba(59, 130, 246, 0.1);  color: #3b82f6; }
+  &.amber  { background: rgba(245, 158, 11, 0.1);  color: var(--tt-warning-dark); }
+  &.green  { background: rgba(16, 185, 129, 0.1);  color: var(--tt-success-dark); }
+}
+
+.section-title { font-size: var(--tt-fs-md); font-weight: 700; color: var(--tt-text); margin: 0 0 0.15rem; }
+.section-sub   { font-size: 0.78rem; color: var(--tt-text-faint); margin: 0; }
+
+/* ── Form body ── */
+.form-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.form-row     { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+.three-col    { grid-template-columns: 1fr 1fr 1fr; }
+.full-width   { grid-column: 1 / -1; }
+
+.tt-textarea {
+  width: 100%;
+  border-radius: var(--tt-radius);
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--tt-fs-body);
+  color: #374151;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    border-color: var(--tt-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  }
+}
+
+/* Settings has appearance:auto which differs from global .tt-select */
+.tt-select {
+  appearance: auto;
+}
+
+.tt-time {
+  width: 100%;
+  border-radius: var(--tt-radius);
+  border: 1px solid #d1d5db;
+  padding: 0.55rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tt-text);
+  background: var(--tt-bg);
+  outline: none;
+
+  &:focus {
+    border-color: var(--tt-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  }
+}
+
+/* ── Business hours ── */
+.hours-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: 480px) { flex-direction: column; }
+}
+
+.hours-block   { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+.hours-label   { font-size: 0.8rem; font-weight: 600; color: var(--tt-text-dim); display: flex; align-items: center; gap: 0.4rem; i { color: var(--tt-text-faint); } }
+.hours-divider { color: var(--tt-text-faint); font-size: 0.9rem; margin-top: 1.4rem; }
+
+.hours-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  border-radius: var(--tt-radius);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--tt-primary);
+
+  i { font-size: 0.85rem; }
+}
+
+/* ── Plan tiles ── */
+.plan-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+
+.plan-tile {
+  position: relative;
+  border: 1.5px solid var(--tt-border-soft);
+  border-radius: var(--tt-radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  text-align: center;
+
+  &:hover { border-color: var(--tt-primary); }
+
+  &.plan-active {
+    border-color: var(--tt-primary);
+    background: rgba(99, 102, 241, 0.04);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+}
+
+.plan-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--tt-text-dim);
+  margin: 0 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.plan-price {
+  font-size: var(--tt-fs-2xl);
+  font-weight: 800;
+  color: var(--tt-text);
+  margin: 0 0 0.25rem;
+
+  span { font-size: 0.8rem; font-weight: 500; color: var(--tt-text-faint); }
+}
+
+.plan-desc { font-size: 0.72rem; color: var(--tt-text-faint); margin: 0; }
+
+.plan-badge {
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: var(--tt-grad);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--tt-radius-full);
+  letter-spacing: 0.04em;
+}
+
+/* ── Footer actions ── */
+.card-footer-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}

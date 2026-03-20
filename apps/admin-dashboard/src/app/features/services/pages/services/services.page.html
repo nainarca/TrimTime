@@ -1,149 +1,200 @@
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h1 class="h4 mb-3">Services</h1>
-    <p class="text-muted">
-      Service catalog loaded from the GraphQL API.
-    </p>
+<div class="services-page">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div></div>
-      <button
-        pButton
-        type="button"
-        label="Add service"
-        icon="pi pi-plus"
-        (click)="openNew()"
-      ></button>
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Catalog</p>
+      <h1 class="page-title">Services</h1>
+      <p class="page-sub">Define what your shop offers, pricing and duration</p>
     </div>
+    <div class="header-actions">
+      <button pButton label="Add Service" icon="pi pi-plus" class="btn-grad" (click)="openNew()"></button>
+    </div>
+  </div>
 
-    <p-table
-      #dt
-      [value]="services"
-      [loading]="loading"
-      [paginator]="true"
-      [rows]="20"
-      [rowsPerPageOptions]="[10, 20, 50]"
-      [globalFilterFields]="['name']"
-    >
-      <ng-template pTemplate="caption" let-dt>
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="fw-semibold">Services</span>
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input
-              pInputText
-              type="text"
-              (input)="dt.filterGlobal($event.target.value, 'contains')"
-              placeholder="Search"
-            />
-          </span>
-        </div>
-      </ng-template>
+  <!-- ── Summary Strip Skeleton ── -->
+  <div class="summary-strip" *ngIf="loading">
+    <div class="summary-card" *ngFor="let i of [1,2,3,4]">
+      <span class="skel skel-icon"></span>
+      <div class="sc-body">
+        <span class="skel skel-value" style="width:48px"></span>
+        <span class="skel skel-label" style="width:72px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Summary Strip ── -->
+  <div class="summary-strip" *ngIf="!loading">
+    <div class="summary-card">
+      <span class="sc-icon blue"><i class="pi pi-briefcase"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ services.length }}</span>
+        <span class="sc-label">Total Services</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon green"><i class="pi pi-check-circle"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ activeCount }}</span>
+        <span class="sc-label">Active</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon amber"><i class="pi pi-star"></i></span>
+      <div class="sc-body">
+        <span class="sc-value sc-value-sm">{{ topService }}</span>
+        <span class="sc-label">Most Popular</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon indigo"><i class="pi pi-tag"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ avgPrice }}</span>
+        <span class="sc-label">Avg Price</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Services Table Skeleton ── -->
+  <div class="table-card" *ngIf="loading">
+    <div class="skel-row" *ngFor="let i of [1,2,3,4,5]">
+      <span class="skel skel-icon" style="border-radius:8px;flex-shrink:0"></span>
+      <span class="skel skel-text" style="flex:1"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-chip"></span>
+    </div>
+  </div>
+
+  <!-- ── Services Table ── -->
+  <div class="table-card" *ngIf="!loading">
+    <p-table [value]="services" [rowHover]="true" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="name">
-            Name
-            <p-sortIcon field="name"></p-sortIcon>
-          </th>
-          <th pSortableColumn="durationMins">
-            Duration (min)
-            <p-sortIcon field="durationMins"></p-sortIcon>
-          </th>
-          <th pSortableColumn="price">
-            Price
-            <p-sortIcon field="price"></p-sortIcon>
-          </th>
-          <th pSortableColumn="isActive">
-            Status
-            <p-sortIcon field="isActive"></p-sortIcon>
-          </th>
-          <th style="width: 100px;"></th>
+          <th>Service</th>
+          <th>Category</th>
+          <th>Duration</th>
+          <th>Price</th>
+          <th>Today's Bookings</th>
+          <th>Status</th>
+          <th class="actions-header">Actions</th>
         </tr>
       </ng-template>
+
       <ng-template pTemplate="body" let-s>
         <tr>
-          <td>{{ s.name }}</td>
-          <td>{{ s.durationMins }}</td>
-          <td>{{ s.price | number : '1.2-2' }} {{ s.currency }}</td>
-          <td>{{ s.isActive ? 'Active' : 'Archived' }}</td>
-          <td class="text-end">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              class="p-button-text p-button-sm me-1"
-              (click)="editService(s)"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-archive"
-              class="p-button-text p-button-sm p-button-danger"
-              (click)="archiveService(s)"
-            ></button>
+
+          <td>
+            <div class="service-name-wrap">
+              <div class="service-icon"><i class="pi pi-scissors"></i></div>
+              <span class="service-name">{{ s.name }}</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="category-chip" [ngClass]="categoryColor(s.category)">{{ s.category }}</span>
+          </td>
+
+          <td>
+            <div class="duration-wrap">
+              <i class="pi pi-clock"></i>
+              <span>{{ s.durationMins }} min</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="price-value">${{ s.price }}</span>
+          </td>
+
+          <td>
+            <div class="bookings-bar-wrap">
+              <span class="bookings-count">{{ s.bookingsToday }}</span>
+              <div class="mini-bar">
+                <div class="mini-bar-fill" [style.width.%]="(s.bookingsToday / 20) * 100"></div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="status-chip" [ngClass]="s.status === 'ACTIVE' ? 's-active' : 's-inactive'">
+              {{ s.status }}
+            </span>
+          </td>
+
+          <td>
+            <div class="actions-wrap">
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm qaction"
+                pTooltip="Edit" tooltipPosition="top" (click)="editService(s)"></button>
+              <button pButton [icon]="s.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-play'"
+                class="p-button-text p-button-sm qaction"
+                [pTooltip]="s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'"
+                tooltipPosition="top" (click)="toggleStatus(s)"></button>
+              <button pButton icon="pi pi-trash" class="p-button-text p-button-sm qaction qaction-danger"
+                pTooltip="Delete" tooltipPosition="top" (click)="deleteConfirmId = s.id"></button>
+            </div>
+            <div class="delete-confirm" *ngIf="deleteConfirmId === s.id">
+              <span>Delete {{ s.name }}?</span>
+              <button pButton label="Yes" class="p-button-danger p-button-sm p-button-text" (click)="deleteService(s)"></button>
+              <button pButton label="No" class="p-button-text p-button-sm" (click)="deleteConfirmId = null"></button>
+            </div>
+          </td>
+
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-icon-wrap"><i class="pi pi-briefcase"></i></div>
+              <p class="empty-title">No services yet</p>
+              <p class="empty-sub">Define what your shop offers — add services with pricing and duration to get started.</p>
+              <button pButton label="Add Service" icon="pi pi-plus" class="btn-grad" style="margin-top:0.75rem" (click)="openNew()"></button>
+            </div>
           </td>
         </tr>
       </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="4" class="text-muted">No services defined yet.</td>
-        </tr>
-      </ng-template>
     </p-table>
-
-    <p-dialog
-      header="{{ editingService ? 'Edit service' : 'New service' }}"
-      [(visible)]="serviceDialogVisible"
-      [modal]="true"
-      [style]="{ width: '400px' }"
-      [draggable]="false"
-      [resizable]="false"
-    >
-      <div class="mb-3">
-        <label class="form-label">Service name</label>
-        <input
-          pInputText
-          type="text"
-          class="form-control"
-          [(ngModel)]="form.name"
-        />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Duration (minutes)</label>
-        <input
-          pInputText
-          type="number"
-          class="form-control"
-          [(ngModel)]="form.durationMins"
-        />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Price</label>
-        <input
-          pInputText
-          type="number"
-          class="form-control"
-          [(ngModel)]="form.price"
-        />
-      </div>
-
-      <ng-template pTemplate="footer">
-        <button
-          pButton
-          type="button"
-          label="Cancel"
-          class="p-button-text"
-          (click)="serviceDialogVisible = false"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="Save"
-          icon="pi pi-check"
-          (click)="saveService()"
-        ></button>
-      </ng-template>
-    </p-dialog>
   </div>
-</div>
 
+  <!-- ── Dialog ── -->
+  <p-dialog
+    [(visible)]="dialogVisible"
+    [header]="editingId ? 'Edit Service' : 'Add Service'"
+    [modal]="true" [draggable]="false" [resizable]="false"
+    [style]="{ width: '440px' }" styleClass="tt-dialog"
+  >
+    <div class="dialog-form">
+
+      <div class="form-field">
+        <label>Service Name *</label>
+        <input pInputText [(ngModel)]="form.name" placeholder="e.g. Haircut" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Category</label>
+          <select class="tt-select" [(ngModel)]="form.category">
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Duration (min)</label>
+          <input pInputText type="number" [(ngModel)]="form.durationMins" min="5" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>Price ($)</label>
+        <input pInputText type="number" [(ngModel)]="form.price" min="0" />
+      </div>
+
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton label="Cancel" class="p-button-text" (click)="dialogVisible = false"></button>
+      <button pButton [label]="editingId ? 'Save Changes' : 'Add Service'" class="btn-grad"
+        (click)="saveService()" [disabled]="!form.name.trim()"></button>
+    </ng-template>
+  </p-dialog>
+
+</div>

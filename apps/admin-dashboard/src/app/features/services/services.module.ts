@@ -6,6 +6,7 @@ import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
     DialogModule,
     InputTextModule,
     ButtonModule,
+    TooltipModule,
   ],
   declarations: [ServicesPageComponent],
 })

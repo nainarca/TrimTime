@@ -1,49 +1,11 @@
 /* ═══════════════════════════════════════════
-   Queue Monitor
+   Queue Monitor — page-specific styles
    ═══════════════════════════════════════════ */
 
 .queue-monitor {
-  color: #0f172a;
+  color: var(--tt-text);
   max-width: 1400px;
-}
-
-/* ── Page Header ── */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.page-eyebrow {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6366f1;
-  margin: 0 0 0.25rem;
-}
-
-.page-title {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 0.2rem;
-  letter-spacing: -0.03em;
-}
-
-.page-sub {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-shrink: 0;
+  animation: fadeUp 0.3s var(--tt-ease) both;
 }
 
 /* ── Live Badge ── */
@@ -51,63 +13,93 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #059669;
-  border-radius: 999px;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.775rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  color: var(--tt-success-dark);
+  border-radius: var(--tt-radius-full);
+  padding: 0.3rem 0.85rem;
+  font-size: var(--tt-fs-sm);
   font-weight: 700;
   letter-spacing: 0.03em;
-}
+  transition: background var(--tt-dur), border-color var(--tt-dur), color var(--tt-dur),
+              box-shadow var(--tt-dur);
 
-.live-badge.disconnected {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #dc2626;
+  &:not(.disconnected):not(.reconnecting) {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
 
-  .live-dot {
-    background: #ef4444;
-    animation: pulse-red 1.2s ease-in-out infinite;
+  &.reconnecting {
+    background:   rgba(245, 158, 11, 0.07);
+    border-color: rgba(245, 158, 11, 0.25);
+    color:        #92400e;
+    box-shadow:   none;
+    .live-dot { background: #f59e0b; animation: pulse-amber 0.9s ease-in-out infinite; }
+  }
+
+  &.disconnected {
+    background:   rgba(239, 68, 68, 0.07);
+    border-color: rgba(239, 68, 68, 0.2);
+    color:        var(--tt-danger-dark);
+    box-shadow:   none;
+    .live-dot { background: var(--tt-danger); animation: pulse-red 1.2s ease-in-out infinite; }
   }
 }
 
 .live-dot {
   width: 7px;
   height: 7px;
-  background: #10b981;
+  background: var(--tt-success);
   border-radius: 50%;
   animation: pulse-green 1.6s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
-@keyframes pulse-green {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.4; transform: scale(0.85); }
-}
+/* ════════════════════════════════════════════
+   Status Bar
+   ════════════════════════════════════════════ */
 
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.3; transform: scale(0.8); }
-}
-
-/* ── Status Bar ── */
 .status-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: #fff;
-  border: 1px solid #e8edf3;
-  border-radius: 16px;
+  gap: 0.5rem;
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-border-soft);
+  border-radius: var(--tt-radius-lg);
   padding: 0.85rem 1.25rem;
   margin-bottom: 1.25rem;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--tt-shadow-sm);
   flex-wrap: wrap;
+  position: relative;
+  animation: fadeUp 0.3s var(--tt-ease) 0.04s both;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: var(--tt-radius-lg) var(--tt-radius-lg) 0 0;
+    background: var(--tt-grad);
+    opacity: 0.4;
+  }
 }
 
+/* Stat pills — each status gets a color-matched background on hover */
 .stat-pill {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: var(--tt-radius-full);
+  border: 1px solid transparent;
+  transition: background var(--tt-dur-fast), border-color var(--tt-dur-fast);
+  cursor: default;
+
+  &:hover { background: var(--tt-surface-2); border-color: var(--tt-border-soft); }
+  &--waiting:hover { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.18); }
+  &--called:hover  { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.18); }
+  &--serving:hover { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.18); }
+  &--served:hover  { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.18); }
 }
 
 .stat-dot {
@@ -115,62 +107,125 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-
-  &.waiting { background: #f59e0b; }
-  &.called  { background: #6366f1; }
-  &.serving { background: #10b981; }
+  &.waiting { background: var(--tt-accent); }
+  &.called  { background: var(--tt-primary); }
+  &.serving { background: #3b82f6; }
+  &.served  { background: var(--tt-success); }
 }
 
 .stat-label {
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: 0.78rem;
+  color: var(--tt-text-muted);
   font-weight: 500;
 }
 
 .stat-val {
-  font-size: 0.875rem;
+  font-size: var(--tt-fs-body);
   font-weight: 700;
-  color: #0f172a;
-  min-width: 20px;
+  color: var(--tt-text);
+  min-width: 18px;
 }
 
 .stat-sep {
   width: 1px;
   height: 24px;
-  background: #e2e8f0;
-  margin: 0 0.25rem;
+  background: var(--tt-border);
+  margin: 0 0.35rem;
+  flex-shrink: 0;
 }
 
-/* ── Now Serving ── */
+/* ── Now Serving pill ── */
 .now-serving {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--tt-radius-full);
+  padding: 0.28rem 0.85rem 0.28rem 0.55rem;
+  animation: scaleIn 0.22s var(--tt-ease) both;
+}
+
+/* Pulsing ring + dot around the "live" indicator */
+.ns-pulse-ring {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ns-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: ns-ping 1.8s ease-in-out infinite;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(59, 130, 246, 0.35);
+    animation: ns-ring 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes ns-ping {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+@keyframes ns-ring {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(1.9); opacity: 0; }
 }
 
 .ns-label {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: 0.72rem;
+  color: #3b82f6;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .ns-token {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
-  color: #6366f1;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.03em;
+  color: #1d4ed8;
+  font-family: var(--tt-font-mono);
+  letter-spacing: 0.04em;
+  background: rgba(59, 130, 246, 0.12);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--tt-radius-sm);
+}
+
+.ns-customer {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tt-text-2);
 }
 
 .ns-eta {
-  font-size: 0.775rem;
-  color: #64748b;
+  font-size: var(--tt-fs-sm);
+  color: var(--tt-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  i { font-size: 0.65rem; }
 }
 
 .no-serving-text {
-  font-size: 0.825rem;
-  color: #94a3b8;
-  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--tt-text-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  i { font-size: 0.85rem; opacity: 0.5; }
 }
 
 .status-bar-actions {
@@ -179,34 +234,150 @@
   gap: 0.5rem;
 }
 
-.btn-grad {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-  border: none !important;
-  color: #fff !important;
-  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35) !important;
+/* ════════════════════════════════════════════
+   Queue Table Card — sticky-header container
+   ════════════════════════════════════════════ */
+
+.qm-card {
+  // Override table-card so sticky works inside PrimeNG scrollable
+  overflow: visible !important;
+
+  // PrimeNG scrollable generates .p-datatable-wrapper with overflow
+  ::ng-deep .p-datatable-wrapper {
+    border-radius: 0 0 var(--tt-radius-lg) var(--tt-radius-lg);
+  }
 }
 
-/* ── Table Card ── */
-.table-card {
-  background: #fff;
-  border: 1px solid #e8edf3;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
-  overflow: hidden;
+/* ════════════════════════════════════════════
+   QM Table — scoped overrides
+   ════════════════════════════════════════════ */
+
+::ng-deep .qm-table {
+
+  /* ── Sticky header ── */
+  .p-datatable-thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--tt-surface);
+    // Crisp shadow under the stuck header
+    box-shadow: 0 1px 0 var(--tt-border-soft), 0 2px 8px rgba(15,23,42,0.04);
+    backdrop-filter: blur(8px);
+  }
+
+  /* ── Smooth row transitions ── */
+  .p-datatable-tbody > tr {
+    // Transition both background and opacity for status-change animations
+    transition: background-color 0.3s var(--tt-ease),
+                opacity          0.3s var(--tt-ease),
+                box-shadow       0.3s var(--tt-ease);
+  }
+
+  /* ════════════════════════════════════════════
+     Row state overrides
+     ════════════════════════════════════════════ */
+
+  /* SERVING — most prominent: vivid blue wash + left bar + inner ring */
+  .row-serving {
+    background: rgba(59, 130, 246, 0.055) !important;
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.14),
+                inset 4px 0 0 #3b82f6 !important;
+
+    > td { border-bottom-color: rgba(59,130,246,0.1) !important; }
+
+    // Suppress hover accent from global styles on the first cell
+    > td:first-child { box-shadow: none !important; }
+
+    &:hover > td { background: rgba(59, 130, 246, 0.075) !important; }
+  }
+
+  /* CALLED — soft indigo, ready to be seated */
+  .row-called {
+    background: rgba(99, 102, 241, 0.04) !important;
+    box-shadow: inset 4px 0 0 var(--tt-primary) !important;
+
+    > td:first-child { box-shadow: none !important; }
+
+    &:hover > td { background: rgba(99, 102, 241, 0.065) !important; }
+  }
+
+  /* SERVED — dimmed, task complete */
+  .row-served {
+    opacity: 0.58;
+    > td { color: var(--tt-text-faint) !important; }
+    &:hover { opacity: 0.72; }
+    &:hover > td { background: var(--tt-surface-2) !important; }
+  }
+
+  /* NO_SHOW — red-dimmed */
+  .row-no-show {
+    opacity: 0.45;
+    > td { color: var(--tt-text-faint) !important; }
+    &:hover { opacity: 0.62; }
+  }
+
+  /* ════════════════════════════════════════════
+     Queue-specific status chip color overrides
+     (user spec: Waiting=yellow, Serving=blue, Completed=green)
+     ════════════════════════════════════════════ */
+
+  .qm-chip {
+    font-size: 0.68rem;
+    transition: transform 0.2s var(--tt-ease), box-shadow 0.2s var(--tt-ease);
+
+    // WAITING — amber/yellow ✓ (matches global s-waiting, kept)
+
+    // CALLED — indigo/purple (about to be served)
+    &.s-called {
+      background: rgba(99,102,241,0.1);
+      color: var(--tt-primary);
+      border-color: rgba(99,102,241,0.25);
+    }
+
+    // SERVING — blue (override global green)
+    &.s-serving {
+      background: rgba(59,130,246,0.12);
+      color: #1d4ed8;
+      border-color: rgba(59,130,246,0.28);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+      animation: chip-pulse-blue 2.2s ease-in-out infinite;
+    }
+
+    // SERVED / DONE — green (override global gray)
+    &.s-served {
+      background: rgba(16,185,129,0.1);
+      color: var(--tt-success-dark);
+      border-color: rgba(16,185,129,0.25);
+    }
+
+    // NO_SHOW — keep red from global, add strikethrough feel
+    &.s-no_show,
+    &.s-no-show {
+      opacity: 0.8;
+    }
+  }
 }
 
-/* ── Token ── */
-.token-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.07));
-  color: #6366f1;
-  border: 1px solid rgba(99,102,241,0.2);
-  border-radius: 8px;
-  padding: 0.2rem 0.65rem;
-  font-size: 0.775rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  font-family: 'Courier New', monospace;
+@keyframes chip-pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+  50%       { box-shadow: 0 0 0 5px rgba(59,130,246,0.16); }
+}
+
+/* ── Token cell ── */
+.token-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Pulsing live dot on the serving row token */
+.serving-live-dot {
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse-green 1.4s ease-in-out infinite;
 }
 
 /* ── Customer Cell ── */
@@ -219,8 +390,8 @@
 .customer-avatar {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 8px;
+  background: var(--tt-grad);
+  border-radius: var(--tt-radius);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -228,6 +399,20 @@
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;
+  transition: transform var(--tt-dur-fast), box-shadow var(--tt-dur);
+
+  tr:hover & { transform: scale(1.1); }
+
+  // Blue ring when serving
+  &.avatar-serving {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.35);
+  }
+
+  // Indigo ring when called
+  &.avatar-called {
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.35);
+  }
 }
 
 .customer-info {
@@ -236,128 +421,332 @@
   min-width: 0;
 }
 
+.customer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
 .customer-name {
-  font-size: 0.875rem;
+  font-size: var(--tt-fs-body);
   font-weight: 600;
-  color: #1e293b;
+  color: var(--tt-text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.customer-phone {
-  font-size: 0.725rem;
-  color: #94a3b8;
+/* Inline "Now Serving" badge in the customer cell */
+.ns-inline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.22);
+  border-radius: var(--tt-radius-full);
+  padding: 0.1rem 0.45rem;
+  white-space: nowrap;
+  animation: scaleIn 0.2s var(--tt-ease) both;
+
+  i { font-size: 0.55rem; }
 }
 
-/* ── Service Chip ── */
-.service-chip {
-  background: #f1f5f9;
-  color: #475569;
-  border-radius: 6px;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.775rem;
-  font-weight: 500;
+.customer-phone {
+  font-size: 0.725rem;
+  color: var(--tt-text-faint);
+  margin-top: 1px;
 }
 
 /* ── Position / ETA ── */
 .pos-cell {
-  color: #64748b;
+  color: var(--tt-text-muted);
   font-weight: 600;
   font-size: 0.85rem;
+  transition: color var(--tt-dur);
+
+  &.pos-active {
+    color: #3b82f6;
+    font-weight: 700;
+  }
 }
 
 .eta-cell {
-  color: #475569;
+  color: var(--tt-text-dim);
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
 }
 
-.muted-text {
-  color: #cbd5e1;
-}
+.muted-text { color: #cbd5e1; }
 
-/* ── Status Chip ── */
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.725rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+/* ════════════════════════════════════════════
+   Premium Empty State
+   ════════════════════════════════════════════ */
 
-  &.s-waiting  { background: rgba(245,158,11,0.1);  color: #d97706; border: 1px solid rgba(245,158,11,0.2); }
-  &.s-called   { background: rgba(99,102,241,0.1);  color: #6366f1; border: 1px solid rgba(99,102,241,0.2); }
-  &.s-serving  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.2); }
-  &.s-served   { background: rgba(100,116,139,0.08); color: #64748b; border: 1px solid rgba(100,116,139,0.15); }
-  &.s-no_show  { background: rgba(239,68,68,0.1);   color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
-}
-
-/* ── Actions ── */
-.actions-header {
-  text-align: center;
-}
-
-.actions-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-}
-
-.qaction {
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 8px !important;
-  color: #94a3b8 !important;
-
-  &:hover:not(:disabled) {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-  }
-
-  &:disabled {
-    opacity: 0.35 !important;
-  }
-
-  &.qaction-success:hover:not(:disabled) {
-    background: rgba(16, 185, 129, 0.1) !important;
-    color: #059669 !important;
-  }
-
-  &.qaction-danger:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.1) !important;
-    color: #dc2626 !important;
-  }
-}
-
-/* ── Empty State ── */
-.empty-state {
+.queue-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3.5rem 1rem;
-  color: #94a3b8;
+  padding: 4rem 1rem 3.5rem;
+  animation: fadeUp 0.45s var(--tt-ease) both;
+}
 
-  i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    opacity: 0.4;
+.qes-icon-ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 28px;
+  background: linear-gradient(135deg,
+    rgba(99, 102, 241, 0.06) 0%,
+    rgba(139, 92, 246, 0.04) 100%);
+  border: 1.5px solid rgba(99, 102, 241, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 36px;
+    border: 1px solid rgba(99, 102, 241, 0.07);
+    animation: pulse-queue 3s ease-in-out infinite;
   }
 }
 
-.empty-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #475569;
-  margin: 0 0 0.35rem;
+.qes-icon-inner {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg,
+    rgba(99, 102, 241, 0.12) 0%,
+    rgba(139, 92, 246, 0.08) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i { font-size: 1.6rem; color: var(--tt-primary); opacity: 0.6; }
 }
 
-.empty-sub {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin: 0;
+.qes-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tt-text-2);
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.qes-sub {
+  font-size: 0.875rem;
+  color: var(--tt-text-faint);
+  margin: 0 0 1.5rem;
   text-align: center;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+.qes-hints {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.qes-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: var(--tt-text-muted);
+  background: var(--tt-surface-2);
+  border: 1px solid var(--tt-border-soft);
+  border-radius: var(--tt-radius-full);
+  padding: 0.3rem 0.75rem;
+  transition: background var(--tt-dur-fast), color var(--tt-dur-fast),
+              border-color var(--tt-dur-fast);
+
+  i { font-size: 0.75rem; color: var(--tt-primary); opacity: 0.7; }
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: var(--tt-text-2);
+    border-color: rgba(99, 102, 241, 0.15);
+  }
+}
+
+/* ════════════════════════════════════════════
+   Live Update Animations
+   ════════════════════════════════════════════ */
+
+// ── Row: generic status change ───────────────────────────────────────────────
+// Subtle indigo outline — used for SERVED / NO_SHOW / other transitions.
+// Outline avoids conflicting with the !important background rules on
+// .row-serving and .row-called.
+@keyframes rowFlash {
+  0%   { outline: 2px solid rgba(99, 102, 241, 0.50); outline-offset: -1px; }
+  60%  { outline: 2px solid rgba(99, 102, 241, 0.18); outline-offset: -1px; }
+  100% { outline: 2px solid transparent;              outline-offset: -1px; }
+}
+
+::ng-deep .qm-table .row-flash {
+  animation: rowFlash 0.65s var(--tt-ease, ease) forwards;
+}
+
+// ── Row: status → CALLED  (amber / indigo burst) ──────────────────────────────
+// Three-step animation: expand glow → hold → fade. The left-bar accent on
+// .row-called is already rendered by the persistent class; this only plays once.
+@keyframes rowCalledFlash {
+  0% {
+    outline:        3px solid rgba(99, 102, 241, 0);
+    outline-offset: -1px;
+    background:     transparent !important;
+  }
+  12% {
+    outline:        3px solid rgba(245, 158, 11, 0.75);
+    outline-offset: -1px;
+    background:     rgba(245, 158, 11, 0.08) !important;
+    box-shadow:     inset 4px 0 0 #f59e0b,
+                    0 0 0 4px rgba(245, 158, 11, 0.12) !important;
+  }
+  55% {
+    outline:        3px solid rgba(99, 102, 241, 0.45);
+    outline-offset: -1px;
+    background:     rgba(99, 102, 241, 0.05) !important;
+    box-shadow:     inset 4px 0 0 var(--tt-primary),
+                    0 0 0 2px rgba(99, 102, 241, 0.06) !important;
+  }
+  100% {
+    outline:        3px solid transparent;
+    outline-offset: -1px;
+  }
+}
+
+::ng-deep .qm-table .row-called-flash {
+  animation: rowCalledFlash 0.95s var(--tt-ease, ease) forwards;
+}
+
+// ── Row: status → SERVING  (blue burst) ──────────────────────────────────────
+// Brighter and bolder than the called flash — this customer is now in the chair.
+@keyframes rowServingFlash {
+  0% {
+    outline:        3px solid rgba(59, 130, 246, 0);
+    outline-offset: -1px;
+    background:     transparent !important;
+  }
+  10% {
+    outline:        3px solid rgba(59, 130, 246, 0.85);
+    outline-offset: -1px;
+    background:     rgba(59, 130, 246, 0.14) !important;
+    box-shadow:     inset 4px 0 0 #3b82f6,
+                    0 0 0 6px rgba(59, 130, 246, 0.16),
+                    inset 0 0 20px rgba(59, 130, 246, 0.08) !important;
+    transform:      scaleX(1.002);
+  }
+  50% {
+    outline:        3px solid rgba(59, 130, 246, 0.35);
+    outline-offset: -1px;
+    background:     rgba(59, 130, 246, 0.07) !important;
+    box-shadow:     inset 4px 0 0 #3b82f6,
+                    0 0 0 3px rgba(59, 130, 246, 0.08) !important;
+    transform:      scaleX(1);
+  }
+  100% {
+    outline:        3px solid transparent;
+    outline-offset: -1px;
+  }
+}
+
+::ng-deep .qm-table .row-serving-flash {
+  animation: rowServingFlash 0.95s var(--tt-ease, ease) forwards;
+
+  // Avatar pops with extra spring when the SERVING flash plays
+  .customer-avatar {
+    animation: avatarServePop 0.45s var(--tt-ease, ease) both !important;
+  }
+}
+
+// ── Row: new entry joined (slide-in + green accent) ──────────────────────────
+// Applied only to brand-new IDs not present in the previous entries array.
+@keyframes rowNewGlow {
+  0%   {
+    box-shadow: inset 4px 0 0 rgba(16, 185, 129, 0.9);
+    background:  rgba(16, 185, 129, 0.05);
+  }
+  100% {
+    box-shadow: inset 4px 0 0 rgba(16, 185, 129, 0);
+    background:  transparent;
+  }
+}
+
+@keyframes rowNewSlide {
+  0%   { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+// Slide the row in, then let the left-bar glow fade out on the first cell
+::ng-deep .qm-table .row-new {
+  animation: rowNewSlide 0.3s var(--tt-ease, ease) both;
+
+  // Suppress the global rowEnter so ours is the only motion
+  &.p-datatable-row { animation-name: rowNewSlide !important; }
+}
+
+::ng-deep .qm-table .row-new > td:first-child {
+  animation: rowNewGlow 0.85s var(--tt-ease, ease) both;
+}
+
+// ── Now Serving block: ticket changed (scale + glow burst) ───────────────────
+@keyframes nsChanging {
+  0% {
+    background:  rgba(59, 130, 246, 0.2);
+    box-shadow:  0 0 0 6px rgba(59, 130, 246, 0.16),
+                 inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform:   scale(1.04);
+  }
+  55% {
+    background:  rgba(59, 130, 246, 0.1);
+    box-shadow:  0 0 0 4px rgba(59, 130, 246, 0.08),
+                 inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform:   scale(1.015);
+  }
+  100% {
+    background:  rgba(59, 130, 246, 0.06);
+    box-shadow:  0 0 0 4px rgba(16, 185, 129, 0.06),
+                 inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform:   scale(1);
+  }
+}
+
+.now-serving.ns-changing {
+  animation: nsChanging 0.75s var(--tt-ease, ease) both;
+}
+
+// ── Ticket token: flip-in when a new customer is served ──────────────────────
+@keyframes tokenFlip {
+  0%   { opacity: 0; transform: translateY(-7px) scale(0.85); }
+  55%  { opacity: 1; transform: translateY(1px)  scale(1.08); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.ns-token.ns-token-flash {
+  animation: tokenFlip 0.45s var(--tt-ease, ease) both;
+}
+
+// ── Serving row: avatar entrance when row gains SERVING status ───────────────
+// The avatar already has a transition on box-shadow; add a brief scale pop.
+@keyframes avatarServePop {
+  0%   { transform: scale(0.85); }
+  65%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+::ng-deep .qm-table .row-serving .customer-avatar {
+  animation: avatarServePop 0.45s var(--tt-ease, ease) both;
 }

@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { ButtonModule } from 'primeng/button';
     InputTextModule,
     DropdownModule,
     ButtonModule,
+    TooltipModule,
   ],
   declarations: [StaffPageComponent],
 })

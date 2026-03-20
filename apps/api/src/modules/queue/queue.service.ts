@@ -24,23 +24,27 @@ import { NOTIFICATION_EVENTS } from '../notifications/types/notification.types';
 
 const DEFAULT_AVG_DURATION = 20; // minutes fallback
 
+// ── Terminal statuses that indicate a customer is done with the queue ──────────
+const TERMINAL_STATUSES = new Set(['SERVED', 'LEFT', 'NO_SHOW']);
+
 @Injectable()
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
+    private readonly prisma:       PrismaService,
+    private readonly redis:        RedisService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ── Join queue ─────────────────────────────────────────────────────────────
 
   async joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]) {
-    // tenant check
+    // Tenant check
     if (allowedShopIds && !allowedShopIds.includes(input.shopId)) {
       throw new ForbiddenException('Cannot join queue for another shop');
     }
+
     // Validate shop & branch
     const branch = await this.prisma.shopBranch.findFirst({
       where: { id: input.branchId, shopId: input.shopId, isActive: true },
@@ -59,8 +63,8 @@ export class QueueService {
     }
 
     // Generate ticket number
-    const today = new Date().toISOString().slice(0, 10);
-    const counterKey = this.redis.ticketCounterKey(input.shopId, today);
+    const today        = new Date().toISOString().slice(0, 10);
+    const counterKey   = this.redis.ticketCounterKey(input.shopId, today);
     const ticketNumber = await this.redis.incr(counterKey);
 
     // Set TTL for ticket counter (2 days auto-expire)
@@ -73,23 +77,23 @@ export class QueueService {
     // Create queue entry
     const entry = await this.prisma.queueEntry.create({
       data: {
-        shopId: input.shopId,
-        branchId: input.branchId,
-        barberId: input.barberId,
+        shopId:        input.shopId,
+        branchId:      input.branchId,
+        barberId:      input.barberId,
         customerId,
         ticketNumber,
         ticketDisplay,
-        entryType: input.entryType,
-        priority: input.priority,
-        status: 'WAITING',
-        position: 0,         // will be recalculated
-        guestName: input.guestName,
-        guestPhone: input.guestPhone,
+        entryType:     input.entryType,
+        priority:      input.priority,
+        status:        'WAITING',
+        position:      0, // recalculated immediately below
+        guestName:     input.guestName,
+        guestPhone:    input.guestPhone,
         appointmentId: input.appointmentId,
       },
     });
 
-    // Recalculate positions and EWT for the queue
+    // Recalculate positions and EWT; also broadcasts QUEUE_UPDATED
     await this.recalculateQueue(input.shopId, input.barberId);
 
     return entry;
@@ -98,7 +102,7 @@ export class QueueService {
   // ── Get active queue ───────────────────────────────────────────────────────
 
   async getActiveQueue(shopId: string, barberId?: string) {
-    const entries = await this.prisma.queueEntry.findMany({
+    return this.prisma.queueEntry.findMany({
       where: {
         shopId,
         ...(barberId && { barberId }),
@@ -106,7 +110,6 @@ export class QueueService {
       },
       orderBy: [{ priority: 'desc' }, { joinedAt: 'asc' }],
     });
-    return entries;
   }
 
   async getEntryById(entryId: string, allowedShopIds?: string[]) {
@@ -137,7 +140,6 @@ export class QueueService {
         }),
       ]);
 
-    // Calculate average service duration from today's data
     const durations = recentServed
       .filter((e) => e.servingAt && e.servedAt)
       .map((e) => (e.servedAt!.getTime() - e.servingAt!.getTime()) / 60000);
@@ -161,33 +163,51 @@ export class QueueService {
       );
     }
 
-    // Build timestamp updates based on new status
+    // Build timestamp updates
     const now = new Date();
     const timestampUpdate: Record<string, Date> = {};
-    if (input.newStatus === 'CALLED') timestampUpdate.calledAt = now;
-    if (input.newStatus === 'SERVING') timestampUpdate.servingAt = now;
-    if (input.newStatus === 'SERVED') timestampUpdate.servedAt = now;
-    if (input.newStatus === 'LEFT') timestampUpdate.leftAt = now;
-    if (input.newStatus === 'NO_SHOW') timestampUpdate.noShowAt = now;
+    if (input.newStatus === 'CALLED')   timestampUpdate.calledAt   = now;
+    if (input.newStatus === 'SERVING')  timestampUpdate.servingAt  = now;
+    if (input.newStatus === 'SERVED')   timestampUpdate.servedAt   = now;
+    if (input.newStatus === 'LEFT')     timestampUpdate.leftAt     = now;
+    if (input.newStatus === 'NO_SHOW')  timestampUpdate.noShowAt   = now;
 
     const updated = await this.prisma.queueEntry.update({
       where: { id: input.entryId },
-      data: { status: input.newStatus, ...timestampUpdate },
+      data:  { status: input.newStatus, ...timestampUpdate },
     });
 
-    // ── Notification: barber explicitly called this customer ──────────────────
+    // ── Recalculate & broadcast FIRST ─────────────────────────────────────────
+    // Ensures the queue state is up-to-date on the frontend BEFORE the customer
+    // receives their notification.
+    await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
+
+    // ── Emit QUEUE_CALLED after the queue broadcast ───────────────────────────
+    // Ordering: frontend sees the updated queue, then the "your turn!" toast
+    // pops up with an accurate position/status in the background.
     if (input.newStatus === 'CALLED') {
+      // Clear the NEXT_IN_LINE dedup so the customer can be notified again if
+      // they re-join the queue on a future visit.
+      await this.redis.clearNextInLineNotif(updated.id);
+
+      this.logger.log(
+        `[NOTIF] QUEUE_CALLED → entry:${updated.id} ticket:${updated.ticketDisplay} shop:${updated.shopId}`,
+      );
+
       this.eventEmitter.emit(NOTIFICATION_EVENTS.QUEUE_CALLED, {
-        entryId:      updated.id,
-        shopId:       updated.shopId,
+        queueId:       updated.id,
+        entryId:       updated.id,
+        shopId:        updated.shopId,
         ticketDisplay: updated.ticketDisplay,
-        guestPhone:   updated.guestPhone,
-        guestName:    updated.guestName,
+        guestPhone:    updated.guestPhone,
+        guestName:     updated.guestName,
       });
     }
 
-    // Recalculate queue after status change
-    await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
+    // Also clear the dedup key when the entry reaches a terminal status
+    if (TERMINAL_STATUSES.has(input.newStatus)) {
+      await this.redis.clearNextInLineNotif(updated.id);
+    }
 
     return updated;
   }
@@ -200,18 +220,25 @@ export class QueueService {
     if (entry.customerId !== customerId) {
       throw new BadRequestException('Not your queue entry');
     }
-
     if (isTerminalStatus(entry.status as QueueStatus)) {
       throw new BadRequestException('Entry already completed');
     }
 
-    return this.updateStatus(
-      { entryId, newStatus: QueueStatus.LEFT },
-      customerId,
-    );
+    return this.updateStatus({ entryId, newStatus: QueueStatus.LEFT }, customerId);
   }
 
   // ── Recalculate positions + EWT ───────────────────────────────────────────
+  //
+  // Order of operations inside this method:
+  //   1. Snapshot current positions from DB
+  //   2. Sort + assign new positions
+  //   3. Bulk-update DB (positions + EWT)
+  //   4. Fetch updated list → broadcast QUEUE_UPDATED  ← frontend state synced
+  //   5. Emit domain events (POSITION_CHANGED, NEXT_IN_LINE)  ← notify customer
+  //
+  // Notifications always fire AFTER the broadcast so that when the customer's
+  // live-tracker receives the toast, the QUEUE_UPDATED has already arrived and
+  // their position number is correct.
 
   async recalculateQueue(shopId: string, barberId?: string) {
     const rawEntries = await this.prisma.queueEntry.findMany({
@@ -227,32 +254,29 @@ export class QueueService {
       return;
     }
 
-    // ── Snapshot current positions BEFORE recalculation ───────────────────────
-    // Used to detect movement and fire position-change notifications.
+    // ── 1. Snapshot current positions BEFORE recalculation ────────────────────
     const positionSnapshot = new Map(rawEntries.map((e) => [e.id, e.position]));
 
-    // Sort using queue-engine
-    const sortableEntries = rawEntries.map((e) => ({
-      id: e.id,
-      priority: e.priority,
-      joinedAt: e.joinedAt,
-      entryType: e.entryType as 'WALK_IN' | 'APPOINTMENT',
+    // ── 2. Sort and assign new positions ──────────────────────────────────────
+    const sortable = rawEntries.map((e) => ({
+      id:              e.id,
+      priority:        e.priority,
+      joinedAt:        e.joinedAt,
+      entryType:       e.entryType as 'WALK_IN' | 'APPOINTMENT',
       appointmentTime: undefined,
     }));
-    const sorted = sortQueueEntries(sortableEntries);
+    const sorted    = sortQueueEntries(sortable);
     const positions = assignPositions(sorted);
 
-    // Get average service duration
+    // ── 3. Calculate EWT ──────────────────────────────────────────────────────
     const barberRecord = barberId
       ? await this.prisma.barber.findUnique({
           where: { id: barberId },
           select: { avgServiceDurationMins: true },
         })
       : null;
-    const avgDuration =
-      barberRecord?.avgServiceDurationMins ?? DEFAULT_AVG_DURATION;
+    const avgDuration = barberRecord?.avgServiceDurationMins ?? DEFAULT_AVG_DURATION;
 
-    // Determine if a barber is currently serving
     const servingEntry = await this.prisma.queueEntry.findFirst({
       where: {
         shopId,
@@ -266,29 +290,33 @@ export class QueueService {
       ? (Date.now() - servingEntry.servingAt.getTime()) / 60000
       : 0;
 
-    // ── Bulk update positions + EWT ───────────────────────────────────────────
-    // Collect notification candidates while building the update tasks.
+    // ── 4. Bulk update DB + collect notification candidates ───────────────────
     interface NotifCandidate {
-      entryId: string; ticketDisplay: string;
-      guestPhone: string | null; guestName: string | null;
-      oldPosition: number; newPosition: number;
+      entryId:           string;
+      ticketDisplay:     string;
+      guestPhone:        string | null;
+      guestName:         string | null;
+      oldPosition:       number;
+      newPosition:       number;
       estimatedWaitMins: number | null;
     }
     const notifCandidates: NotifCandidate[] = [];
 
     await Promise.all(
       rawEntries.map((entry) => {
-        const newPos = positions.get(entry.id) ?? 0;
+        const newPos    = positions.get(entry.id) ?? 0;
         const ewtResult = calculateEwt({
-          position: newPos,
-          avgServiceDurationMins: avgDuration,
-          currentlyServing: !!servingEntry,
-          currentServiceElapsedMins: currentElapsedMins,
-          bufferPercent: 15,
+          position:                    newPos,
+          avgServiceDurationMins:      avgDuration,
+          currentlyServing:            !!servingEntry,
+          currentServiceElapsedMins:   currentElapsedMins,
+          bufferPercent:               15,
         });
 
-        // Track position movement for notifications
         const oldPos = positionSnapshot.get(entry.id) ?? 0;
+
+        // Only track entries whose position actually changed AND had a real
+        // prior position (oldPos === 0 means it was just created this cycle).
         if (oldPos !== 0 && oldPos !== newPos) {
           notifCandidates.push({
             entryId:           entry.id,
@@ -308,9 +336,20 @@ export class QueueService {
       }),
     );
 
-    // ── Emit position-change notifications (after DB writes complete) ─────────
+    // ── 5. Broadcast QUEUE_UPDATED ← must happen BEFORE notifications ─────────
+    const updatedEntries = await this.getActiveQueue(shopId, barberId);
+    await this.publishUpdate(shopId, barberId, 'POSITION_UPDATE', null, updatedEntries);
+
+    // ── 6. Emit per-customer notifications (after broadcast) ──────────────────
     for (const c of notifCandidates) {
+      // ── POSITION_CHANGED ────────────────────────────────────────────────────
+      this.logger.debug(
+        `[NOTIF] POSITION_CHANGED → entry:${c.entryId} ` +
+        `${c.oldPosition}→${c.newPosition} shop:${shopId}`,
+      );
+
       this.eventEmitter.emit(NOTIFICATION_EVENTS.POSITION_CHANGED, {
+        queueId:           c.entryId,
         entryId:           c.entryId,
         shopId,
         ticketDisplay:     c.ticketDisplay,
@@ -321,36 +360,47 @@ export class QueueService {
         estimatedWaitMins: c.estimatedWaitMins,
       });
 
-      // "You're next!" — position just became 1
+      // ── NEXT_IN_LINE ─────────────────────────────────────────────────────────
+      // Use atomic Redis SETNX to guarantee this fires exactly once per entry
+      // even under concurrent recalculations.
       if (c.newPosition === 1) {
-        this.eventEmitter.emit(NOTIFICATION_EVENTS.NEXT_IN_LINE, {
-          entryId:           c.entryId,
-          shopId,
-          ticketDisplay:     c.ticketDisplay,
-          guestPhone:        c.guestPhone,
-          guestName:         c.guestName,
-          estimatedWaitMins: c.estimatedWaitMins,
-        });
+        const claimed = await this.redis.claimNextInLineNotif(c.entryId);
+
+        if (claimed) {
+          this.logger.log(
+            `[NOTIF] NEXT_IN_LINE → entry:${c.entryId} ticket:${c.ticketDisplay} shop:${shopId}`,
+          );
+
+          this.eventEmitter.emit(NOTIFICATION_EVENTS.NEXT_IN_LINE, {
+            queueId:           c.entryId,
+            entryId:           c.entryId,
+            shopId,
+            ticketDisplay:     c.ticketDisplay,
+            guestPhone:        c.guestPhone,
+            guestName:         c.guestName,
+            estimatedWaitMins: c.estimatedWaitMins,
+          });
+        } else {
+          this.logger.debug(
+            `[NOTIF] NEXT_IN_LINE skipped (dedup) → entry:${c.entryId}`,
+          );
+        }
       }
     }
-
-    // Fetch updated entries for subscription broadcast
-    const updatedEntries = await this.getActiveQueue(shopId, barberId);
-    await this.publishUpdate(shopId, barberId, 'POSITION_UPDATE', null, updatedEntries);
   }
 
   // ── PubSub publish ────────────────────────────────────────────────────────
 
   private async publishUpdate(
-    shopId: string,
-    barberId: string | undefined,
-    type: string,
-    entry: unknown,
+    shopId:        string,
+    barberId:      string | undefined,
+    type:          string,
+    entry:         unknown,
     activeEntries: unknown[],
   ) {
     const payload = {
       shopId,
-      barberId: barberId ?? null,
+      barberId:     barberId ?? null,
       type,
       entry,
       activeEntries,
@@ -363,5 +413,9 @@ export class QueueService {
 
     // WebSocket broadcast (socket.io via EventEmitter → QueueGateway)
     this.eventEmitter.emit('queue.updated', payload);
+
+    this.logger.debug(
+      `[BROADCAST] QUEUE_UPDATED → shop:${shopId} entries:${(activeEntries as unknown[]).length}`,
+    );
   }
 }

@@ -1,229 +1,192 @@
-<div class="row g-3">
-  <div class="col-12">
-    <h1 class="h4 mb-3">Settings</h1>
-  </div>
+<div class="settings-page">
 
-  <!-- Shop Profile -->
-  <div class="col-12 col-lg-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h2 class="h5 mb-2">Shop profile</h2>
-        <p class="text-muted mb-3">Basic details for your barber shop.</p>
-
-        <div class="mb-3">
-          <label class="form-label">Shop name</label>
-          <input
-            pInputText
-            type="text"
-            class="form-control"
-            [(ngModel)]="shopForm.name"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea
-            pInputTextarea
-            class="form-control"
-            rows="3"
-            [(ngModel)]="shopForm.description"
-          ></textarea>
-        </div>
-
-        <div class="row">
-          <div class="col-12 col-md-6 mb-3">
-            <label class="form-label">Phone</label>
-            <input
-              pInputText
-              type="text"
-              class="form-control"
-              [(ngModel)]="shopForm.phone"
-            />
-          </div>
-          <div class="col-12 col-md-6 mb-3">
-            <label class="form-label">Email</label>
-            <input
-              pInputText
-              type="email"
-              class="form-control"
-              [(ngModel)]="shopForm.email"
-            />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-12 col-md-4 mb-3">
-            <label class="form-label">Country</label>
-            <p-dropdown
-              [options]="countries"
-              [(ngModel)]="shopForm.country"
-              optionLabel="label"
-              optionValue="value"
-              class="w-100"
-            ></p-dropdown>
-          </div>
-          <div class="col-12 col-md-4 mb-3">
-            <label class="form-label">Timezone</label>
-            <p-dropdown
-              [options]="timezones"
-              [(ngModel)]="shopForm.timezone"
-              optionLabel="label"
-              optionValue="value"
-              class="w-100"
-            ></p-dropdown>
-          </div>
-          <div class="col-12 col-md-4 mb-3">
-            <label class="form-label">Currency</label>
-            <p-dropdown
-              [options]="currencies"
-              [(ngModel)]="shopForm.currency"
-              optionLabel="label"
-              optionValue="value"
-              class="w-100"
-            ></p-dropdown>
-          </div>
-        </div>
-
-        <button
-          pButton
-          type="button"
-          label="Save profile"
-          icon="pi pi-check"
-          class="mt-2"
-          (click)="saveShopProfile()"
-        ></button>
-      </div>
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">System</p>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-sub">Configure your shop, branch, hours and subscription</p>
     </div>
   </div>
 
-  <!-- Branch Settings -->
-  <div class="col-12 col-lg-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h2 class="h5 mb-2">Branch settings</h2>
-        <p class="text-muted mb-3">Configure the primary branch details.</p>
+  <div class="settings-grid">
 
-        <div class="mb-3">
-          <label class="form-label">Branch name</label>
-          <input
-            pInputText
-            type="text"
-            class="form-control"
-            [(ngModel)]="branchForm.name"
-          />
+    <!-- ── Shop Profile ── -->
+    <div class="settings-card">
+      <div class="card-section-head">
+        <span class="section-icon indigo"><i class="pi pi-shop"></i></span>
+        <div>
+          <p class="section-title">Shop Profile</p>
+          <p class="section-sub">Basic details visible to customers</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <div class="form-field full-width">
+          <label>Shop Name *</label>
+          <input pInputText [(ngModel)]="shopForm.name" placeholder="Mike's Barber Shop" />
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Address</label>
-          <input
-            pInputText
-            type="text"
-            class="form-control"
-            [(ngModel)]="branchForm.address"
-          />
+        <div class="form-field full-width">
+          <label>Description</label>
+          <textarea class="tt-textarea" rows="3" [(ngModel)]="shopForm.description"
+            placeholder="Premium cuts and grooming services in the heart of downtown."></textarea>
         </div>
 
-        <div class="row">
-          <div class="col-12 col-md-8 mb-3">
-            <label class="form-label">City</label>
-            <input
-              pInputText
-              type="text"
-              class="form-control"
-              [(ngModel)]="branchForm.city"
-            />
+        <div class="form-row">
+          <div class="form-field">
+            <label>Phone</label>
+            <input pInputText [(ngModel)]="shopForm.phone" placeholder="+1 555-0100" />
           </div>
-          <div class="col-12 col-md-4 mb-3">
-            <label class="form-label">Phone</label>
-            <input
-              pInputText
-              type="text"
-              class="form-control"
-              [(ngModel)]="branchForm.phone"
-            />
+          <div class="form-field">
+            <label>Email</label>
+            <input pInputText [(ngModel)]="shopForm.email" placeholder="shop&#64;example.com" />
           </div>
         </div>
 
-        <button
-          pButton
-          type="button"
-          label="Save branch"
-          icon="pi pi-check"
-          class="mt-2"
-          (click)="saveBranchSettings()"
-        ></button>
+        <div class="form-row three-col">
+          <div class="form-field">
+            <label>Country</label>
+            <select class="tt-select" [(ngModel)]="shopForm.country">
+              <option *ngFor="let c of countries" [value]="c.value">{{ c.label }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Timezone</label>
+            <select class="tt-select" [(ngModel)]="shopForm.timezone">
+              <option *ngFor="let t of timezones" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Currency</label>
+            <select class="tt-select" [(ngModel)]="shopForm.currency">
+              <option *ngFor="let c of currencies" [value]="c.value">{{ c.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-footer-actions">
+          <button pButton label="Save Profile" icon="pi pi-check" class="btn-grad" (click)="saveShopProfile()"></button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Business Hours -->
-  <div class="col-12 col-lg-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h2 class="h5 mb-2">Business hours</h2>
-        <p class="text-muted mb-3">Set default open and close times.</p>
+    <!-- ── Branch Settings ── -->
+    <div class="settings-card">
+      <div class="card-section-head">
+        <span class="section-icon blue"><i class="pi pi-map-marker"></i></span>
+        <div>
+          <p class="section-title">Branch Details</p>
+          <p class="section-sub">Physical location information</p>
+        </div>
+      </div>
 
-        <div class="row">
-          <div class="col-6 mb-3">
-            <label class="form-label">Open time</label>
-            <input
-              pInputText
-              type="time"
-              class="form-control"
-              [(ngModel)]="hoursForm.openTime"
-            />
+      <div class="form-body">
+        <div class="form-field full-width">
+          <label>Branch Name</label>
+          <input pInputText [(ngModel)]="branchForm.name" placeholder="Main Branch" />
+        </div>
+
+        <div class="form-field full-width">
+          <label>Street Address</label>
+          <input pInputText [(ngModel)]="branchForm.address" placeholder="123 Main St" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>City</label>
+            <input pInputText [(ngModel)]="branchForm.city" placeholder="New York" />
           </div>
-          <div class="col-6 mb-3">
-            <label class="form-label">Close time</label>
-            <input
-              pInputText
-              type="time"
-              class="form-control"
-              [(ngModel)]="hoursForm.closeTime"
-            />
+          <div class="form-field">
+            <label>Branch Phone</label>
+            <input pInputText [(ngModel)]="branchForm.phone" placeholder="+1 555-0200" />
           </div>
         </div>
 
-        <button
-          pButton
-          type="button"
-          label="Save hours"
-          icon="pi pi-check"
-          class="mt-2"
-          (click)="saveBusinessHours()"
-        ></button>
+        <div class="card-footer-actions">
+          <button pButton label="Save Branch" icon="pi pi-check" class="btn-grad" (click)="saveBranchSettings()"></button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Subscription Plan -->
-  <div class="col-12 col-lg-6">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h2 class="h5 mb-2">Subscription plan</h2>
-        <p class="text-muted mb-3">Manage your TrimTime subscription.</p>
+    <!-- ── Business Hours ── -->
+    <div class="settings-card">
+      <div class="card-section-head">
+        <span class="section-icon amber"><i class="pi pi-clock"></i></span>
+        <div>
+          <p class="section-title">Business Hours</p>
+          <p class="section-sub">Default daily open and close times</p>
+        </div>
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label">Current plan</label>
-          <p-dropdown
-            [options]="plans"
-            [(ngModel)]="subscriptionForm.plan"
-            optionLabel="label"
-            optionValue="value"
-            class="w-100"
-          ></p-dropdown>
+      <div class="form-body">
+        <div class="hours-row">
+          <div class="hours-block">
+            <div class="hours-label">
+              <i class="pi pi-sun"></i>
+              <span>Opens at</span>
+            </div>
+            <input type="time" class="tt-time" [(ngModel)]="hoursForm.openTime" />
+          </div>
+          <div class="hours-divider"><i class="pi pi-arrow-right"></i></div>
+          <div class="hours-block">
+            <div class="hours-label">
+              <i class="pi pi-moon"></i>
+              <span>Closes at</span>
+            </div>
+            <input type="time" class="tt-time" [(ngModel)]="hoursForm.closeTime" />
+          </div>
         </div>
 
-        <button
-          pButton
-          type="button"
-          label="Update plan"
-          icon="pi pi-check"
-          class="mt-2"
-          (click)="saveSubscription()"
-        ></button>
+        <div class="hours-preview">
+          <i class="pi pi-info-circle"></i>
+          <span>Shop is open {{ hoursForm.openTime }} – {{ hoursForm.closeTime }} every day</span>
+        </div>
+
+        <div class="card-footer-actions">
+          <button pButton label="Save Hours" icon="pi pi-check" class="btn-grad" (click)="saveBusinessHours()"></button>
+        </div>
       </div>
     </div>
+
+    <!-- ── Subscription ── -->
+    <div class="settings-card plan-card">
+      <div class="card-section-head">
+        <span class="section-icon green"><i class="pi pi-crown"></i></span>
+        <div>
+          <p class="section-title">Subscription Plan</p>
+          <p class="section-sub">Manage your QueueCut tier</p>
+        </div>
+      </div>
+
+      <div class="form-body">
+        <div class="plan-tiles">
+          <div class="plan-tile" [class.plan-active]="subscriptionForm.plan === 'FREE'"
+            (click)="subscriptionForm.plan = 'FREE'">
+            <p class="plan-name">Free</p>
+            <p class="plan-price">$0<span>/mo</span></p>
+            <p class="plan-desc">1 barber · 50 customers/mo</p>
+          </div>
+          <div class="plan-tile" [class.plan-active]="subscriptionForm.plan === 'PRO'"
+            (click)="subscriptionForm.plan = 'PRO'">
+            <p class="plan-name">Pro</p>
+            <p class="plan-price">$29<span>/mo</span></p>
+            <p class="plan-desc">5 barbers · Unlimited customers</p>
+            <span class="plan-badge">Popular</span>
+          </div>
+          <div class="plan-tile" [class.plan-active]="subscriptionForm.plan === 'ENTERPRISE'"
+            (click)="subscriptionForm.plan = 'ENTERPRISE'">
+            <p class="plan-name">Enterprise</p>
+            <p class="plan-price">$99<span>/mo</span></p>
+            <p class="plan-desc">Unlimited · Multi-branch · Priority</p>
+          </div>
+        </div>
+
+        <div class="card-footer-actions">
+          <button pButton label="Update Plan" icon="pi pi-check" class="btn-grad" (click)="saveSubscription()"></button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
-

@@ -93,6 +93,24 @@ export class AuthService {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
   }
 
+  /** Returns the first shopId encoded in the JWT payload. */
+  getShopId(): string | null {
+    return this.getShopIds()[0] ?? null;
+  }
+
+  getShopIds(): string[] {
+    const token = this.getAccessToken();
+    if (!token) return [];
+    try {
+      const [, payload] = token.split('.');
+      const decoded = JSON.parse(atob(payload));
+      const shopIds = decoded['shopIds'];
+      return Array.isArray(shopIds) ? shopIds : [];
+    } catch {
+      return [];
+    }
+  }
+
   hasRole(role: string): boolean {
     const roles = this.getRoles();
     return roles.includes(role);

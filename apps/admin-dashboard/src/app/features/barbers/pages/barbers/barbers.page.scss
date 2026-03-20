@@ -1,0 +1,140 @@
+/* ═══════════════════════════════════════════
+   Barbers Page — page-specific styles only
+   (shared patterns live in styles.scss)
+   ═══════════════════════════════════════════ */
+
+.barbers-page {
+  color: var(--tt-text);
+  max-width: 1400px;
+}
+
+/* ── Barber Cell ── */
+.barber-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.barber-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--tt-grad);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.inactive-avatar {
+    background: var(--tt-border);
+    color: var(--tt-text-faint);
+  }
+}
+
+.barber-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.barber-name {
+  font-size: var(--tt-fs-body);
+  font-weight: 600;
+  color: var(--tt-text-2);
+}
+
+.barber-role {
+  font-size: 0.725rem;
+  color: var(--tt-text-faint);
+}
+
+/* ── Contact ── */
+.contact-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.contact-phone,
+.contact-email {
+  font-size: var(--tt-fs-sm);
+  color: var(--tt-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  i { font-size: 0.65rem; color: var(--tt-text-faint); }
+}
+
+/* ── Specialties ── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.specialty-tag {
+  background: var(--tt-surface-2);
+  color: var(--tt-text-dim);
+  border-radius: var(--tt-radius-sm);
+  padding: 0.15rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Served Count ── */
+.served-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tt-text);
+}
+
+.served-label {
+  font-size: 0.75rem;
+  color: var(--tt-text-faint);
+}
+
+/* ── Rating ── */
+.rating-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.rating-val {
+  font-size: var(--tt-fs-body);
+  font-weight: 700;
+  color: var(--tt-text-2);
+}
+
+.rating-star {
+  color: var(--tt-accent);
+  font-size: 0.75rem;
+}
+
+/* ── Queue Badge ── */
+.queue-badge {
+  display: inline-block;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--tt-primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--tt-radius-full);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.queue-empty {
+    background: var(--tt-bg);
+    color: #cbd5e1;
+    border-color: var(--tt-border);
+  }
+}
+
+/* ── Form hint ── */
+.form-hint {
+  font-weight: 400;
+  color: var(--tt-text-faint);
+}

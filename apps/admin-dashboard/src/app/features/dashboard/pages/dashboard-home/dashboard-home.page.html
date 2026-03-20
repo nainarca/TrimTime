@@ -1,5 +1,13 @@
 <div class="dashboard">
 
+  <!-- ════════════ ERROR BANNER ════════════ -->
+  <div class="error-banner" *ngIf="error">
+    <i class="pi pi-exclamation-circle"></i>
+    <span>{{ error }}</span>
+    <button pButton icon="pi pi-refresh" class="p-button-text p-button-sm"
+      (click)="loadKpis()" label="Retry"></button>
+  </div>
+
   <!-- ════════════ PAGE HEADER ════════════ -->
   <div class="dash-header">
     <div class="dash-header-text">
@@ -8,7 +16,7 @@
         Analytics &nbsp;·&nbsp; {{ today | date:'EEEE, MMMM d' }}
       </div>
       <h1 class="dash-title">Dashboard Overview</h1>
-      <p class="dash-sub">Live queue insights for Mike's Barber Shop</p>
+      <p class="dash-sub">Live queue insights for <strong>{{ shopName }}</strong></p>
     </div>
     <div class="dash-actions">
       <button pButton label="Export" icon="pi pi-download"
@@ -18,18 +26,26 @@
     </div>
   </div>
 
-  <!-- ════════════ KPI CARDS ════════════ -->
-  <div class="kpi-grid">
+  <!-- ════════════ KPI — SKELETON ════════════ -->
+  <div class="kpi-grid" *ngIf="kpisLoading">
+    <div class="kpi-card kpi-skel" *ngFor="let _ of [0,1,2,3]">
+      <div class="kpi-card-top">
+        <div class="skel skel-icon"></div>
+        <div class="skel skel-chip"></div>
+      </div>
+      <div class="skel skel-value"></div>
+      <div class="skel skel-label" style="width:55%"></div>
+      <div class="skel skel-bar" style="margin-top:1rem;height:24px"></div>
+    </div>
+  </div>
 
-    <!-- Customers Today -->
+  <!-- ════════════ KPI — REAL ════════════ -->
+  <div class="kpi-grid" *ngIf="!kpisLoading">
+
     <div class="kpi-card kpi-card--blue">
       <div class="kpi-card-top">
-        <div class="kpi-icon-wrap kpi-blue">
-          <i class="pi pi-users"></i>
-        </div>
-        <span class="kpi-delta positive">
-          <i class="pi pi-arrow-up-right"></i>&nbsp;12%
-        </span>
+        <div class="kpi-icon-wrap kpi-blue"><i class="pi pi-users"></i></div>
+        <span class="kpi-delta positive"><i class="pi pi-arrow-up-right"></i>&nbsp;12%</span>
       </div>
       <span class="kpi-value">{{ kpis?.totalCustomersToday ?? 48 }}</span>
       <span class="kpi-label">Total Customers Today</span>
@@ -44,15 +60,10 @@
       </div>
     </div>
 
-    <!-- Active Queue -->
     <div class="kpi-card kpi-card--indigo">
       <div class="kpi-card-top">
-        <div class="kpi-icon-wrap kpi-indigo">
-          <i class="pi pi-list"></i>
-        </div>
-        <span class="kpi-delta live">
-          <span class="live-micro-dot"></span> Live
-        </span>
+        <div class="kpi-icon-wrap kpi-indigo"><i class="pi pi-list"></i></div>
+        <span class="kpi-delta live"><span class="live-micro-dot"></span> Live</span>
       </div>
       <span class="kpi-value">{{ kpis?.activeQueueCount ?? 7 }}</span>
       <span class="kpi-label">Active Queue</span>
@@ -67,17 +78,17 @@
       </div>
     </div>
 
-    <!-- Avg Wait Time -->
     <div class="kpi-card kpi-card--amber">
       <div class="kpi-card-top">
-        <div class="kpi-icon-wrap kpi-amber">
-          <i class="pi pi-clock"></i>
-        </div>
-        <span class="kpi-delta negative">
-          <i class="pi pi-arrow-up-right"></i>&nbsp;+2 min
-        </span>
+        <div class="kpi-icon-wrap kpi-amber"><i class="pi pi-clock"></i></div>
+        <span class="kpi-delta negative"><i class="pi pi-arrow-up-right"></i>&nbsp;+2 min</span>
       </div>
-      <span class="kpi-value">14&thinsp;<small>min</small></span>
+      <span class="kpi-value">
+        <ng-container *ngIf="kpis?.avgWaitMins != null; else noWait">
+          {{ kpis!.avgWaitMins }}&thinsp;<small>min</small>
+        </ng-container>
+        <ng-template #noWait>—</ng-template>
+      </span>
       <span class="kpi-label">Avg Wait Time</span>
       <div class="kpi-sparkline">
         <span class="spark amber"        style="height:30%"></span>
@@ -90,15 +101,10 @@
       </div>
     </div>
 
-    <!-- Completed Services -->
     <div class="kpi-card kpi-card--emerald">
       <div class="kpi-card-top">
-        <div class="kpi-icon-wrap kpi-emerald">
-          <i class="pi pi-check-circle"></i>
-        </div>
-        <span class="kpi-delta positive">
-          <i class="pi pi-arrow-up-right"></i>&nbsp;8%
-        </span>
+        <div class="kpi-icon-wrap kpi-emerald"><i class="pi pi-check-circle"></i></div>
+        <span class="kpi-delta positive"><i class="pi pi-arrow-up-right"></i>&nbsp;8%</span>
       </div>
       <span class="kpi-value">{{ kpis?.completedServicesToday ?? 31 }}</span>
       <span class="kpi-label">Completed Services</span>
@@ -115,40 +121,55 @@
 
   </div>
 
-  <!-- ════════════ CHART + STATUS ROW ════════════ -->
+  <!-- ════════════ ROW 1: QUEUE TREND + STATUS BREAKDOWN ════════════ -->
   <div class="charts-row">
 
-    <!-- ── Line Chart ── -->
+    <!-- ── Queue Trend Line Chart ── -->
     <div class="chart-card">
       <div class="card-head">
         <div>
           <h3 class="card-title">Queue Trend</h3>
-          <p class="card-sub">Customers served &amp; avg wait throughout the day</p>
+          <p class="card-sub">Customers served today vs yesterday</p>
         </div>
         <div class="chip-group">
-          <button class="chip active">Today</button>
-          <button class="chip">Week</button>
-          <button class="chip">Month</button>
+          <button class="chip" [class.active]="activePeriod === 'today'"
+            (click)="selectPeriod('today')">Today</button>
+          <button class="chip" [class.active]="activePeriod === 'week'"
+            (click)="selectPeriod('week')">Week</button>
+          <button class="chip" [class.active]="activePeriod === 'month'"
+            (click)="selectPeriod('month')">Month</button>
         </div>
       </div>
+
+      <!-- Comparison badge -->
+      <div class="trend-compare">
+        <div class="tc-badge tc-today">
+          <span class="tc-line tc-line--solid"></span>Today
+        </div>
+        <div class="tc-badge tc-yesterday">
+          <span class="tc-line tc-line--dashed"></span>Yesterday
+        </div>
+        <div class="tc-delta positive">
+          <i class="pi pi-trending-up"></i> +14% vs yesterday
+        </div>
+      </div>
+
       <div class="chart-area">
         <p-chart
           type="line"
           [data]="lineChartData"
           [options]="lineChartOptions"
-          height="260px"
+          height="250px"
         ></p-chart>
       </div>
     </div>
 
     <!-- ── Status Breakdown ── -->
     <div class="status-card">
-
       <div class="card-head">
         <h3 class="card-title">Queue Breakdown</h3>
       </div>
 
-      <!-- Status bars -->
       <div class="status-list">
         <div class="status-row">
           <div class="status-left">
@@ -156,7 +177,7 @@
             <span class="status-name">Waiting</span>
           </div>
           <div class="status-right">
-            <span class="status-count">{{ kpis?.activeQueueCount ?? 5 }}</span>
+            <span class="status-count">{{ kpis?.waitingCount ?? 0 }}</span>
             <div class="status-bar-wrap">
               <div class="status-bar waiting" style="width:50%"></div>
             </div>
@@ -169,7 +190,7 @@
             <span class="status-name">Serving</span>
           </div>
           <div class="status-right">
-            <span class="status-count">2</span>
+            <span class="status-count">{{ kpis?.servingCount ?? 0 }}</span>
             <div class="status-bar-wrap">
               <div class="status-bar serving" style="width:20%"></div>
             </div>
@@ -245,8 +266,100 @@
           <span class="qstat-label">Satisfaction</span>
         </div>
       </div>
-
     </div>
+  </div>
+
+  <!-- ════════════ ROW 2: BARBER PERFORMANCE + SERVICE DISTRIBUTION ════════════ -->
+  <div class="analytics-row">
+
+    <!-- ── Barber Performance Bar Chart ── -->
+    <div class="chart-card analytics-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Barber Performance</h3>
+          <p class="card-sub">Customers served — today vs yesterday</p>
+        </div>
+        <div class="card-badge card-badge--indigo">
+          <i class="pi pi-star"></i> Top: Mike
+        </div>
+      </div>
+
+      <div class="chart-area chart-area--bar">
+        <p-chart
+          type="bar"
+          [data]="barChartData"
+          [options]="barChartOptions"
+          height="240px"
+        ></p-chart>
+      </div>
+
+      <!-- Barber stat rows below chart -->
+      <div class="barber-stats">
+        <div class="bstat-row" *ngFor="let b of barberItems">
+          <div class="bstat-avatar">{{ b.name.charAt(0) }}</div>
+          <div class="bstat-body">
+            <div class="bstat-top">
+              <span class="bstat-name">{{ b.name }}</span>
+              <span class="bstat-rating">
+                <i class="pi pi-star-fill"></i>{{ b.rating }}
+              </span>
+            </div>
+            <div class="bstat-meta">
+              <span class="bstat-count">{{ b.servedToday }} served</span>
+              <span class="bstat-wait">~{{ b.avgWait }} min avg wait</span>
+            </div>
+          </div>
+          <div class="bstat-bar-wrap">
+            <div class="bstat-bar" [style.width.%]="getBarberPct(b.servedToday)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Service Distribution Doughnut ── -->
+    <div class="chart-card analytics-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Service Distribution</h3>
+          <p class="card-sub">Breakdown of services booked today</p>
+        </div>
+        <div class="card-badge card-badge--emerald">
+          <i class="pi pi-tag"></i> {{ totalServices }} total
+        </div>
+      </div>
+
+      <!-- Doughnut + centre label -->
+      <div class="doughnut-container">
+        <div class="doughnut-wrap">
+          <p-chart
+            type="doughnut"
+            [data]="doughnutData"
+            [options]="doughnutOptions"
+            height="220px"
+          ></p-chart>
+          <!-- Centre overlay -->
+          <div class="doughnut-centre">
+            <span class="dc-value">{{ totalServices }}</span>
+            <span class="dc-label">Services</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom legend -->
+      <div class="donut-legend">
+        <div class="dl-item" *ngFor="let s of serviceItems">
+          <div class="dl-dot" [style.background]="s.color"></div>
+          <span class="dl-label">{{ s.label }}</span>
+          <span class="dl-pct">{{ getServicePct(s.value) }}%</span>
+          <div class="dl-track">
+            <div class="dl-fill" [style.width.%]="getServicePct(s.value)"
+              [style.background]="s.color"></div>
+          </div>
+          <span class="dl-count">{{ s.value }}</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ════════════ RECENT QUEUE TABLE ════════════ -->
@@ -261,7 +374,24 @@
       </a>
     </div>
 
+    <!-- Skeleton -->
+    <ng-container *ngIf="entriesLoading">
+      <div class="skel-row" *ngFor="let _ of [0,1,2,3,4]">
+        <div class="skel skel-text" style="width:52px"></div>
+        <div style="display:flex;align-items:center;gap:.6rem;flex:1.5">
+          <div class="skel skel-avatar" style="width:30px;height:30px;border-radius:8px;flex-shrink:0"></div>
+          <div class="skel skel-text" style="width:100px"></div>
+        </div>
+        <div class="skel skel-text" style="width:80px;flex:1"></div>
+        <div class="skel skel-text" style="width:60px;flex:.8"></div>
+        <div class="skel skel-text" style="width:44px;flex:.6"></div>
+        <div class="skel skel-chip" style="width:68px"></div>
+      </div>
+    </ng-container>
+
+    <!-- Real table -->
     <p-table
+      *ngIf="!entriesLoading"
       [value]="recentEntries"
       [rowHover]="true"
       styleClass="p-datatable-sm queue-table"
@@ -279,31 +409,16 @@
 
       <ng-template pTemplate="body" let-entry>
         <tr>
-          <!-- Token -->
-          <td>
-            <span class="token-badge">{{ entry.token }}</span>
-          </td>
-
-          <!-- Customer with avatar -->
+          <td><span class="token-badge">{{ entry.token }}</span></td>
           <td>
             <div class="customer-cell">
               <div class="cust-avatar">{{ entry.customer.charAt(0) }}</div>
               <span class="cust-name">{{ entry.customer }}</span>
             </div>
           </td>
-
-          <!-- Service -->
-          <td>
-            <span class="service-chip">{{ entry.service }}</span>
-          </td>
-
-          <!-- Barber -->
+          <td><span class="service-chip">{{ entry.service }}</span></td>
           <td class="barber-cell">{{ entry.barber }}</td>
-
-          <!-- Wait -->
           <td class="wait-cell">{{ entry.wait }}</td>
-
-          <!-- Status -->
           <td>
             <span class="status-chip"
               [ngClass]="'s-' + entry.status.toLowerCase().replace('_', '-')">
@@ -315,9 +430,12 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="empty-msg">
-            <i class="pi pi-inbox"></i>
-            <span>No recent entries found.</span>
+          <td colspan="6">
+            <div class="empty-state">
+              <div class="empty-icon-wrap"><i class="pi pi-inbox"></i></div>
+              <p class="empty-title">No recent activity</p>
+              <p class="empty-sub">Queue entries will appear here as customers join via QR scan.</p>
+            </div>
           </td>
         </tr>
       </ng-template>

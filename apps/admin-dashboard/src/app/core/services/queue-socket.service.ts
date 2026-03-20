@@ -1,5 +1,5 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, map } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 
@@ -31,6 +31,59 @@ export interface QueueEntry {
   guestPhone?: string | null;
 }
 
+export interface NotificationPayload {
+  id: string;
+  type: 'POSITION_UPDATE' | 'NEXT_IN_LINE' | 'NOW_SERVING';
+  title: string;
+  message: string;
+  entryId: string;
+  queueId: string;
+  shopId: string;
+  priority: 'normal' | 'high';
+  data?: Record<string, unknown>;
+  timestamp: string;
+}
+
+// ── Connection state ──────────────────────────────────────────────────────────
+
+/** Lifecycle phase of the WebSocket connection. */
+export type SocketStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
+
+export interface ConnectionState {
+  /** Current lifecycle phase. */
+  status:    SocketStatus;
+  /**
+   * Current reconnect attempt number.
+   * 0 while connected or on the very first connection attempt.
+   */
+  attempt:   number;
+  /** Timestamp when this status was entered. */
+  since:     Date;
+  /** Last disconnect reason or error message, if any. */
+  lastError: string | null;
+}
+
+// ── Backoff configuration ─────────────────────────────────────────────────────
+//
+// Socket.io's built-in formula:
+//   delay = min(base * 2^attempt * (1 + factor * rand), max)
+//
+// Resulting schedule (approx, with 0.5 jitter):
+//   attempt 1 →  1–3 s
+//   attempt 2 →  2–6 s
+//   attempt 3 →  4–12 s
+//   attempt 4 →  8–24 s
+//   attempt 5+ → 30 s  (cap)
+
+const RECONNECT_CONFIG = {
+  reconnection:         true,
+  reconnectionDelay:    1_000,   // base delay: 1 s
+  reconnectionDelayMax: 30_000,  // cap: 30 s
+  reconnectionAttempts: Infinity,
+  randomizationFactor:  0.5,     // ±50 % jitter prevents thundering herd
+  timeout:              10_000,  // initial connection timeout: 10 s
+} as const;
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -38,22 +91,44 @@ export class QueueSocketService implements OnDestroy {
   private socket: Socket | null = null;
   private currentShopId: string | null = null;
 
+  // ── Subjects ──────────────────────────────────────────────────────────────
+
   private readonly queueUpdated$$ = new Subject<QueueUpdatedPayload>();
-  private readonly nowServing$$    = new Subject<NowServingPayload>();
-  private readonly connected$$     = new Subject<boolean>();
+  private readonly nowServing$$   = new Subject<NowServingPayload>();
+  private readonly notification$$ = new Subject<NotificationPayload>();
 
-  /** Emits the full queue list whenever the server broadcasts QUEUE_UPDATED */
-  readonly queueUpdated$  = this.queueUpdated$$.asObservable();
+  private readonly connectionState$$ = new BehaviorSubject<ConnectionState>({
+    status:    'disconnected',
+    attempt:   0,
+    since:     new Date(),
+    lastError: null,
+  });
 
-  /** Emits the currently-serving entry whenever NOW_SERVING_CHANGED fires */
-  readonly nowServing$    = this.nowServing$$.asObservable();
+  // ── Public streams ────────────────────────────────────────────────────────
 
-  /** Emits true when connected, false when disconnected / error */
-  readonly connected$     = this.connected$$.asObservable();
+  /** Full queue list — emits every time the server broadcasts QUEUE_UPDATED. */
+  readonly queueUpdated$ = this.queueUpdated$$.asObservable();
+
+  /** Currently-serving entry — emits every time NOW_SERVING_CHANGED fires. */
+  readonly nowServing$ = this.nowServing$$.asObservable();
+
+  /** Push notifications targeted at an entry (NOTIFICATION socket event). */
+  readonly notification$ = this.notification$$.asObservable();
+
+  /** Rich connection state — replays current value to every new subscriber. */
+  readonly connectionState$ = this.connectionState$$.asObservable();
+
+  /**
+   * Boolean convenience stream (backward-compatible).
+   * Emits true while the socket is fully connected, false otherwise.
+   */
+  readonly connected$ = this.connectionState$.pipe(
+    map(s => s.status === 'connected'),
+  );
 
   constructor(private readonly zone: NgZone) {}
 
-  // ── Connection lifecycle ────────────────────────────────────────────────────
+  // ── Public API ────────────────────────────────────────────────────────────
 
   /**
    * Connect to the /queue namespace for a specific shop.
@@ -63,41 +138,64 @@ export class QueueSocketService implements OnDestroy {
     if (this.socket && this.currentShopId === shopId) return;
 
     // Tear down previous connection if switching shops
-    this.disconnect();
+    this.teardown();
 
-    const url = `${environment.apiUrl}/queue`;
     this.currentShopId = shopId;
+    this.setStatus({ status: 'connecting', attempt: 0, since: new Date(), lastError: null });
 
-    this.socket = io(url, {
-      query:      { shopId },
+    this.socket = io(`${environment.apiUrl}/queue`, {
+      query: { shopId },
       transports: ['websocket', 'polling'],
-      reconnection:         true,
-      reconnectionDelay:    2_000,
-      reconnectionAttempts: Infinity,
+      ...RECONNECT_CONFIG,
     });
 
-    this.socket.on('connect', () => {
-      this.zone.run(() => this.connected$$.next(true));
-    });
-
-    this.socket.on('disconnect', () => {
-      this.zone.run(() => this.connected$$.next(false));
-    });
-
-    this.socket.on('connect_error', () => {
-      this.zone.run(() => this.connected$$.next(false));
-    });
-
-    this.socket.on('QUEUE_UPDATED', (payload: QueueUpdatedPayload) => {
-      this.zone.run(() => this.queueUpdated$$.next(payload));
-    });
-
-    this.socket.on('NOW_SERVING_CHANGED', (payload: NowServingPayload) => {
-      this.zone.run(() => this.nowServing$$.next(payload));
-    });
+    this.bindEvents();
   }
 
+  /**
+   * Permanently disconnect and clean up.
+   * Components should call this in ngOnDestroy.
+   */
   disconnect(): void {
+    this.teardown();
+    this.setStatus({ status: 'disconnected', attempt: 0, since: new Date(), lastError: null });
+  }
+
+  /**
+   * Force an immediate reconnect attempt.
+   * Useful when the user taps a "Retry" button or the app resumes from background.
+   */
+  forceReconnect(): void {
+    if (!this.currentShopId) return;
+
+    if (this.socket) {
+      // socket.io will re-run its connect sequence without full teardown
+      this.socket.connect();
+    } else {
+      const shopId = this.currentShopId;
+      this.teardown();
+      this.connect(shopId);
+    }
+  }
+
+  /** Synchronous connected check (same as before — used by fallback guards). */
+  get isConnected(): boolean {
+    return this.socket?.connected ?? false;
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+  ngOnDestroy(): void {
+    this.teardown();
+    this.queueUpdated$$.complete();
+    this.nowServing$$.complete();
+    this.notification$$.complete();
+    this.connectionState$$.complete();
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private teardown(): void {
     if (this.socket) {
       this.socket.removeAllListeners();
       this.socket.disconnect();
@@ -106,14 +204,100 @@ export class QueueSocketService implements OnDestroy {
     }
   }
 
-  get isConnected(): boolean {
-    return this.socket?.connected ?? false;
+  private setStatus(state: ConnectionState): void {
+    this.connectionState$$.next(state);
   }
 
-  ngOnDestroy(): void {
-    this.disconnect();
-    this.queueUpdated$$.complete();
-    this.nowServing$$.complete();
-    this.connected$$.complete();
+  private bindEvents(): void {
+    const s = this.socket!;
+
+    // ── Connection lifecycle ───────────────────────────────────────────────
+
+    s.on('connect', () => {
+      this.zone.run(() =>
+        this.setStatus({ status: 'connected', attempt: 0, since: new Date(), lastError: null }),
+      );
+    });
+
+    s.on('disconnect', (reason: string) => {
+      this.zone.run(() => {
+        // 'io client disconnect' is intentional (we called socket.disconnect())
+        // — skip emitting; teardown / disconnect() handles the state.
+        if (reason === 'io client disconnect') return;
+
+        this.setStatus({
+          status:    'disconnected',
+          attempt:   0,
+          since:     new Date(),
+          lastError: reason,
+        });
+      });
+    });
+
+    s.on('connect_error', (err: Error) => {
+      this.zone.run(() => {
+        const cur = this.connectionState$$.getValue();
+        // reconnect_attempt fires before connect_error for retries, so only
+        // update when we are still in the initial 'connecting' phase.
+        if (cur.status === 'connecting') {
+          this.setStatus({
+            status:    'disconnected',
+            attempt:   0,
+            since:     new Date(),
+            lastError: err.message,
+          });
+        } else {
+          // Preserve attempt count, just update the error text
+          this.setStatus({ ...cur, lastError: err.message });
+        }
+      });
+    });
+
+    // ── Reconnection ────────────────────────────────────────────────────────
+
+    s.on('reconnect_attempt', (attempt: number) => {
+      this.zone.run(() => {
+        const cur = this.connectionState$$.getValue();
+        this.setStatus({
+          status:    'reconnecting',
+          attempt,
+          since:     new Date(),
+          lastError: cur.lastError,
+        });
+      });
+    });
+
+    s.on('reconnect_error', (err: Error) => {
+      this.zone.run(() => {
+        const cur = this.connectionState$$.getValue();
+        this.setStatus({ ...cur, lastError: err.message });
+      });
+    });
+
+    s.on('reconnect_failed', () => {
+      // Only fires when reconnectionAttempts is finite — included for completeness.
+      this.zone.run(() =>
+        this.setStatus({
+          status:    'disconnected',
+          attempt:   0,
+          since:     new Date(),
+          lastError: 'Max reconnection attempts reached',
+        }),
+      );
+    });
+
+    // ── Queue events ─────────────────────────────────────────────────────────
+
+    s.on('QUEUE_UPDATED', (payload: QueueUpdatedPayload) => {
+      this.zone.run(() => this.queueUpdated$$.next(payload));
+    });
+
+    s.on('NOW_SERVING_CHANGED', (payload: NowServingPayload) => {
+      this.zone.run(() => this.nowServing$$.next(payload));
+    });
+
+    s.on('NOTIFICATION', (payload: NotificationPayload) => {
+      this.zone.run(() => this.notification$$.next(payload));
+    });
   }
 }

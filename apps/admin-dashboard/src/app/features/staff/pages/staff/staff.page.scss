@@ -1,4 +1,83 @@
-:host {
-  display: block;
+/* ═══════════════════════════════════════════
+   Staff Page — page-specific styles only
+   (shared patterns live in styles.scss)
+   ═══════════════════════════════════════════ */
+
+.staff-page {
+  color: var(--tt-text);
+  max-width: 1400px;
 }
 
+/* ── Member cell ── */
+.member-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.member-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--tt-grad);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.inactive-avatar {
+    background: var(--tt-border);
+    color: var(--tt-text-faint);
+  }
+}
+
+.member-info { display: flex; flex-direction: column; }
+
+.member-name {
+  font-size: var(--tt-fs-body);
+  font-weight: 600;
+  color: var(--tt-text-2);
+}
+
+.member-email {
+  font-size: 0.72rem;
+  color: var(--tt-text-faint);
+}
+
+/* ── Role chip ── */
+.role-chip {
+  display: inline-block;
+  border-radius: var(--tt-radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+
+  &.role-owner     { background: rgba(245, 158, 11, 0.12); color: var(--tt-warning-dark); }
+  &.role-barber    { background: rgba(99, 102, 241, 0.1);  color: var(--tt-primary); }
+  &.role-admin     { background: rgba(239, 68, 68, 0.1);   color: var(--tt-danger-dark); }
+  &.role-reception { background: rgba(16, 185, 129, 0.1);  color: var(--tt-success-dark); }
+}
+
+/* ── Contact ── */
+.contact-stack {
+  font-size: 0.78rem;
+  color: var(--tt-text-muted);
+
+  i { color: var(--tt-text-faint); font-size: 0.7rem; margin-right: 0.25rem; }
+}
+
+/* ── Last active ── */
+.last-active {
+  font-size: 0.8rem;
+  color: var(--tt-text-faint);
+
+  &.active-today {
+    color: var(--tt-success-dark);
+    font-weight: 600;
+  }
+}

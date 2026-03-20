@@ -37,7 +37,11 @@
     </div>
 
     <!-- Token Card -->
-    <div class="token-card animate-in" style="animation-delay: 0.08s" [class.pulsing]="entry.status === 'CALLED'">
+    <div class="token-card animate-in" style="animation-delay: 0.08s"
+         [class.pulsing]="entry.status === 'CALLED'"
+         [class.position-changed]="positionChanging"
+         [class.notif-next]="notifAnim === 'next'"
+         [class.notif-called]="notifAnim === 'called'">
       <div class="token-label">Your Token</div>
       <div class="token-number" [class]="'token-' + statusColor">
         {{ entry.ticketDisplay }}
@@ -71,7 +75,7 @@
 
       <div class="stat-divider"></div>
 
-      <div class="stat-card">
+      <div class="stat-card" [class.stat-highlight]="positionChanging">
         <div class="stat-icon pos-icon">
           <ion-icon name="list-outline"></ion-icon>
         </div>
@@ -83,12 +87,12 @@
 
       <div class="stat-divider"></div>
 
-      <div class="stat-card">
+      <div class="stat-card" [class.stat-highlight]="nowServingChanging">
         <div class="stat-icon now-icon">
           <ion-icon name="cut-outline"></ion-icon>
         </div>
         <div class="stat-body">
-          <span class="stat-value">{{ currentServing }}</span>
+          <span class="stat-value" [class.ns-flip]="nowServingChanging">{{ nowServingDisplay }}</span>
         </div>
         <span class="stat-label">Now Serving</span>
       </div>
@@ -101,8 +105,8 @@
         <span class="progress-label">Queue Progress</span>
         <span class="progress-pct">{{ progressWidth }}%</span>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" [class]="statusColor" [style.width.%]="progressWidth"></div>
+      <div class="progress-track" [class.progress-flash]="progressFlashing">
+        <div class="progress-fill" [class]="statusColor" [style.width.%]="progressDisplayWidth"></div>
       </div>
       <div class="progress-foot">
         <span>Start</span>
@@ -143,9 +147,24 @@
         <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
         Leave Queue
       </ion-button>
-      <div class="update-info">
-        <ion-icon name="sync-outline"></ion-icon>
-        Updates in real-time
+      <div class="update-info"
+           [class.offline]="connectionState.status === 'disconnected'"
+           [class.reconnecting]="connectionState.status === 'reconnecting'">
+        <ng-container [ngSwitch]="connectionState.status">
+          <ng-container *ngSwitchCase="'connected'">
+            <ion-icon name="sync-outline"></ion-icon>
+            Updates in real-time
+          </ng-container>
+          <ng-container *ngSwitchCase="'reconnecting'">
+            <ion-icon name="refresh-outline"></ion-icon>
+            Reconnecting… ({{ connectionState.attempt }})
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            <ion-icon name="cloud-offline-outline"></ion-icon>
+            Offline ·
+            <button class="retry-btn" (click)="retryConnection()">Retry</button>
+          </ng-container>
+        </ng-container>
       </div>
     </div>
 

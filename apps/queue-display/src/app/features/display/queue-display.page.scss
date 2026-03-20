@@ -33,6 +33,50 @@ $muted:      #64748b;
   -webkit-font-smoothing: antialiased;
 }
 
+// ── Full-screen serving-change glow overlay ───────────────────
+//
+// A fixed overlay that is always in the DOM (opacity 0) so there is no
+// layout shift when it activates. The parent `.display-root.screen-glow`
+// class triggers the keyframe via the child selector.
+//
+// Keyframe design: fast rise to peak brightness → slow exponential decay
+// so the flash registers instantly from across the room but doesn't linger
+// long enough to obscure the queue data.
+
+.screen-glow-overlay {
+  position:       fixed;
+  inset:          0;
+  pointer-events: none;
+  z-index:        0;   // behind all content layers (grid children at z-index:1)
+  opacity:        0;
+
+  // Cyan radial matching the hero-number palette
+  background: radial-gradient(
+    ellipse 75% 55% at 50% 40%,
+    rgba(34, 211, 238, 0.22) 0%,
+    rgba(34, 211, 238, 0.10) 35%,
+    rgba(34, 211, 238, 0.03) 65%,
+    transparent 100%
+  );
+}
+
+.display-root.screen-glow .screen-glow-overlay {
+  animation: screenGlowPulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes screenGlowPulse {
+  // Frame 0: invisible
+  0%   { opacity: 0;    }
+  // Frame ~8%: peak — hits hard and fast
+  8%   { opacity: 1;    }
+  // Frame 35%: settling — half brightness
+  35%  { opacity: 0.45; }
+  // Frame 70%: nearly gone
+  70%  { opacity: 0.14; }
+  // Frame 100%: fully away
+  100% { opacity: 0;    }
+}
+
 // ── Ambient background layers ─────────────────────────────────
 .bg-grid {
   position:       fixed;
@@ -189,8 +233,16 @@ $muted:      #64748b;
     background:   rgba(239, 68, 68, 0.07);
     border-color: rgba(239, 68, 68, 0.2);
 
-    .live-dot   { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+    .live-dot   { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); animation: none; }
     .live-label { color: #f87171; }
+  }
+
+  &.reconnecting {
+    background:   rgba(251, 191, 36, 0.07);
+    border-color: rgba(251, 191, 36, 0.25);
+
+    .live-dot   { background: #fbbf24; box-shadow: 0 0 8px rgba(251, 191, 36, 0.6); animation: livePulse 0.8s ease-in-out infinite; }
+    .live-label { color: #fcd34d; letter-spacing: 0.12em; }
   }
 }
 
@@ -711,4 +763,177 @@ $muted:      #64748b;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color:          $muted;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CORE KEYFRAMES
+// ══════════════════════════════════════════════════════════════
+
+// Soft brightness breathe — color-agnostic, used for both amber + cyan numbers
+@keyframes neonBreathe {
+  0%, 100% { filter: brightness(1);    }
+  50%       { filter: brightness(0.78); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PREVIOUSLY MISSING KEYFRAMES (referenced above but undefined)
+// ══════════════════════════════════════════════════════════════
+
+// Scan beam travels from top to bottom of viewport
+@keyframes scanDown {
+  0%   { top: -2px; }
+  100% { top: 100%; }
+}
+
+// Pulsing live dot (green or amber depending on context)
+@keyframes livePulse {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(0.88); }
+}
+
+// Seamless left-scroll for the bottom ticker track
+// The track contains two copies of the list, so -50% = one full pass
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+// Hero number change — scale-up pop with blur-in effect
+@keyframes ticketChange {
+  0%   {
+    opacity:   0;
+    transform: scale(0.65) translateY(-24px);
+    filter:    blur(6px);
+  }
+  55%  {
+    opacity:   1;
+    transform: scale(1.06) translateY(4px);
+    filter:    blur(0);
+  }
+  100% {
+    opacity:   1;
+    transform: scale(1) translateY(0);
+    filter:    blur(0);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// LIVE UPDATE ANIMATIONS (new)
+// ══════════════════════════════════════════════════════════════
+
+// ── UP NEXT number change animation ──────────────────────────────────────────
+@keyframes nextChange {
+  0%   {
+    opacity:   0;
+    transform: scale(0.72) translateY(18px);
+    filter:    blur(4px);
+  }
+  60%  {
+    opacity:   1;
+    transform: scale(1.05) translateY(-2px);
+    filter:    blur(0);
+  }
+  100% {
+    opacity:   1;
+    transform: scale(1) translateY(0);
+    filter:    blur(0);
+  }
+}
+
+.next-number.animating {
+  animation: nextChange 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+// ── Serving section: radial glow burst when ticket changes ────────────────────
+// Overrides the ::before pseudo-element's background radial gradient for 900ms.
+@keyframes servingGlowBurst {
+  0%   {
+    background: radial-gradient(
+      ellipse 75% 75% at 50% 55%,
+      rgba(252, 211, 77, 0.22) 0%,
+      rgba(252, 211, 77, 0.08) 40%,
+      transparent 70%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      ellipse 60% 60% at 50% 55%,
+      rgba(252, 211, 77, 0.055) 0%,
+      transparent 70%
+    );
+  }
+}
+
+.serving-section.serving-glow::before {
+  animation: servingGlowBurst 0.9s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+// ── Hero number: extra glow burst on the text-shadow ────────────────────────
+// Runs alongside ticketChange — adds an intensified neon flare on entry.
+@keyframes glowBurst {
+  0%   {
+    text-shadow:
+      0 0  6px $amber,
+      0 0 18px $amber,
+      0 0 40px $amber,
+      0 0 80px $amber-hi,
+      0 0 140px $amber-dim,
+      0 0 220px rgba(252, 211, 77, 0.2);
+  }
+  100% {
+    text-shadow:
+      0 0  6px $amber,
+      0 0 14px $amber,
+      0 0 28px $amber,
+      0 0 56px $amber-hi,
+      0 0 100px $amber-dim;
+  }
+}
+
+.hero-number.glow-burst {
+  animation:
+    ticketChange 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    glowBurst    0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+// ── Upcoming chips: enter animation for new arrivals ─────────────────────────
+// trackBy prevents recreation of existing chips, so this only fires on
+// genuinely new entries added to the upcomingList.
+@keyframes chipEnter {
+  0%   { opacity: 0; transform: scale(0.75) translateY(8px); }
+  65%  { opacity: 1; transform: scale(1.05) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.upcoming-chip {
+  animation: chipEnter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+// ── Ticker chip: subtle slide-in for new entries ──────────────────────────────
+@keyframes tickerChipEnter {
+  0%   { opacity: 0; transform: translateX(12px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.ticker-chip {
+  animation: tickerChipEnter 0.3s ease both;
+}
+
+// ── Stats pill numbers: count-up feel via scale pop ───────────────────────────
+@keyframes statPop {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  60%  { transform: scale(1.14); opacity: 1;   }
+  100% { transform: scale(1);    opacity: 1;   }
+}
+
+.stat-pill-num {
+  display: inline-block;  // required for transform
+
+  // Animate on initial load
+  animation: statPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+
+  // Re-trigger on live queue updates via [class.pop]
+  &.pop {
+    animation: statPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
 }

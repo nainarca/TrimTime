@@ -36,7 +36,8 @@ export class SidebarComponent {
     {
       label: 'Manage',
       items: [
-        { label: 'Barbers',   icon: 'pi pi-id-card',    route: '/staff'    },
+        { label: 'Barbers',   icon: 'pi pi-id-card',    route: '/barbers'  },
+        { label: 'Staff',     icon: 'pi pi-users',      route: '/staff'    },
         { label: 'Services',  icon: 'pi pi-briefcase',  route: '/services' },
         { label: 'Reports',   icon: 'pi pi-chart-bar',  route: '/reports'  },
       ],

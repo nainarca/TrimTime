@@ -39,8 +39,8 @@
 .tt-content {
   overflow-y: auto;
   background: transparent;
-  padding: 1.75rem 2rem;
-  flex: 1;
+  padding: 1.75rem 2rem !important;
+  flex: 1 1 auto !important;
 }
 
 @media (max-width: 992px) {
