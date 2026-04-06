@@ -12,6 +12,12 @@
     </div>
   </div>
 
+  <!-- ── Demo Data Banner ── -->
+  <div class="demo-banner" *ngIf="usingMockData">
+    <i class="pi pi-info-circle"></i>
+    Showing demo data — booking sync coming soon
+  </div>
+
   <!-- ── Summary Strip Skeleton ── -->
   <div class="summary-strip" *ngIf="loading">
     <div class="summary-card" *ngFor="let i of [1,2,3,4]">
@@ -76,7 +82,6 @@
       [paginator]="bookings.length > 20"
       [rows]="20"
       [rowsPerPageOptions]="[10, 20, 50]"
-      [globalFilterFields]="['customerId', 'serviceId', 'barberId', 'status']"
       styleClass="p-datatable-sm"
     >
       <ng-template pTemplate="header">
@@ -85,23 +90,31 @@
           <th>Service</th>
           <th>Barber</th>
           <th>Scheduled</th>
-          <th>Status</th>
-          <th class="actions-header"></th>
+          <th style="width:90px">Duration</th>
+          <th style="width:120px">Status</th>
+          <th class="actions-header" style="width:60px"></th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-b>
         <tr>
-          <td class="muted-cell">{{ b.customerId | slice:0:8 }}…</td>
-          <td class="muted-cell">{{ b.serviceId  | slice:0:8 }}…</td>
-          <td class="muted-cell">{{ b.barberId   | slice:0:8 }}…</td>
-          <td class="muted-cell">{{ b.scheduledAt | date:'short' }}</td>
+          <td>
+            <div class="customer-wrap">
+              <div class="customer-avatar">{{ displayCustomer(b).charAt(0).toUpperCase() }}</div>
+              <span class="customer-name">{{ displayCustomer(b) }}</span>
+            </div>
+          </td>
+          <td>{{ displayService(b) }}</td>
+          <td>{{ displayBarber(b) }}</td>
+          <td class="muted-text">{{ b.scheduledAt | date:'MMM d, h:mm a' }}</td>
+          <td class="muted-text">{{ b.durationMins }} min</td>
           <td>
             <span class="status-chip" [ngClass]="bookingStatusClass(b.status)">{{ b.status }}</span>
           </td>
           <td>
             <div class="actions-wrap">
               <button
+                *ngIf="b.status !== 'CANCELLED' && b.status !== 'COMPLETED'"
                 pButton icon="pi pi-times"
                 class="p-button-text p-button-sm qaction qaction-danger"
                 pTooltip="Cancel" tooltipPosition="top"
@@ -114,7 +127,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6">
+          <td colspan="7">
             <div class="empty-state">
               <div class="empty-icon-wrap"><i class="pi pi-calendar"></i></div>
               <p class="empty-title">No bookings yet</p>
@@ -141,18 +154,18 @@
 
       <div class="form-row">
         <div class="form-field">
-          <label>Customer ID</label>
-          <input pInputText type="text" [(ngModel)]="newBooking.customerId" placeholder="cust_…" />
+          <label>Customer Name</label>
+          <input pInputText type="text" [(ngModel)]="newBooking.customerName" placeholder="e.g. John Smith" />
         </div>
         <div class="form-field">
-          <label>Barber ID</label>
-          <input pInputText type="text" [(ngModel)]="newBooking.barberId" placeholder="barb_…" />
+          <label>Barber</label>
+          <input pInputText type="text" [(ngModel)]="newBooking.barberName" placeholder="e.g. Mike Johnson" />
         </div>
       </div>
 
       <div class="form-field">
-        <label>Service ID</label>
-        <input pInputText type="text" [(ngModel)]="newBooking.serviceId" placeholder="svc_…" />
+        <label>Service</label>
+        <input pInputText type="text" [(ngModel)]="newBooking.serviceName" placeholder="e.g. Haircut" />
       </div>
 
       <div class="form-row">
@@ -174,7 +187,14 @@
     </div>
     <ng-template pTemplate="footer">
       <button pButton label="Cancel" class="p-button-text" (click)="createDialogVisible = false"></button>
-      <button pButton label="Save Booking" icon="pi pi-check" class="btn-grad" (click)="saveBooking()"></button>
+      <button
+        pButton
+        [label]="saving ? 'Saving…' : 'Save Booking'"
+        [icon]="saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+        class="btn-grad"
+        [disabled]="saving"
+        (click)="saveBooking()"
+      ></button>
     </ng-template>
   </p-dialog>
 

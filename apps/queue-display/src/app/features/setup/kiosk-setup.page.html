@@ -79,6 +79,46 @@
         </div>
       </div>
 
+      <!-- Shop Display Name (optional) -->
+      <div class="field-group">
+        <label class="field-label" for="shopName">
+          <span class="label-icon" aria-hidden="true">◉</span>
+          Shop Display Name
+          <span class="optional-tag">optional</span>
+        </label>
+        <div class="input-wrap">
+          <input
+            id="shopName"
+            class="setup-input"
+            type="text"
+            placeholder="e.g. Mike's Barber Shop"
+            [(ngModel)]="shopName"
+            autocomplete="off"
+          />
+          <span class="input-icon" aria-hidden="true">◉</span>
+        </div>
+      </div>
+
+      <!-- Branch Display Name (optional) -->
+      <div class="field-group">
+        <label class="field-label" for="branchName">
+          <span class="label-icon" aria-hidden="true">◎</span>
+          Branch Display Name
+          <span class="optional-tag">optional</span>
+        </label>
+        <div class="input-wrap">
+          <input
+            id="branchName"
+            class="setup-input"
+            type="text"
+            placeholder="e.g. Main Branch"
+            [(ngModel)]="branchName"
+            autocomplete="off"
+          />
+          <span class="input-icon" aria-hidden="true">◎</span>
+        </div>
+      </div>
+
       <!-- Activate button -->
       <button
         class="activate-btn"

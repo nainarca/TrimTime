@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 export interface Service {
   id: string;
@@ -10,6 +11,14 @@ export interface Service {
   bookingsToday: number;
 }
 
+const SEED_SERVICES: Service[] = [
+  { id: '1', name: 'Haircut',         category: 'Hair',    durationMins: 30, price: 25, status: 'ACTIVE',   bookingsToday: 14 },
+  { id: '2', name: 'Beard Trim',      category: 'Beard',   durationMins: 15, price: 15, status: 'ACTIVE',   bookingsToday: 9  },
+  { id: '3', name: 'Haircut + Beard', category: 'Package', durationMins: 45, price: 35, status: 'ACTIVE',   bookingsToday: 6  },
+  { id: '4', name: 'Hot Towel Shave', category: 'Beard',   durationMins: 30, price: 28, status: 'ACTIVE',   bookingsToday: 4  },
+  { id: '5', name: 'Hair Coloring',   category: 'Hair',    durationMins: 90, price: 65, status: 'INACTIVE', bookingsToday: 0  },
+];
+
 @Component({
   selector: 'tt-services-page',
   templateUrl: './services.page.html',
@@ -17,21 +26,18 @@ export interface Service {
 })
 export class ServicesPageComponent implements OnInit {
   loading = true;
+  saving  = false;
 
-  services: Service[] = [
-    { id: '1', name: 'Haircut',         category: 'Hair',    durationMins: 30, price: 25, status: 'ACTIVE',   bookingsToday: 14 },
-    { id: '2', name: 'Beard Trim',      category: 'Beard',   durationMins: 15, price: 15, status: 'ACTIVE',   bookingsToday: 9  },
-    { id: '3', name: 'Haircut + Beard', category: 'Package', durationMins: 45, price: 35, status: 'ACTIVE',   bookingsToday: 6  },
-    { id: '4', name: 'Hot Towel Shave', category: 'Beard',   durationMins: 30, price: 28, status: 'ACTIVE',   bookingsToday: 4  },
-    { id: '5', name: 'Hair Coloring',   category: 'Hair',    durationMins: 90, price: 65, status: 'INACTIVE', bookingsToday: 0  },
-  ];
+  services: Service[] = [];
 
-  dialogVisible = false;
+  dialogVisible     = false;
   deleteConfirmId: string | null = null;
   editingId: string | null = null;
   categories = ['Hair', 'Beard', 'Package', 'Treatment', 'Other'];
 
   form = { name: '', category: 'Hair', durationMins: 30, price: 25 };
+
+  constructor(private readonly notify: NotificationService) {}
 
   get activeCount(): number   { return this.services.filter(s => s.status === 'ACTIVE').length; }
   get totalBookings(): number { return this.services.reduce((t, s) => t + s.bookingsToday, 0); }
@@ -46,7 +52,11 @@ export class ServicesPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    setTimeout(() => { this.loading = false; }, 600);
+    // Simulate load; replace with upsertService GraphQL call in Phase-2
+    setTimeout(() => {
+      this.services = [...SEED_SERVICES];
+      this.loading  = false;
+    }, 500);
   }
 
   openNew(): void {
@@ -62,32 +72,49 @@ export class ServicesPageComponent implements OnInit {
   }
 
   saveService(): void {
-    if (!this.form.name.trim()) return;
-    if (this.editingId) {
-      const idx = this.services.findIndex(s => s.id === this.editingId);
-      if (idx !== -1) {
-        this.services[idx] = { ...this.services[idx], ...this.form };
-        this.services = [...this.services];
-      }
-    } else {
-      this.services = [...this.services, {
-        id: Date.now().toString(), ...this.form, status: 'ACTIVE', bookingsToday: 0,
-      }];
+    if (!this.form.name.trim()) {
+      this.notify.warn('Validation', 'Service name is required.');
+      return;
     }
-    this.dialogVisible = false;
+    this.saving = true;
+
+    // Simulate async save (replace with upsertService mutation when backend ready)
+    setTimeout(() => {
+      if (this.editingId) {
+        const idx = this.services.findIndex(s => s.id === this.editingId);
+        if (idx !== -1) {
+          this.services[idx] = { ...this.services[idx], ...this.form };
+          this.services = [...this.services];
+        }
+        this.notify.success('Updated', `"${this.form.name}" updated successfully.`);
+      } else {
+        this.services = [...this.services, {
+          id: Date.now().toString(),
+          ...this.form,
+          status:       'ACTIVE',
+          bookingsToday: 0,
+        }];
+        this.notify.success('Added', `"${this.form.name}" added to your catalog.`);
+      }
+      this.saving        = false;
+      this.dialogVisible = false;
+    }, 500);
   }
 
   toggleStatus(s: Service): void {
     const idx = this.services.findIndex(x => x.id === s.id);
-    if (idx !== -1) {
-      this.services[idx] = { ...s, status: s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' };
-      this.services = [...this.services];
-    }
+    if (idx === -1) return;
+    const next  = s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    this.services[idx] = { ...s, status: next };
+    this.services = [...this.services];
+    const label = next === 'ACTIVE' ? 'activated' : 'deactivated';
+    this.notify.info('Status changed', `"${s.name}" has been ${label}.`);
   }
 
   deleteService(s: Service): void {
     this.services = this.services.filter(x => x.id !== s.id);
     this.deleteConfirmId = null;
+    this.notify.warn('Deleted', `"${s.name}" has been removed from the catalog.`);
   }
 
   categoryColor(cat: string): string {

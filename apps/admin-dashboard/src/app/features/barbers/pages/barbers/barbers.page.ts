@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 export interface Barber {
   id: string;
@@ -13,54 +14,54 @@ export interface Barber {
   queueSize: number;
 }
 
+const SEED_BARBERS: Barber[] = [
+  {
+    id: '1', name: 'Mike Johnson',    initials: 'MJ',
+    phone: '+1 555-0101', email: 'mike@barbershop.com',
+    specialties: ['Haircut', 'Beard Trim'],
+    status: 'ACTIVE', rating: 4.9, todayServed: 12, queueSize: 3,
+  },
+  {
+    id: '2', name: 'James Williams',  initials: 'JW',
+    phone: '+1 555-0102', email: 'james@barbershop.com',
+    specialties: ['Haircut', 'Hair Color'],
+    status: 'ACTIVE', rating: 4.7, todayServed: 8, queueSize: 2,
+  },
+  {
+    id: '3', name: 'Carlos Martinez', initials: 'CM',
+    phone: '+1 555-0103', email: 'carlos@barbershop.com',
+    specialties: ['Beard Trim', 'Hot Shave'],
+    status: 'ACTIVE', rating: 4.8, todayServed: 6, queueSize: 1,
+  },
+  {
+    id: '4', name: 'David Chen',      initials: 'DC',
+    phone: '+1 555-0104', email: 'david@barbershop.com',
+    specialties: ['Haircut'],
+    status: 'INACTIVE', rating: 4.5, todayServed: 0, queueSize: 0,
+  },
+];
+
 @Component({
   selector: 'tt-barbers-page',
   templateUrl: './barbers.page.html',
   styleUrls: ['./barbers.page.scss'],
 })
 export class BarbersPageComponent implements OnInit {
-  loading = true;
+  loading  = true;
+  saving   = false;
 
-  barbers: Barber[] = [
-    {
-      id: '1', name: 'Mike Johnson',   initials: 'MJ',
-      phone: '+1 555-0101', email: 'mike&#64;barbershop.com',
-      specialties: ['Haircut', 'Beard Trim'],
-      status: 'ACTIVE', rating: 4.9, todayServed: 12, queueSize: 3,
-    },
-    {
-      id: '2', name: 'James Williams', initials: 'JW',
-      phone: '+1 555-0102', email: 'james&#64;barbershop.com',
-      specialties: ['Haircut', 'Hair Color'],
-      status: 'ACTIVE', rating: 4.7, todayServed: 8, queueSize: 2,
-    },
-    {
-      id: '3', name: 'Carlos Martinez', initials: 'CM',
-      phone: '+1 555-0103', email: 'carlos&#64;barbershop.com',
-      specialties: ['Beard Trim', 'Hot Shave'],
-      status: 'ACTIVE', rating: 4.8, todayServed: 6, queueSize: 1,
-    },
-    {
-      id: '4', name: 'David Chen',     initials: 'DC',
-      phone: '+1 555-0104', email: 'david&#64;barbershop.com',
-      specialties: ['Haircut'],
-      status: 'INACTIVE', rating: 4.5, todayServed: 0, queueSize: 0,
-    },
-  ];
+  barbers: Barber[] = [];
 
-  dialogVisible = false;
+  dialogVisible     = false;
   editingId: string | null = null;
   deleteConfirmId: string | null = null;
 
-  form = {
-    name: '',
-    phone: '',
-    email: '',
-    specialties: '',
-  };
+  form = { name: '', phone: '', email: '', specialties: '' };
 
-  get totalActive(): number   { return this.barbers.filter(b => b.status === 'ACTIVE').length; }
-  get totalServed(): number   { return this.barbers.reduce((s, b) => s + b.todayServed, 0); }
+  constructor(private readonly notify: NotificationService) {}
+
+  get totalActive(): number { return this.barbers.filter(b => b.status === 'ACTIVE').length; }
+  get totalServed(): number { return this.barbers.reduce((s, b) => s + b.todayServed, 0); }
   get avgRating(): string {
     const active = this.barbers.filter(b => b.status === 'ACTIVE');
     if (!active.length) return '—';
@@ -68,7 +69,12 @@ export class BarbersPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    setTimeout(() => { this.loading = false; }, 600);
+    // Simulate loading from API; replace with real GraphQL call when barbers
+    // resolver is added to the backend (Phase-2).
+    setTimeout(() => {
+      this.barbers = [...SEED_BARBERS];
+      this.loading = false;
+    }, 500);
   }
 
   openNew(): void {
@@ -80,70 +86,79 @@ export class BarbersPageComponent implements OnInit {
   editBarber(b: Barber): void {
     this.editingId = b.id;
     this.form = {
-      name: b.name,
-      phone: b.phone,
-      email: b.email,
+      name:        b.name,
+      phone:       b.phone,
+      email:       b.email,
       specialties: b.specialties.join(', '),
     };
     this.dialogVisible = true;
   }
 
   saveBarber(): void {
-    if (!this.form.name.trim()) return;
-    const specialties = this.form.specialties
-      .split(',').map(s => s.trim()).filter(Boolean);
-
-    if (this.editingId) {
-      const idx = this.barbers.findIndex(b => b.id === this.editingId);
-      if (idx !== -1) {
-        this.barbers[idx] = {
-          ...this.barbers[idx],
-          name: this.form.name,
-          initials: this.initials(this.form.name),
-          phone: this.form.phone,
-          email: this.form.email,
-          specialties,
-        };
-        this.barbers = [...this.barbers];
-      }
-    } else {
-      this.barbers = [...this.barbers, {
-        id: Date.now().toString(),
-        name: this.form.name,
-        initials: this.initials(this.form.name),
-        phone: this.form.phone,
-        email: this.form.email,
-        specialties,
-        status: 'ACTIVE',
-        rating: 5.0,
-        todayServed: 0,
-        queueSize: 0,
-      }];
+    if (!this.form.name.trim()) {
+      this.notify.warn('Validation', 'Barber name is required.');
+      return;
     }
-    this.dialogVisible = false;
+    const specialties = this.form.specialties.split(',').map(s => s.trim()).filter(Boolean);
+    this.saving = true;
+
+    // Simulate async save (replace with upsertBarber mutation when available)
+    setTimeout(() => {
+      if (this.editingId) {
+        const idx = this.barbers.findIndex(b => b.id === this.editingId);
+        if (idx !== -1) {
+          this.barbers[idx] = {
+            ...this.barbers[idx],
+            name:       this.form.name,
+            initials:   this.toInitials(this.form.name),
+            phone:      this.form.phone,
+            email:      this.form.email,
+            specialties,
+          };
+          this.barbers = [...this.barbers];
+        }
+        this.notify.success('Updated', `${this.form.name} updated successfully.`);
+      } else {
+        this.barbers = [...this.barbers, {
+          id:          Date.now().toString(),
+          name:        this.form.name,
+          initials:    this.toInitials(this.form.name),
+          phone:       this.form.phone,
+          email:       this.form.email,
+          specialties,
+          status:      'ACTIVE',
+          rating:      5.0,
+          todayServed: 0,
+          queueSize:   0,
+        }];
+        this.notify.success('Added', `${this.form.name} added to your team.`);
+      }
+      this.saving       = false;
+      this.dialogVisible = false;
+    }, 500);
   }
 
   toggleStatus(b: Barber): void {
     const idx = this.barbers.findIndex(x => x.id === b.id);
-    if (idx !== -1) {
-      this.barbers[idx] = {
-        ...b,
-        status: b.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE',
-      };
-      this.barbers = [...this.barbers];
-    }
+    if (idx === -1) return;
+    const next = b.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    this.barbers[idx] = { ...b, status: next };
+    this.barbers = [...this.barbers];
+    const label = next === 'ACTIVE' ? 'activated' : 'deactivated';
+    this.notify.info('Status changed', `${b.name} has been ${label}.`);
   }
 
   deleteBarber(b: Barber): void {
     this.barbers = this.barbers.filter(x => x.id !== b.id);
     this.deleteConfirmId = null;
+    this.notify.warn('Deleted', `${b.name} has been removed.`);
   }
 
-  starsArray(rating: number): number[] {
-    return Array.from({ length: 5 }, (_, i) => i);
+  starsArray(_rating: number): number[] {
+    return Array.from({ length: 5 });
   }
 
-  private initials(name: string): string {
+  private toInitials(name: string): string {
     return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
   }
 }

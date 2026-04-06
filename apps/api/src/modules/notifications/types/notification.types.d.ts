@@ -12,12 +12,17 @@ export declare const NotificationChannel: {
 };
 export type NotificationChannel = (typeof NotificationChannel)[keyof typeof NotificationChannel];
 export interface NotificationPayload {
-    /** Unique id — used on the frontend to deduplicate */
+    /** Unique id — used on the frontend to deduplicate toasts */
     id: string;
     type: NotificationType;
     title: string;
     message: string;
-    /** Relevant queue entry */
+    /**
+     * The queue entry this notification is about.
+     * Exposed as both `queueId` (canonical field, matches frontend API contract)
+     * and `entryId` (internal alias, used by InAppChannel for room routing).
+     */
+    queueId: string;
     entryId: string;
     shopId: string;
     /** Opaque extras (position numbers, EWT, etc.) */
@@ -27,6 +32,7 @@ export interface NotificationPayload {
     timestamp: string;
 }
 export interface PositionChangedEvent {
+    queueId: string;
     entryId: string;
     shopId: string;
     ticketDisplay: string;
@@ -37,6 +43,7 @@ export interface PositionChangedEvent {
     estimatedWaitMins: number | null;
 }
 export interface NextInLineEvent {
+    queueId: string;
     entryId: string;
     shopId: string;
     ticketDisplay: string;
@@ -45,6 +52,7 @@ export interface NextInLineEvent {
     estimatedWaitMins: number | null;
 }
 export interface QueueCalledEvent {
+    queueId: string;
     entryId: string;
     shopId: string;
     ticketDisplay: string;

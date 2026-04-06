@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { environment } from '../../../environments/environment';
 
 @Component({
   standalone: true,
@@ -24,7 +25,7 @@ export class ScannerPage {
     // Demo: navigate to seeded shop after 1.8 s
     setTimeout(() => {
       this.scanning = false;
-      this.router.navigate(['/shop', 'mikes-barber-shop']);
+      this.router.navigate(['/shop', environment.demoShopSlug]);
     }, 1800);
   }
 

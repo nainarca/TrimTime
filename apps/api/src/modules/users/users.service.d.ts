@@ -5,8 +5,8 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findById(id: string): Promise<{
         roles: {
-            shopId: string;
             id: string;
+            shopId: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -14,19 +14,19 @@ export declare class UsersService {
     } & {
         name: string;
         id: string;
-        phone: string;
-        email: string;
-        avatarUrl: string;
-        isVerified: boolean;
-        isActive: boolean;
-        preferredLang: string;
         createdAt: Date;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
+        phone: string;
+        email: string;
+        isVerified: boolean;
+        preferredLang: string;
     }>;
     findByPhone(phone: string): Promise<{
         roles: {
-            shopId: string;
             id: string;
+            shopId: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -34,19 +34,19 @@ export declare class UsersService {
     } & {
         name: string;
         id: string;
-        phone: string;
-        email: string;
-        avatarUrl: string;
-        isVerified: boolean;
-        isActive: boolean;
-        preferredLang: string;
         createdAt: Date;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
+        phone: string;
+        email: string;
+        isVerified: boolean;
+        preferredLang: string;
     }>;
     updateProfile(userId: string, input: UpdateProfileInput): Promise<{
         roles: {
-            shopId: string;
             id: string;
+            shopId: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -54,25 +54,25 @@ export declare class UsersService {
     } & {
         name: string;
         id: string;
-        phone: string;
-        email: string;
-        avatarUrl: string;
-        isVerified: boolean;
-        isActive: boolean;
-        preferredLang: string;
         createdAt: Date;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
+        phone: string;
+        email: string;
+        isVerified: boolean;
+        preferredLang: string;
     }>;
     deactivate(userId: string): Promise<{
         name: string;
         id: string;
-        phone: string;
-        email: string;
-        avatarUrl: string;
-        isVerified: boolean;
-        isActive: boolean;
-        preferredLang: string;
         createdAt: Date;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
+        phone: string;
+        email: string;
+        isVerified: boolean;
+        preferredLang: string;
     }>;
 }

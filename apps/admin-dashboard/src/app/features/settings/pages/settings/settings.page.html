@@ -66,7 +66,13 @@
         </div>
 
         <div class="card-footer-actions">
-          <button pButton label="Save Profile" icon="pi pi-check" class="btn-grad" (click)="saveShopProfile()"></button>
+          <button pButton
+            [label]="saving['profile'] ? 'Saving…' : 'Save Profile'"
+            [icon]="saving['profile'] ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            class="btn-grad"
+            [disabled]="saving['profile']"
+            (click)="saveShopProfile()">
+          </button>
         </div>
       </div>
     </div>
@@ -104,7 +110,13 @@
         </div>
 
         <div class="card-footer-actions">
-          <button pButton label="Save Branch" icon="pi pi-check" class="btn-grad" (click)="saveBranchSettings()"></button>
+          <button pButton
+            [label]="saving['branch'] ? 'Saving…' : 'Save Branch'"
+            [icon]="saving['branch'] ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            class="btn-grad"
+            [disabled]="saving['branch']"
+            (click)="saveBranchSettings()">
+          </button>
         </div>
       </div>
     </div>
@@ -144,7 +156,13 @@
         </div>
 
         <div class="card-footer-actions">
-          <button pButton label="Save Hours" icon="pi pi-check" class="btn-grad" (click)="saveBusinessHours()"></button>
+          <button pButton
+            [label]="saving['hours'] ? 'Saving…' : 'Save Hours'"
+            [icon]="saving['hours'] ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            class="btn-grad"
+            [disabled]="saving['hours']"
+            (click)="saveBusinessHours()">
+          </button>
         </div>
       </div>
     </div>
@@ -183,7 +201,13 @@
         </div>
 
         <div class="card-footer-actions">
-          <button pButton label="Update Plan" icon="pi pi-check" class="btn-grad" (click)="saveSubscription()"></button>
+          <button pButton
+            [label]="saving['plan'] ? 'Updating…' : 'Update Plan'"
+            [icon]="saving['plan'] ? 'pi pi-spin pi-spinner' : 'pi pi-crown'"
+            class="btn-grad"
+            [disabled]="saving['plan']"
+            (click)="saveSubscription()">
+          </button>
         </div>
       </div>
     </div>

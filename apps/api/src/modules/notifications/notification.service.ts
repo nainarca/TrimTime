@@ -104,7 +104,7 @@ export class NotificationService implements OnModuleInit {
     payload:    NotificationPayload,
     guestPhone: string | null,
   ): Promise<void> {
-    const channelsUsed: PrismaChannel[] = [PrismaChannel.IN_APP];
+    const channelsUsed: PrismaChannel[] = ['IN_APP' as PrismaChannel];
 
     const tasks: Promise<void>[] = [
       this.inApp.send(payload).catch((e) =>

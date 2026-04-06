@@ -11,9 +11,11 @@ import { Router } from '@angular/router';
   styleUrls: ['./kiosk-setup.page.scss'],
 })
 export class KioskSetupPage {
-  shopId   = '';
-  branchId = '';
-  error    = '';
+  shopId     = '';
+  branchId   = '';
+  shopName   = '';
+  branchName = '';
+  error      = '';
 
   constructor(private readonly router: Router) {}
 
@@ -27,6 +29,11 @@ export class KioskSetupPage {
     const path = this.branchId.trim()
       ? ['/display', id, this.branchId.trim()]
       : ['/display', id];
-    this.router.navigate(path);
+
+    const queryParams: Record<string, string> = {};
+    if (this.shopName.trim())   queryParams['shopName']   = this.shopName.trim();
+    if (this.branchName.trim()) queryParams['branchName'] = this.branchName.trim();
+
+    this.router.navigate(path, { queryParams });
   }
 }

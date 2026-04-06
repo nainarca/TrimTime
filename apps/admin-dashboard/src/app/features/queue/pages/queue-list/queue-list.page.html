@@ -1,51 +1,235 @@
-<div class="queue-header">
-  <div>
-    <p class="eyebrow">Live queue</p>
-    <h1>Queue monitor</h1>
-    <p class="subtext">Manage current customers and update status in real time.</p>
-  </div>
-  <div class="stats-pill">
-    <div><strong>Waiting</strong><span>{{ stats?.waitingCount || 0 }}</span></div>
-    <div><strong>Serving</strong><span>{{ stats?.servingCount || 0 }}</span></div>
-    <div><strong>Completed</strong><span>{{ stats?.servedTodayCount || 0 }}</span></div>
-  </div>
-</div>
+<div class="queue-list-page">
 
-<div class="table-card">
-  <p-table [value]="entries" [loading]="loading" [paginator]="true" [rows]="15" [rowsPerPageOptions]="[15,25,50]" responsiveLayout="scroll">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Token</th>
-        <th>Status</th>
-        <th>Position</th>
-        <th>ETA</th>
-        <th>Customer</th>
-        <th>Joined</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-entry>
-      <tr>
-        <td><strong>{{ entry.ticketDisplay }}</strong></td>
-        <td>
-          <p-tag
-            [value]="entry.status"
-            [severity]="
-              entry.status === 'WAITING' ? 'info' :
-              entry.status === 'SERVING' ? 'success' :
-              entry.status === 'CALLED' ? 'warning' : 'secondary'
-            "
-          ></p-tag>
-        </td>
-        <td>{{ entry.position }}</td>
-        <td>{{ entry.estimatedWaitMins ?? '—' }} min</td>
-        <td>{{ entry.guestName || entry.guestPhone || 'Guest' }}</td>
-        <td>{{ entry.joinedAt | date:'shortTime' }}</td>
-        <td>
-          <button pButton type="button" class="p-button-sm p-button-rounded p-button-text" [routerLink]="['/queue', entry.id]">Details</button>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Real-time</p>
+      <h1 class="page-title">Queue Monitor</h1>
+      <p class="page-sub">Manage current customers and update status in real time.</p>
+    </div>
+    <div class="header-actions">
+      <button
+        pButton
+        label="Call Next"
+        icon="pi pi-chevron-right"
+        class="btn-grad p-button-sm"
+        [disabled]="actionLoading || !nextWaiting"
+        (click)="callNext()"
+      ></button>
+      <button
+        pButton
+        label="Refresh"
+        icon="pi pi-refresh"
+        class="p-button-outlined p-button-sm"
+        [disabled]="loading"
+        (click)="loadData()"
+      ></button>
+    </div>
+  </div>
 
+  <!-- ── Stats Strip ── -->
+  <div class="summary-strip" *ngIf="stats">
+    <div class="summary-card">
+      <span class="sc-icon blue"><i class="pi pi-clock"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ stats.waitingCount ?? 0 }}</span>
+        <span class="sc-label">Waiting</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon green"><i class="pi pi-play"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ stats.servingCount ?? 0 }}</span>
+        <span class="sc-label">Serving</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon indigo"><i class="pi pi-check-circle"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">{{ stats.servedTodayCount ?? 0 }}</span>
+        <span class="sc-label">Completed Today</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="sc-icon amber"><i class="pi pi-hourglass"></i></span>
+      <div class="sc-body">
+        <span class="sc-value">
+          {{ stats.avgWaitMins != null ? stats.avgWaitMins + ' min' : '—' }}
+        </span>
+        <span class="sc-label">Avg Wait</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Now Serving Banner ── -->
+  <div class="now-serving-bar" *ngIf="currentServing">
+    <span class="ns-pulse-dot"></span>
+    <span class="ns-label">Now Serving</span>
+    <span class="ns-ticket">{{ currentServing.ticketDisplay }}</span>
+    <span class="ns-name">{{ customerName(currentServing) }}</span>
+    <button
+      pButton
+      label="Mark Served"
+      icon="pi pi-check"
+      class="p-button-success p-button-sm"
+      [disabled]="actionLoading"
+      (click)="markServed(currentServing)"
+    ></button>
+  </div>
+
+  <!-- ── Table Skeleton ── -->
+  <div class="table-card" *ngIf="loading">
+    <div class="skel-row" *ngFor="let i of [1,2,3,4,5]">
+      <span class="skel skel-text" style="width:80px"></span>
+      <span class="skel skel-chip"></span>
+      <span class="skel skel-text" style="flex:1"></span>
+      <span class="skel skel-text" style="width:60px"></span>
+      <span class="skel skel-text" style="width:70px"></span>
+      <span class="skel skel-chip" style="width:80px"></span>
+    </div>
+  </div>
+
+  <!-- ── Queue Table ── -->
+  <div class="table-card" *ngIf="!loading">
+    <p-table
+      [value]="entries"
+      [rowHover]="true"
+      [paginator]="entries.length > 15"
+      [rows]="15"
+      [rowsPerPageOptions]="[15, 25, 50]"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width:110px">Token</th>
+          <th style="width:120px">Status</th>
+          <th>Customer</th>
+          <th style="width:80px">Position</th>
+          <th style="width:90px">ETA</th>
+          <th style="width:90px">Joined</th>
+          <th style="width:160px" class="actions-header">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-entry>
+        <tr [class.row-serving]="entry.status === 'SERVING'"
+            [class.row-called]="entry.status === 'CALLED'">
+
+          <!-- Token -->
+          <td>
+            <span class="token-badge">{{ entry.ticketDisplay }}</span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <p-tag
+              [value]="statusLabel(entry.status)"
+              [severity]="statusSeverity(entry.status)"
+            ></p-tag>
+          </td>
+
+          <!-- Customer -->
+          <td>
+            <div class="customer-wrap">
+              <div class="customer-avatar">{{ customerName(entry).charAt(0).toUpperCase() }}</div>
+              <div class="customer-info">
+                <span class="customer-name">{{ customerName(entry) }}</span>
+                <span class="customer-phone" *ngIf="entry.guestPhone">{{ entry.guestPhone }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Position -->
+          <td><span class="pos-cell">#{{ entry.position }}</span></td>
+
+          <!-- ETA -->
+          <td>
+            <span *ngIf="entry.estimatedWaitMins != null; else noEta">
+              {{ entry.estimatedWaitMins }} min
+            </span>
+            <ng-template #noEta><span class="muted-text">—</span></ng-template>
+          </td>
+
+          <!-- Joined -->
+          <td class="muted-text">{{ entry.joinedAt | date:'shortTime' }}</td>
+
+          <!-- Actions -->
+          <td>
+            <div class="actions-wrap">
+              <!-- WAITING → Call -->
+              <button
+                *ngIf="entry.status === 'WAITING'"
+                pButton icon="pi pi-megaphone"
+                class="p-button-text p-button-sm qaction"
+                pTooltip="Call Customer" tooltipPosition="top"
+                [disabled]="actionLoading"
+                (click)="callNext()"
+              ></button>
+
+              <!-- CALLED → Start Serving -->
+              <button
+                *ngIf="entry.status === 'CALLED'"
+                pButton icon="pi pi-play"
+                class="p-button-text p-button-sm qaction qaction-blue"
+                pTooltip="Start Serving" tooltipPosition="top"
+                [disabled]="actionLoading"
+                (click)="startServing(entry)"
+              ></button>
+
+              <!-- SERVING → Mark Done -->
+              <button
+                *ngIf="entry.status === 'SERVING'"
+                pButton icon="pi pi-check"
+                class="p-button-text p-button-sm qaction qaction-success"
+                pTooltip="Mark Served" tooltipPosition="top"
+                [disabled]="actionLoading"
+                (click)="markServed(entry)"
+              ></button>
+
+              <!-- WAITING / CALLED → Skip / No-show -->
+              <button
+                *ngIf="entry.status === 'WAITING' || entry.status === 'CALLED'"
+                pButton icon="pi pi-times"
+                class="p-button-text p-button-sm qaction qaction-danger"
+                pTooltip="No-show / Skip" tooltipPosition="top"
+                [disabled]="actionLoading"
+                (click)="skipEntry(entry)"
+              ></button>
+
+              <!-- Details link (always shown) -->
+              <button
+                pButton icon="pi pi-eye"
+                class="p-button-text p-button-sm qaction"
+                pTooltip="Details" tooltipPosition="top"
+                [routerLink]="['/queue', entry.id]"
+              ></button>
+            </div>
+          </td>
+
+        </tr>
+      </ng-template>
+
+      <!-- Empty state -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="queue-empty-state">
+              <div class="qes-icon-ring">
+                <div class="qes-icon-inner"><i class="pi pi-inbox"></i></div>
+              </div>
+              <h3 class="qes-title">Queue is empty</h3>
+              <p class="qes-sub">
+                Customers appear here as they scan the QR code at your shop entrance.
+              </p>
+              <div class="qes-hints">
+                <span class="qes-hint"><i class="pi pi-qrcode"></i> Share your QR code</span>
+                <span class="qes-hint"><i class="pi pi-refresh"></i> Auto-refreshes live</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</div>

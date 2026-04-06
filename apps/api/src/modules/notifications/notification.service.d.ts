@@ -13,27 +13,41 @@ export declare class NotificationService implements OnModuleInit {
     constructor(prisma: PrismaService, inApp: InAppChannel, sms: SmsChannel, push: PushChannel);
     onModuleInit(): void;
     /**
-     * Fires whenever a customer's position changes after a recalculation.
-     * Sends a "queue update" in-app toast (quiet, normal priority).
+     * POSITION_CHANGED
+     * Fires after every recalculateQueue() call for entries whose position moved.
+     * Sends a quiet in-app banner (normal priority).
+     *
+     * Emitted by: QueueService.recalculateQueue()
+     * Guarantee: broadcast has already been sent before this handler runs.
      */
     handlePositionChanged(evt: PositionChangedEvent): Promise<void>;
     /**
-     * Fires when a customer reaches position #1.
-     * High-priority alert — plays sound on the frontend.
+     * NEXT_IN_LINE
+     * Fires when a customer's position reaches #1 (they're next up).
+     * High-priority — plays sound on the frontend.
+     *
+     * Emitted by: QueueService.recalculateQueue()
+     * Dedup: guarded by Redis SETNX in QueueService — fires at most once per entry.
      */
     handleNextInLine(evt: NextInLineEvent): Promise<void>;
     /**
+     * QUEUE_CALLED
      * Fires when a barber explicitly calls a customer (status → CALLED).
-     * Highest urgency — "Your turn!" with sound.
+     * Highest urgency — "Your turn!" with prominent sound.
+     *
+     * Emitted by: QueueService.updateStatus() — after recalculate + broadcast.
      */
     handleQueueCalled(evt: QueueCalledEvent): Promise<void>;
     /**
-     * Routes a notification through all enabled channels and logs it to the DB.
+     * Routes a notification through all enabled channels.
      *
      * Channel priority:
-     *   1. In-app  — always, instant (sub-ms over socket.io)
-     *   2. SMS     — when guestPhone present and TWILIO_* env vars set
-     *   3. Push    — when user has an FCM token (future)
+     *   1. In-app  — always (sub-ms delivery over socket.io to the customer's device)
+     *   2. SMS     — when guestPhone is present and TWILIO_* env vars are configured
+     *   3. Push    — when the user has an FCM token (future — PushChannel is a stub)
+     *
+     * A failed channel never blocks the others.
+     * DB logging is fire-and-forget so it cannot delay the delivery chain.
      */
     private dispatch;
     private logToDatabase;

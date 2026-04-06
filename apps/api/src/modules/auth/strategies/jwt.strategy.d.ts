@@ -9,8 +9,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
     constructor(config: ConfigService, prisma: PrismaService);
     validate(payload: JwtPayload): Promise<{
         roles: {
-            shopId: string;
             id: string;
+            shopId: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -18,14 +18,14 @@ export declare class JwtStrategy extends JwtStrategy_base {
     } & {
         name: string;
         id: string;
-        phone: string;
-        email: string;
-        avatarUrl: string;
-        isVerified: boolean;
-        isActive: boolean;
-        preferredLang: string;
         createdAt: Date;
         updatedAt: Date;
+        avatarUrl: string;
+        isActive: boolean;
+        phone: string;
+        email: string;
+        isVerified: boolean;
+        preferredLang: string;
     } & {
         shopIds: string[];
     }>;

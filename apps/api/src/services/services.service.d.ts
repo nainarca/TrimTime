@@ -5,26 +5,26 @@ export declare class ServicesService {
     constructor(prisma: PrismaService);
     listServices(shopId: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        description: string;
-        shopId: string;
         id: string;
-        isActive: boolean;
-        createdAt: Date;
+        shopId: string;
         durationMins: number;
-        price: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        isActive: boolean;
+        description: string;
         currency: string;
+        price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }[]>;
     upsertService(input: ServiceInput, allowedShopIds?: string[]): Promise<{
         name: string;
-        description: string;
-        shopId: string;
         id: string;
-        isActive: boolean;
-        createdAt: Date;
+        shopId: string;
         durationMins: number;
-        price: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        isActive: boolean;
+        description: string;
         currency: string;
+        price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;
     deleteService(id: string, allowedShopIds?: string[]): Promise<boolean>;

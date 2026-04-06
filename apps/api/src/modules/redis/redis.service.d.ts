@@ -41,6 +41,17 @@ export declare class RedisService implements OnModuleInit, OnModuleDestroy {
     refreshTokenKey(userId: string): string;
     /** Daily ticket counter key for a shop */
     ticketCounterKey(shopId: string, date: string): string;
+    /**
+     * Dedup key for NEXT_IN_LINE notifications.
+     * Set atomically via SETNX; auto-expires after `ttlSeconds` so a re-queued
+     * customer can be notified again on their next visit.
+     *
+     * Returns true if this is the first notification (caller should emit),
+     * false if a notification was already sent within the TTL window.
+     */
+    claimNextInLineNotif(entryId: string, ttlSeconds?: number): Promise<boolean>;
+    /** Clear the NEXT_IN_LINE dedup key when the entry advances past position 1. */
+    clearNextInLineNotif(entryId: string): Promise<void>;
     /** Live queue state for a shop/branch/barber */
     queueStateKey(shopId: string, branchId?: string, barberId?: string): string;
 }

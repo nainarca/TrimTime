@@ -25,8 +25,8 @@
     <div class="shop-identity">
       <div class="shop-logo-mark" aria-hidden="true">✂</div>
       <div class="shop-meta">
-        <span class="shop-name">QueueCut</span>
-        <span class="shop-branch">Mike's Barber Shop · Main Branch</span>
+        <span class="shop-name">{{ shopName }}</span>
+        <span class="shop-branch" *ngIf="branchName">{{ branchName }}</span>
       </div>
     </div>
 

@@ -24,7 +24,9 @@ import type { QueueEntry } from '../../../../../../libs/shared/src';
 export class QueueDisplayPage implements OnInit, OnDestroy {
   // ── Route params ─────────────────────────────────────────────
   shopId!: string;
-  branchId: string | null = null;
+  branchId:   string | null = null;
+  shopName   = 'QueueCut';
+  branchName = '';
 
   // ── Queue state ──────────────────────────────────────────────
   currentServing?: QueueEntry;
@@ -71,6 +73,10 @@ export class QueueDisplayPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.shopId   = this.route.snapshot.paramMap.get('shopId')   as string;
     this.branchId = this.route.snapshot.paramMap.get('branchId');
+
+    const qp = this.route.snapshot.queryParamMap;
+    if (qp.get('shopName'))   this.shopName   = qp.get('shopName')!;
+    if (qp.get('branchName')) this.branchName = qp.get('branchName')!;
 
     // ── Initial data load (HTTP) ──────────────────────────────
     this.loadQueue();

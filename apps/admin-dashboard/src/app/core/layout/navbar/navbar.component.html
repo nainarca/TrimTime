@@ -24,13 +24,8 @@
       </span>
     </button>
 
-    <!-- Messages -->
-    <button class="icon-btn" pTooltip="Messages" tooltipPosition="bottom">
-      <i class="pi pi-envelope"></i>
-    </button>
-
     <!-- Help -->
-    <button class="icon-btn" pTooltip="Help" tooltipPosition="bottom">
+    <button class="icon-btn" pTooltip="Help &amp; Docs" tooltipPosition="bottom">
       <i class="pi pi-question-circle"></i>
     </button>
 
@@ -39,11 +34,11 @@
     <!-- Profile Button -->
     <div class="profile-btn" (click)="toggleProfile()">
       <div class="profile-avatar">
-        <span>MO</span>
+        <span>{{ userInitials }}</span>
       </div>
       <div class="profile-info">
-        <span class="profile-name">Mike Owner</span>
-        <span class="profile-role">Shop Owner</span>
+        <span class="profile-name">{{ shopName }}</span>
+        <span class="profile-role">{{ userRole }}</span>
       </div>
       <i class="pi pi-chevron-down profile-chevron" [class.rotated]="profileOpen"></i>
     </div>
@@ -51,24 +46,18 @@
     <!-- Profile Dropdown -->
     <div class="profile-dropdown" *ngIf="profileOpen">
       <div class="dropdown-header">
-        <div class="dropdown-avatar">MO</div>
+        <div class="dropdown-avatar">{{ userInitials }}</div>
         <div>
-          <div class="dropdown-name">Mike Owner</div>
-          <div class="dropdown-email">mike&#64;barbershop.com</div>
+          <div class="dropdown-name">{{ shopName }}</div>
+          <div class="dropdown-email">{{ userRole }}</div>
         </div>
       </div>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item">
-        <i class="pi pi-user"></i> My Profile
-      </button>
-      <button class="dropdown-item">
-        <i class="pi pi-building"></i> Shop Settings
-      </button>
-      <button class="dropdown-item">
-        <i class="pi pi-credit-card"></i> Billing
+      <button class="dropdown-item" (click)="goToSettings()">
+        <i class="pi pi-cog"></i> Shop Settings
       </button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item danger">
+      <button class="dropdown-item danger" (click)="logout()">
         <i class="pi pi-sign-out"></i> Sign Out
       </button>
     </div>

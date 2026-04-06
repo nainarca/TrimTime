@@ -10,15 +10,15 @@ export declare class QueueService {
     private readonly logger;
     constructor(prisma: PrismaService, redis: RedisService, eventEmitter: EventEmitter2);
     joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]): Promise<{
-        shopId: string;
         id: string;
-        createdAt: Date;
+        shopId: string;
         branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
         status: import(".prisma/client").$Enums.QueueStatus;
         notes: string;
+        createdAt: Date;
         estimatedWaitMins: number;
         ticketNumber: number;
         priority: number;
@@ -36,15 +36,15 @@ export declare class QueueService {
         appointmentId: string;
     }>;
     getActiveQueue(shopId: string, barberId?: string): Promise<{
-        shopId: string;
         id: string;
-        createdAt: Date;
+        shopId: string;
         branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
         status: import(".prisma/client").$Enums.QueueStatus;
         notes: string;
+        createdAt: Date;
         estimatedWaitMins: number;
         ticketNumber: number;
         priority: number;
@@ -62,15 +62,15 @@ export declare class QueueService {
         appointmentId: string;
     }[]>;
     getEntryById(entryId: string, allowedShopIds?: string[]): Promise<{
-        shopId: string;
         id: string;
-        createdAt: Date;
+        shopId: string;
         branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
         status: import(".prisma/client").$Enums.QueueStatus;
         notes: string;
+        createdAt: Date;
         estimatedWaitMins: number;
         ticketNumber: number;
         priority: number;
@@ -94,15 +94,15 @@ export declare class QueueService {
         servedTodayCount: number;
     }>;
     updateStatus(input: UpdateQueueStatusInput, actorId: string, allowedShopIds?: string[]): Promise<{
-        shopId: string;
         id: string;
-        createdAt: Date;
+        shopId: string;
         branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
         status: import(".prisma/client").$Enums.QueueStatus;
         notes: string;
+        createdAt: Date;
         estimatedWaitMins: number;
         ticketNumber: number;
         priority: number;
@@ -120,15 +120,15 @@ export declare class QueueService {
         appointmentId: string;
     }>;
     leaveQueue(entryId: string, customerId: string, allowedShopIds?: string[]): Promise<{
-        shopId: string;
         id: string;
-        createdAt: Date;
+        shopId: string;
         branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
         status: import(".prisma/client").$Enums.QueueStatus;
         notes: string;
+        createdAt: Date;
         estimatedWaitMins: number;
         ticketNumber: number;
         priority: number;

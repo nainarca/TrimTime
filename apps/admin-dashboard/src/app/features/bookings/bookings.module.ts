@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { ButtonModule } from 'primeng/button';
     DropdownModule,
     CalendarModule,
     ButtonModule,
+    TooltipModule,
   ],
   declarations: [BookingsPageComponent],
 })

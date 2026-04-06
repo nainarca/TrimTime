@@ -191,9 +191,13 @@
 
     </div>
     <ng-template pTemplate="footer">
-      <button pButton label="Cancel" class="p-button-text" (click)="dialogVisible = false"></button>
-      <button pButton [label]="editingId ? 'Save Changes' : 'Add Service'" class="btn-grad"
-        (click)="saveService()" [disabled]="!form.name.trim()"></button>
+      <button pButton label="Cancel" class="p-button-text" [disabled]="saving" (click)="dialogVisible = false"></button>
+      <button pButton
+        [label]="saving ? 'Saving…' : (editingId ? 'Save Changes' : 'Add Service')"
+        [icon]="saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+        class="btn-grad"
+        [disabled]="!form.name.trim() || saving"
+        (click)="saveService()"></button>
     </ng-template>
   </p-dialog>
 
