@@ -27,6 +27,11 @@ const DEFAULT_AVG_DURATION = 20; // minutes fallback
 // ── Terminal statuses that indicate a customer is done with the queue ──────────
 const TERMINAL_STATUSES = new Set(['SERVED', 'LEFT', 'NO_SHOW']);
 
+/** Staff/owner tokens carry shop IDs; customers often have [] — only enforce tenant when non-empty. */
+function isTenantScoped(allowedShopIds?: string[]): boolean {
+  return Array.isArray(allowedShopIds) && allowedShopIds.length > 0;
+}
+
 @Injectable()
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
@@ -40,8 +45,8 @@ export class QueueService {
   // ── Join queue ─────────────────────────────────────────────────────────────
 
   async joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]) {
-    // Tenant check
-    if (allowedShopIds && !allowedShopIds.includes(input.shopId)) {
+    // Tenant check (skip when shopIds is missing or [] — public / customer OTP users)
+    if (isTenantScoped(allowedShopIds) && !allowedShopIds!.includes(input.shopId)) {
       throw new ForbiddenException('Cannot join queue for another shop');
     }
 
@@ -115,7 +120,7 @@ export class QueueService {
   async getEntryById(entryId: string, allowedShopIds?: string[]) {
     const entry = await this.prisma.queueEntry.findUnique({ where: { id: entryId } });
     if (!entry) throw new NotFoundException(`Queue entry ${entryId} not found`);
-    if (allowedShopIds && !allowedShopIds.includes(entry.shopId)) {
+    if (isTenantScoped(allowedShopIds) && !allowedShopIds!.includes(entry.shopId)) {
       throw new ForbiddenException('Cannot access queue entry from another shop');
     }
     return entry;

@@ -14,6 +14,11 @@ export declare class AuthService {
     private readonly OTP_LENGTH;
     private readonly LOCK_TTL;
     constructor(prisma: PrismaService, redis: RedisService, jwt: JwtService, config: ConfigService);
+    /** Fixed demo OTP in non-production; production always uses random codes + future SMS provider. */
+    private resolveDemoStaticOtp;
+    private logDemoOtpMode;
+    /** E.164-ish: strip spaces so Redis keys match request + verify. */
+    private canonicalPhone;
     requestOtp(phone: string): Promise<OtpRequestResponse>;
     verifyOtp(phone: string, otp: string): Promise<AuthResponse>;
     login(username: string, password: string, role?: string): Promise<AuthResponse>;

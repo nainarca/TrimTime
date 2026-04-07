@@ -31,7 +31,7 @@ async function bootstrap() {
   // which is incompatible with socket.io-client used in all three frontend apps.
   app.useWebSocketAdapter(new IoAdapter(app));
 
-  // CORS — allow all frontend apps (dashboard :4200, mobile :4300, display :4400)
+  // CORS — allow all frontend apps (main dashboard :4200, admin-dashboard :4201, mobile :4300, display :4400)
   const allowedOrigins = (process.env.FRONTEND_URL || '')
     .split(',')
     .map((o) => o.trim())
@@ -40,6 +40,7 @@ async function bootstrap() {
   if (allowedOrigins.length === 0) {
     allowedOrigins.push(
       'http://localhost:4200',
+      'http://localhost:4201',
       'http://localhost:4300',
       'http://localhost:4400',
     );

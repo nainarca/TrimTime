@@ -3,7 +3,11 @@ import { Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { LOGIN_MUTATION } from '../../../features/auth/graphql/auth.gql';
+import {
+  LOGIN_MUTATION,
+  REQUEST_OTP_MUTATION,
+  VERIFY_OTP_MUTATION,
+} from '../../../features/auth/graphql/auth.gql';
 
 export interface LoginResponse {
   accessToken: string;
@@ -53,10 +57,9 @@ export class AuthService {
 
   requestOtp(phone: string): Observable<any> {
     const normalized = this.normalizePhone(phone);
-    const mutation = `mutation RequestOtp($phone: String!) { requestOtp(input: { phone: $phone }) { success message expiresIn otp } }`;
     return this.apollo
       .mutate({
-        mutation: mutation as any,
+        mutation: REQUEST_OTP_MUTATION,
         variables: { phone: normalized },
       })
       .pipe(map((result: any) => result.data?.requestOtp));
@@ -64,10 +67,9 @@ export class AuthService {
 
   verifyOtp(phone: string, otp: string): Observable<any> {
     const normalized = this.normalizePhone(phone);
-    const mutation = `mutation VerifyOtp($phone: String!, $otp: String!) { verifyOtp(input: { phone: $phone, otp: $otp }) { accessToken refreshToken userId isNewUser } }`;
     return this.apollo
       .mutate({
-        mutation: mutation as any,
+        mutation: VERIFY_OTP_MUTATION,
         variables: { phone: normalized, otp },
       })
       .pipe(

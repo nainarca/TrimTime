@@ -5,6 +5,8 @@ import { map } from 'rxjs/operators';
 import {
   SHOP_BY_SLUG_QUERY,
   SHOP_BRANCHES_BY_SLUG_QUERY,
+  PUBLIC_SERVICES_QUERY,
+  PUBLIC_BARBERS_QUERY,
   JOIN_QUEUE_MUTATION,
   QUEUE_ENTRY_QUERY,
   QUEUE_UPDATED_SUBSCRIPTION,
@@ -45,6 +47,26 @@ export interface QueueEntry {
   guestPhone?: string | null;
 }
 
+export interface PublicService {
+  id: string;
+  shopId: string;
+  name: string;
+  description: string | null;
+  durationMins: number;
+  price: number;
+  currency: string;
+  isActive: boolean;
+}
+
+export interface PublicBarber {
+  id: string;
+  shopId: string;
+  displayName: string;
+  branchId: string | null;
+  queueAccepting: boolean;
+  isActive: boolean;
+}
+
 export interface QueueUpdateEvent {
   type: string;
   entry: QueueEntry | null;
@@ -75,6 +97,26 @@ export class QueueApiService {
       .valueChanges.pipe(map((result) => result.data.shopBranchesBySlug));
   }
 
+  getPublicServices(shopId: string): Observable<PublicService[]> {
+    return this.apollo
+      .watchQuery<{ publicServices: PublicService[] }>({
+        query: PUBLIC_SERVICES_QUERY,
+        variables: { shopId },
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges.pipe(map((result) => result.data.publicServices));
+  }
+
+  getPublicBarbers(shopId: string): Observable<PublicBarber[]> {
+    return this.apollo
+      .watchQuery<{ publicBarbers: PublicBarber[] }>({
+        query: PUBLIC_BARBERS_QUERY,
+        variables: { shopId },
+        fetchPolicy: 'network-only',
+      })
+      .valueChanges.pipe(map((result) => result.data.publicBarbers));
+  }
+
   joinQueue(input: {
     shopId: string;
     branchId: string;
@@ -82,6 +124,7 @@ export class QueueApiService {
     priority: number;
     guestName?: string;
     guestPhone?: string;
+    barberId?: string;
   }): Observable<QueueEntry> {
     return this.apollo
       .mutate<{ joinQueue: QueueEntry }>({

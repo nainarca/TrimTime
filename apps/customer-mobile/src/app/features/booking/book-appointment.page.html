@@ -1,0 +1,193 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="jq-toolbar">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="step === 1 ? goBack() : prevStep()">
+        <ion-icon
+          slot="icon-only"
+          [name]="step === 1 ? 'close-outline' : 'chevron-back-outline'"
+        ></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="jq-title">Book appointment</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="jq-content">
+  <div *ngIf="!shopId || !branchId" class="invalid-state animate-in">
+    <div class="invalid-icon">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </div>
+    <h3>No shop selected</h3>
+    <p>Open this flow from a shop page.</p>
+    <ion-button shape="round" class="scan-btn" (click)="goBack()">Go back</ion-button>
+  </div>
+
+  <ng-container *ngIf="shopId && branchId">
+    <div class="shop-info-card animate-in">
+      <div class="shop-info-icon">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <div class="shop-info-text">
+        <span class="shop-info-name">{{ shopName || 'Shop' }}</span>
+        <span class="shop-info-branch">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ branchName || 'Main Branch' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="stepper">
+      <div class="stepper-item" [class.active]="step >= 1" [class.current]="step === 1">
+        <span class="stepper-dot">1</span>
+        <span class="stepper-label">Barber</span>
+      </div>
+      <div class="stepper-line" [class.active]="step >= 2"></div>
+      <div class="stepper-item" [class.active]="step >= 2" [class.current]="step === 2">
+        <span class="stepper-dot">2</span>
+        <span class="stepper-label">Time</span>
+      </div>
+      <div class="stepper-line" [class.active]="step >= 3"></div>
+      <div class="stepper-item" [class.active]="step >= 3" [class.current]="step === 3">
+        <span class="stepper-dot">3</span>
+        <span class="stepper-label">Confirm</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="loadingData && step === 1">
+      <div class="section">
+        <div class="sk-label skeleton-shimmer"></div>
+        <div class="sk-card skeleton-shimmer"></div>
+      </div>
+    </ng-container>
+
+    <!-- Step 1: Barber -->
+    <div class="section animate-in" *ngIf="step === 1 && !loadingData">
+      <h3 class="section-label">Select barber</h3>
+      <p class="step-hint" *ngIf="barbers.length === 0">
+        No barbers are listed for online booking yet. Use <strong>Join Queue</strong> on the shop
+        page for walk-in.
+      </p>
+      <div class="barber-grid" *ngIf="barbers.length > 0">
+        <div
+          *ngFor="let b of barbers"
+          class="barber-option"
+          [class.selected]="selectedBarberId === b.id"
+          (click)="selectBarber(b.id)"
+        >
+          <div class="barber-avatar">{{ barberInitials(b.displayName) }}</div>
+          <div class="barber-info">
+            <span class="barber-name">{{ b.displayName }}</span>
+            <span class="barber-status" [class.barber-status--busy]="!b.queueAccepting">
+              {{ b.queueAccepting ? 'Available' : 'Busy' }}
+            </span>
+          </div>
+          <ion-icon
+            class="barber-check"
+            [name]="selectedBarberId === b.id ? 'checkmark-circle' : 'ellipse-outline'"
+          ></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Service + date/time -->
+    <div class="section animate-in" *ngIf="step === 2">
+      <h3 class="section-label">Select service</h3>
+      <div class="service-grid" *ngIf="services.length > 0">
+        <div
+          *ngFor="let svc of services"
+          class="svc-option"
+          [class.selected]="selectedServiceId === svc.id"
+          (click)="selectService(svc.id)"
+        >
+          <div class="svc-opt-icon" [class.svc-opt-icon--selected]="selectedServiceId === svc.id">
+            <ion-icon name="cut-outline"></ion-icon>
+          </div>
+          <div class="svc-opt-body">
+            <span class="svc-opt-name">{{ svc.name }}</span>
+            <span class="svc-opt-meta"
+              >{{ svc.durationMins }} min · {{ svc.currency }} {{ svc.price }}</span
+            >
+          </div>
+          <div class="svc-check-wrap" [class.svc-check-wrap--selected]="selectedServiceId === svc.id">
+            <ion-icon class="svc-check" [name]="selectedServiceId === svc.id ? 'checkmark' : ''"></ion-icon>
+          </div>
+        </div>
+      </div>
+      <p class="step-hint" *ngIf="services.length === 0">No services loaded. Check your connection.</p>
+
+      <h3 class="section-label" style="margin-top: 1.25rem">Date &amp; time</h3>
+      <div class="datetime-wrap">
+        <ion-datetime
+          presentation="date-time"
+          [value]="scheduledIso"
+          (ionChange)="onScheduleChange($event)"
+          [min]="minIso"
+          [max]="maxIso"
+        ></ion-datetime>
+      </div>
+    </div>
+
+    <!-- Step 3: Confirm -->
+    <div class="section animate-in" *ngIf="step === 3">
+      <h3 class="section-label">Your details</h3>
+      <div class="form-fields">
+        <div class="field-wrap" [class.has-value]="guestName.length > 0">
+          <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
+          <div class="field-body">
+            <label class="field-label">Full name</label>
+            <input type="text" class="field-input" [(ngModel)]="guestName" placeholder="Your name" />
+          </div>
+        </div>
+        <div class="field-wrap" [class.has-value]="guestPhone.length > 0">
+          <div class="field-icon"><ion-icon name="call-outline"></ion-icon></div>
+          <div class="field-body">
+            <label class="field-label">WhatsApp / phone</label>
+            <input
+              type="tel"
+              class="field-input"
+              [(ngModel)]="guestPhone"
+              placeholder="+91 98765 43210"
+            />
+          </div>
+        </div>
+      </div>
+      <p class="phone-note">We use this to confirm your booking and send reminders.</p>
+    </div>
+
+    <div class="error-msg animate-in" *ngIf="error">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      {{ error }}
+    </div>
+
+    <div style="height: 120px"></div>
+  </ng-container>
+</ion-content>
+
+<ion-footer *ngIf="shopId && branchId" class="jq-footer">
+  <div class="footer-inner">
+    <ion-button
+      *ngIf="step < 3"
+      expand="block"
+      shape="round"
+      class="confirm-btn"
+      [disabled]="(step === 1 && (!selectedBarberId || barbers.length === 0)) || loading"
+      (click)="nextStep()"
+    >
+      Continue
+    </ion-button>
+    <ion-button
+      *ngIf="step === 3"
+      expand="block"
+      shape="round"
+      class="confirm-btn"
+      [disabled]="loading || !guestName.trim()"
+      (click)="confirmBooking()"
+    >
+      <ion-spinner *ngIf="loading" name="crescent" class="btn-spinner"></ion-spinner>
+      <ng-container *ngIf="!loading">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Confirm booking
+      </ng-container>
+    </ion-button>
+  </div>
+</ion-footer>

@@ -165,6 +165,21 @@ await prisma.userRoleAssignment.upsert({
     },
   });
 
+  // Branch for the public shop slug (/shop/downtown-barber) — required for customer join-queue flow
+  await prisma.shopBranch.upsert({
+    where: { id: 'seed-branch-downtown-main' },
+    update: { shopId: demoShop.id, isActive: true },
+    create: {
+      id:      'seed-branch-downtown-main',
+      shopId:  demoShop.id,
+      name:    'Main Branch',
+      address: 'OMR, Chennai',
+      city:    'Chennai',
+      isMain:  true,
+      isActive: true,
+    },
+  });
+
   // ── 5. Shop Owner Role ─────────────────────────────────
   await prisma.userRoleAssignment.upsert({
     where: {

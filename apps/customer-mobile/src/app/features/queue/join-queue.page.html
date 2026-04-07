@@ -15,17 +15,17 @@
       <ion-icon name="qr-code-outline"></ion-icon>
     </div>
     <h3>No shop selected</h3>
-    <p>Please scan a shop QR code or enter a shop code to join the queue.</p>
+    <p>Please scan a shop QR code or enter a shop link to join the queue.</p>
     <ion-button shape="round" class="scan-btn" (click)="goBack()">
       <ion-icon name="qr-code-outline" slot="start"></ion-icon>
       Scan QR Code
     </ion-button>
   </div>
 
-  <!-- ── Join Form ── -->
+  <!-- ── Main Form ── -->
   <ng-container *ngIf="shopId && branchId">
 
-    <!-- Shop Info Header -->
+    <!-- Shop Info -->
     <div class="shop-info-card animate-in">
       <div class="shop-info-icon">
         <ion-icon name="cut-outline"></ion-icon>
@@ -40,74 +40,131 @@
       <div class="shop-info-badge">Open</div>
     </div>
 
-    <!-- Service Selection -->
-    <div class="section animate-in" style="animation-delay: 0.08s">
-      <h3 class="section-label">Choose Service</h3>
-      <div class="service-grid">
-        <div
-          *ngFor="let svc of services"
-          class="svc-option"
-          [class.selected]="selectedService?.id === svc.id"
-          (click)="selectService(svc)"
-        >
-          <div class="svc-opt-icon">
-            <ion-icon [name]="svc.icon"></ion-icon>
+    <!-- ── Loading skeleton ── -->
+    <ng-container *ngIf="loadingData">
+      <div class="section">
+        <div class="sk-label skeleton-shimmer"></div>
+        <div class="sk-card skeleton-shimmer"></div>
+        <div class="sk-card skeleton-shimmer"></div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loadingData">
+
+      <!-- ── Services (multi-select) ── -->
+      <div class="section animate-in" style="animation-delay: 0.06s">
+        <h3 class="section-label">Choose Services <span class="section-hint">(select all that apply)</span></h3>
+        <div class="service-grid">
+          <div
+            *ngFor="let svc of services"
+            class="svc-option"
+            [class.selected]="isServiceSelected(svc.id)"
+            (click)="toggleService(svc.id)"
+          >
+            <div class="svc-opt-icon" [class.svc-opt-icon--selected]="isServiceSelected(svc.id)">
+              <ion-icon [name]="svc.icon"></ion-icon>
+            </div>
+            <div class="svc-opt-body">
+              <span class="svc-opt-name">{{ svc.name }}</span>
+              <span class="svc-opt-meta">{{ svc.durationMins }} min · {{ svc.currency }} {{ svc.price }}</span>
+            </div>
+            <div class="svc-check-wrap" [class.svc-check-wrap--selected]="isServiceSelected(svc.id)">
+              <ion-icon
+                class="svc-check"
+                [name]="isServiceSelected(svc.id) ? 'checkmark' : ''"
+              ></ion-icon>
+            </div>
           </div>
-          <div class="svc-opt-body">
-            <span class="svc-opt-name">{{ svc.name }}</span>
-            <span class="svc-opt-meta">{{ svc.duration }} · {{ svc.price }}</span>
-          </div>
-          <ion-icon
-            class="svc-check"
-            [name]="selectedService?.id === svc.id ? 'checkmark-circle' : 'ellipse-outline'"
-          ></ion-icon>
         </div>
       </div>
-    </div>
 
-    <!-- Guest Details -->
-    <div class="section animate-in" style="animation-delay: 0.14s">
-      <h3 class="section-label">Your Details</h3>
-      <div class="form-fields">
+      <!-- ── Barber Selection ── -->
+      <div class="section animate-in" *ngIf="barbers.length > 0" style="animation-delay: 0.1s">
+        <h3 class="section-label">Choose Barber <span class="section-hint">(optional)</span></h3>
+        <div class="barber-grid">
 
-        <div class="field-wrap" [class.has-value]="guestName.length > 0">
-          <div class="field-icon">
-            <ion-icon name="person-outline"></ion-icon>
+          <!-- Any Barber option -->
+          <div
+            class="barber-option"
+            [class.selected]="selectedBarberId === null"
+            (click)="selectBarber(null)"
+          >
+            <div class="barber-avatar barber-avatar--any">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <span class="barber-name">Any Barber</span>
+            <ion-icon
+              class="barber-check"
+              [name]="selectedBarberId === null ? 'checkmark-circle' : 'ellipse-outline'"
+            ></ion-icon>
           </div>
-          <div class="field-body">
-            <label class="field-label">Name</label>
-            <input
-              type="text"
-              class="field-input"
-              [(ngModel)]="guestName"
-              placeholder="Your first name"
-              autocorrect="off"
-            />
+
+          <!-- Actual barbers -->
+          <div
+            *ngFor="let b of barbers"
+            class="barber-option"
+            [class.selected]="selectedBarberId === b.id"
+            [class.barber-option--busy]="!b.queueAccepting"
+            (click)="b.queueAccepting && selectBarber(b.id)"
+          >
+            <div class="barber-avatar">{{ barberInitials(b.displayName) }}</div>
+            <div class="barber-info">
+              <span class="barber-name">{{ b.displayName }}</span>
+              <span class="barber-status" [class.barber-status--busy]="!b.queueAccepting">
+                {{ b.queueAccepting ? 'Available' : 'Busy' }}
+              </span>
+            </div>
+            <ion-icon
+              class="barber-check"
+              [name]="selectedBarberId === b.id ? 'checkmark-circle' : 'ellipse-outline'"
+            ></ion-icon>
           </div>
+
         </div>
-
-        <div class="field-wrap" [class.has-value]="guestPhone.length > 0">
-          <div class="field-icon">
-            <ion-icon name="call-outline"></ion-icon>
-          </div>
-          <div class="field-body">
-            <label class="field-label">Phone</label>
-            <input
-              type="tel"
-              class="field-input"
-              [(ngModel)]="guestPhone"
-              placeholder="+1 234 567 8900"
-            />
-          </div>
-        </div>
-
       </div>
-    </div>
+
+      <!-- ── Your Details ── -->
+      <div class="section animate-in" style="animation-delay: 0.14s">
+        <h3 class="section-label">Your Details</h3>
+        <div class="form-fields">
+
+          <div class="field-wrap" [class.has-value]="guestName.length > 0">
+            <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
+            <div class="field-body">
+              <label class="field-label">Full Name</label>
+              <input
+                type="text"
+                class="field-input"
+                [(ngModel)]="guestName"
+                placeholder="Your name"
+                autocorrect="off"
+              />
+            </div>
+          </div>
+
+          <div class="field-wrap" [class.has-value]="guestPhone.length > 0">
+            <div class="field-icon"><ion-icon name="call-outline"></ion-icon></div>
+            <div class="field-body">
+              <label class="field-label">WhatsApp / Phone <span class="field-hint">(optional)</span></label>
+              <input
+                type="tel"
+                class="field-input"
+                [(ngModel)]="guestPhone"
+                placeholder="+91 98765 43210"
+              />
+            </div>
+          </div>
+
+        </div>
+        <p class="phone-note">Include country code — we'll notify you when it's your turn.</p>
+      </div>
+
+    </ng-container>
 
     <!-- Privacy Note -->
     <div class="privacy-note animate-in" style="animation-delay: 0.18s">
       <ion-icon name="shield-checkmark-outline"></ion-icon>
-      <span>Your info is only used to notify you when it's your turn.</span>
+      <span>Your info is only used to notify you when it's your turn. We don't share it.</span>
     </div>
 
     <!-- Error -->
@@ -116,20 +173,25 @@
       {{ error }}
     </div>
 
-    <!-- Bottom spacer -->
-    <div style="height: 120px;"></div>
+    <div style="height: 130px;"></div>
 
   </ng-container>
 
 </ion-content>
 
-<!-- ── Confirm Button ── -->
+<!-- ── Footer ── -->
 <ion-footer *ngIf="shopId && branchId" class="jq-footer">
   <div class="footer-inner">
-    <div class="summary-row" *ngIf="selectedService">
-      <span class="sum-label">{{ selectedService.name }}</span>
-      <span class="sum-price">{{ selectedService.price }}</span>
+
+    <!-- Summary row -->
+    <div class="summary-row" *ngIf="selectedServiceIds.size > 0">
+      <div class="sum-services">
+        <span class="sum-count">{{ selectedServiceIds.size }} service{{ selectedServiceIds.size !== 1 ? 's' : '' }}</span>
+        <span class="sum-duration" *ngIf="durationDisplay">· {{ durationDisplay }}</span>
+      </div>
+      <span class="sum-price">{{ priceDisplay }}</span>
     </div>
+
     <ion-button
       expand="block"
       shape="round"
@@ -138,10 +200,11 @@
       (click)="join()"
     >
       <ion-spinner *ngIf="loading" name="crescent" class="btn-spinner"></ion-spinner>
-      <span *ngIf="!loading">
+      <ng-container *ngIf="!loading">
         <ion-icon name="enter-outline" slot="start"></ion-icon>
-        Confirm &amp; Join
-      </span>
+        Confirm &amp; Join Queue
+      </ng-container>
     </ion-button>
+
   </div>
 </ion-footer>

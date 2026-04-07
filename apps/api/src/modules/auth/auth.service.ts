@@ -31,11 +31,51 @@ export class AuthService {
     this.OTP_TTL = this.config.get<number>('OTP_TTL_SECONDS', 300);
     this.OTP_MAX_ATTEMPTS = this.config.get<number>('OTP_MAX_ATTEMPTS', 3);
     this.OTP_LENGTH = this.config.get<number>('OTP_LENGTH', 6);
+    this.logDemoOtpMode();
+  }
+
+  /** Fixed demo OTP in non-production; production always uses random codes + future SMS provider. */
+  private resolveDemoStaticOtp(): string {
+    if (this.config.get('NODE_ENV') === 'production') {
+      return '';
+    }
+    const raw = this.config.get<string | undefined>('DEV_STATIC_OTP');
+    if (raw === undefined) {
+      return '123456';
+    }
+    return typeof raw === 'string' ? raw.trim() : '';
+  }
+
+  private logDemoOtpMode(): void {
+    if (this.config.get('NODE_ENV') === 'production') {
+      return;
+    }
+    const raw = this.config.get<string | undefined>('DEV_STATIC_OTP');
+    if (raw === undefined) {
+      this.logger.warn(
+        'Demo OTP: DEV_STATIC_OTP unset — using default 123456. Set DEV_STATIC_OTP= for random codes. For production, use NODE_ENV=production + SMS (e.g. Twilio).',
+      );
+      return;
+    }
+    const t = typeof raw === 'string' ? raw.trim() : '';
+    if (t.length >= 4 && /^\d+$/.test(t)) {
+      this.logger.warn(
+        'Demo OTP: DEV_STATIC_OTP is set — not for production. For go-live: NODE_ENV=production and real SMS.',
+      );
+    } else if (t === '') {
+      this.logger.log('OTP: DEV_STATIC_OTP is empty — using random codes (still returned in API when not production).');
+    }
+  }
+
+  /** E.164-ish: strip spaces so Redis keys match request + verify. */
+  private canonicalPhone(phone: string): string {
+    return typeof phone === 'string' ? phone.replace(/\s/g, '').trim() : phone;
   }
 
   // ── Request OTP ───────────────────────────────────────────────────────────
 
   async requestOtp(phone: string): Promise<OtpRequestResponse> {
+    phone = this.canonicalPhone(phone);
     // Check if phone is locked
     const lockKey = this.redis.otpLockKey(phone);
     const isLocked = await this.redis.exists(lockKey);
@@ -46,7 +86,11 @@ export class AuthService {
       );
     }
 
-    const otp = generateOtp(this.OTP_LENGTH);
+    const staticOtp = this.resolveDemoStaticOtp();
+    const otp =
+      staticOtp.length >= 4 && /^\d+$/.test(staticOtp)
+        ? staticOtp
+        : generateOtp(this.OTP_LENGTH);
     const otpHash = await bcrypt.hash(otp, 10);
 
     // Store hashed OTP with TTL
@@ -75,6 +119,8 @@ export class AuthService {
   // ── Verify OTP ────────────────────────────────────────────────────────────
 
   async verifyOtp(phone: string, otp: string): Promise<AuthResponse> {
+    phone = this.canonicalPhone(phone);
+    otp = typeof otp === 'string' ? otp.trim() : otp;
     const lockKey = this.redis.otpLockKey(phone);
     const isLocked = await this.redis.exists(lockKey);
     if (isLocked) {

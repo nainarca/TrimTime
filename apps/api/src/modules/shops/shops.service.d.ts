@@ -6,9 +6,9 @@ export declare class ShopsService {
     createShop(ownerId: string, input: CreateShopInput): Promise<{
         name: string;
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         phone: string;
         email: string;
         isVerified: boolean;
@@ -23,9 +23,9 @@ export declare class ShopsService {
     findById(id: string, allowedShopIds?: string[]): Promise<{
         name: string;
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         phone: string;
         email: string;
         isVerified: boolean;
@@ -40,9 +40,9 @@ export declare class ShopsService {
     findBySlug(slug: string, allowedShopIds?: string[]): Promise<{
         name: string;
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         phone: string;
         email: string;
         isVerified: boolean;
@@ -57,9 +57,9 @@ export declare class ShopsService {
     findByOwner(ownerId: string, allowedShopIds?: string[]): Promise<{
         name: string;
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         phone: string;
         email: string;
         isVerified: boolean;
@@ -75,9 +75,9 @@ export declare class ShopsService {
         name: string;
         id: string;
         shopId: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         address: string;
         city: string;
         latitude: import("@prisma/client/runtime/library").Decimal;
@@ -89,9 +89,9 @@ export declare class ShopsService {
         name: string;
         id: string;
         shopId: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         address: string;
         city: string;
         latitude: import("@prisma/client/runtime/library").Decimal;
@@ -102,9 +102,9 @@ export declare class ShopsService {
     updateShop(shopId: string, ownerId: string, input: UpdateShopInput): Promise<{
         name: string;
         id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         phone: string;
         email: string;
         isVerified: boolean;

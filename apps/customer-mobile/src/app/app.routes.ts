@@ -7,6 +7,7 @@ import { Routes } from '@angular/router';
  * /tabs/profile       → ProfilePage         (Tab 2)
  * /shop/:slug         → ShopLandingPage     (push, outside tabs)
  * /join-queue         → JoinQueuePage       (push, outside tabs)
+ * /book-appointment   → BookAppointmentPage (scheduled booking)
  * /queue/:entryId     → LiveTrackerPage     (push, MAIN SCREEN)
  * /queue/:entryId/done → ServedPage         (push)
  * /history            → HistoryPage         (push)
@@ -54,6 +55,13 @@ export const routes: Routes = [
     path: 'join-queue',
     loadComponent: () =>
       import('./features/queue/join-queue.page').then((m) => m.JoinQueuePage),
+  },
+  {
+    path: 'book-appointment',
+    loadComponent: () =>
+      import('./features/booking/book-appointment.page').then(
+        (m) => m.BookAppointmentPage,
+      ),
   },
   {
     path: 'queue/:entryId',

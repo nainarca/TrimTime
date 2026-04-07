@@ -27,6 +27,8 @@ export class ShopLandingPage implements OnInit {
   branches: ShopBranch[] = [];
   selectedBranch?: ShopBranch;
   slug = '';
+  /** Stored from shopBySlug response — used when branches have no shopId */
+  private resolvedShopId = '';
 
   // Placeholder services (wire to API in Phase 2)
   services: ServiceCard[] = [
@@ -57,12 +59,14 @@ export class ShopLandingPage implements OnInit {
           this.loading = false;
           return;
         }
+        this.resolvedShopId = shop.id;
         this.shopName    = shop.name;
         this.description = shop.description || 'Join queue and get notified when it\'s your turn.';
         this.cityDisplay = shop.country;
       },
       error: (err) => {
         this.error = err.message || 'Could not load shop';
+        this.loading = false;
       },
     });
 
@@ -72,8 +76,8 @@ export class ShopLandingPage implements OnInit {
         if (branches.length > 0) this.selectedBranch = branches[0];
         this.loading = false;
       },
-      error: (err) => {
-        this.error = err.message || 'Could not load branches.';
+      error: () => {
+        // Branches optional — still allow joining at shop level
         this.loading = false;
       },
     });
@@ -83,14 +87,21 @@ export class ShopLandingPage implements OnInit {
     this.selectedBranch = branch;
   }
 
+  get canJoin(): boolean {
+    return !!(this.resolvedShopId && this.selectedBranch?.id);
+  }
+
   joinQueue(): void {
-    if (!this.selectedBranch) return;
+    const shopId   = this.selectedBranch?.shopId || this.resolvedShopId;
+    const branchId = this.selectedBranch?.id;
+    if (!shopId || !branchId) return;
+
     this.router.navigate(['/join-queue'], {
       queryParams: {
-        shopId:     this.selectedBranch.shopId || '',
-        branchId:   this.selectedBranch.id,
+        shopId,
+        branchId,
         shopName:   this.shopName,
-        branchName: this.selectedBranch.name,
+        branchName: this.selectedBranch?.name || 'Main Branch',
       },
     });
   }

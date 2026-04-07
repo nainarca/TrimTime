@@ -5,11 +5,9 @@ export declare class BarbersService {
     constructor(prisma: PrismaService);
     listBarbers(shopId: string, allowedShopIds?: string[]): Promise<{
         id: string;
+        userId: string;
         shopId: string;
         branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         displayName: string;
         bio: string;
         avatarUrl: string;
@@ -18,14 +16,14 @@ export declare class BarbersService {
         queueAccepting: boolean;
         maxQueueSize: number;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
     upsertBarber(input: BarberInput, allowedShopIds?: string[]): Promise<{
         id: string;
+        userId: string;
         shopId: string;
         branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         displayName: string;
         bio: string;
         avatarUrl: string;
@@ -34,6 +32,8 @@ export declare class BarbersService {
         queueAccepting: boolean;
         maxQueueSize: number;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     deleteBarber(id: string, allowedShopIds?: string[]): Promise<boolean>;
 }

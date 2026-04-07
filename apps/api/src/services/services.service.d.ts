@@ -7,11 +7,11 @@ export declare class ServicesService {
         name: string;
         id: string;
         shopId: string;
-        durationMins: number;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
         description: string;
         currency: string;
+        durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }[]>;
@@ -19,11 +19,11 @@ export declare class ServicesService {
         name: string;
         id: string;
         shopId: string;
-        durationMins: number;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
         description: string;
         currency: string;
+        durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;

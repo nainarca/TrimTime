@@ -1,0 +1,81 @@
+@import '../queue/join-queue.page.scss';
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem 1rem;
+  gap: 0.25rem;
+}
+
+.stepper-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+
+  &.active {
+    opacity: 1;
+  }
+  &.current .stepper-dot {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: transparent;
+    color: #fff;
+  }
+}
+
+.stepper-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.stepper-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stepper-line {
+  flex: 1;
+  max-width: 36px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: 1.25rem;
+  transition: background 0.2s;
+
+  &.active {
+    background: rgba(99, 102, 241, 0.6);
+  }
+}
+
+.step-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.datetime-wrap {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+
+  ion-datetime {
+    width: 100%;
+    --background: transparent;
+    color: #e2e8f0;
+  }
+}

@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { environment } from '../../../../../environments/environment';
 
 interface RoleTab { key: string; label: string; }
 
@@ -48,6 +49,23 @@ export class LoginPageComponent implements OnInit {
       ? (role || '').toString().toUpperCase()
       : 'ADMIN';
     this.applyRoleFields();
+    this.applyDevLoginDefaults();
+  }
+
+  private applyDevLoginDefaults(): void {
+    if (environment.production) return;
+    if (!('devLoginDefaults' in environment) || !environment.devLoginDefaults) return;
+    const defs = environment.devLoginDefaults;
+    const row = defs[this.selectedRole as keyof typeof defs];
+    if (!row) return;
+    if (this.isCustomer) {
+      const patch: { phone?: string; otp?: string } = {};
+      if ('phone' in row && row.phone) patch.phone = row.phone;
+      if ('otp' in row && row.otp) patch.otp = row.otp;
+      if (Object.keys(patch).length) this.loginForm.patchValue(patch);
+    } else if (!this.isCustomer && 'username' in row && 'password' in row && row.username && row.password) {
+      this.loginForm.patchValue({ username: row.username, password: row.password });
+    }
   }
 
   get isCustomer(): boolean {
@@ -67,12 +85,17 @@ export class LoginPageComponent implements OnInit {
     this.otpMessage = null;
     this.otpSent = false;
     this.applyRoleFields();
+    this.applyDevLoginDefaults();
   }
 
   private applyRoleFields(): void {
     if (this.isCustomer) {
       this.loginForm.get('phone')?.setValidators([Validators.required, Validators.pattern(/^[\d\s()+-]{6,20}$/)]);
-      this.loginForm.get('otp')?.setValidators([Validators.required, Validators.minLength(4)]);
+      this.loginForm.get('otp')?.setValidators([
+        Validators.required,
+        Validators.minLength(4),
+        Validators.maxLength(12),
+      ]);
       this.loginForm.get('username')?.clearValidators();
       this.loginForm.get('password')?.clearValidators();
     } else {
@@ -99,6 +122,10 @@ export class LoginPageComponent implements OnInit {
         this.otpLoading = false;
         this.otpSent = true;
         this.otpMessage = result?.message || 'OTP sent successfully';
+        // Always use the code the API just issued (random OTP if DEV_STATIC_OTP= is empty; avoids stale 123456 in the field).
+        if (result?.otp) {
+          this.loginForm.patchValue({ otp: result.otp });
+        }
         this.notifications.success('OTP sent', this.otpMessage || 'OTP sent successfully');
       },
       error: (err) => {

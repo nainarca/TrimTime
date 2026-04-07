@@ -142,7 +142,7 @@
       expand="block"
       shape="round"
       class="join-btn"
-      [disabled]="!selectedBranch"
+      [disabled]="!canJoin"
       (click)="joinQueue()"
     >
       <ion-icon name="people-outline" slot="start"></ion-icon>

@@ -11,6 +11,11 @@ import { CurrentUser, AuthenticatedUser } from '../modules/auth/decorators/curre
 export class ServicesResolver {
   constructor(private readonly servicesService: ServicesService) {}
 
+  @Query(() => [ServiceModel], { description: 'Get active services for a shop (public — no auth required)' })
+  publicServices(@Args('shopId', { type: () => ID }) shopId: string) {
+    return this.servicesService.listServices(shopId);
+  }
+
   @UseGuards(GqlJwtGuard, TenantGuard)
   @Query(() => [ServiceModel], { description: 'Get services for a shop' })
   services(

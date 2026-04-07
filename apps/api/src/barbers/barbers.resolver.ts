@@ -11,6 +11,11 @@ import { CurrentUser, AuthenticatedUser } from '../modules/auth/decorators/curre
 export class BarbersResolver {
   constructor(private readonly barbersService: BarbersService) {}
 
+  @Query(() => [BarberModel], { description: 'List active barbers for a shop (public — no auth required)' })
+  publicBarbers(@Args('shopId', { type: () => ID }) shopId: string) {
+    return this.barbersService.listBarbers(shopId);
+  }
+
   @UseGuards(GqlJwtGuard, TenantGuard)
   @Query(() => [BarberModel], { description: 'List barbers for a shop' })
   barbers(

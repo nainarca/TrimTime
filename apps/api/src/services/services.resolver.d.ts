@@ -4,15 +4,27 @@ import { AuthenticatedUser } from '../modules/auth/decorators/current-user.decor
 export declare class ServicesResolver {
     private readonly servicesService;
     constructor(servicesService: ServicesService);
+    publicServices(shopId: string): Promise<{
+        name: string;
+        id: string;
+        shopId: string;
+        isActive: boolean;
+        createdAt: Date;
+        description: string;
+        currency: string;
+        durationMins: number;
+        price: import("@prisma/client/runtime/library").Decimal;
+        displayOrder: number;
+    }[]>;
     services(shopId: string, user: AuthenticatedUser): Promise<{
         name: string;
         id: string;
         shopId: string;
-        durationMins: number;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
         description: string;
         currency: string;
+        durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }[]>;
@@ -20,11 +32,11 @@ export declare class ServicesResolver {
         name: string;
         id: string;
         shopId: string;
-        durationMins: number;
-        createdAt: Date;
         isActive: boolean;
+        createdAt: Date;
         description: string;
         currency: string;
+        durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         displayOrder: number;
     }>;

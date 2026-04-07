@@ -3,6 +3,7 @@ import { UseGuards } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { AppointmentModel } from './models/appointment.model';
 import { AppointmentInput } from './dto/appointment.input';
+import { GuestBookAppointmentInput } from './dto/guest-book-appointment.input';
 import { GqlJwtGuard } from '../modules/auth/guards/gql-jwt.guard';
 import { TenantGuard } from '../modules/auth/guards/tenant.guard';
 import { CurrentUser, AuthenticatedUser } from '../modules/auth/decorators/current-user.decorator';
@@ -10,6 +11,18 @@ import { CurrentUser, AuthenticatedUser } from '../modules/auth/decorators/curre
 @Resolver(() => AppointmentModel)
 export class AppointmentsResolver {
   constructor(private readonly appointmentsService: AppointmentsService) {}
+
+  @Mutation(() => AppointmentModel, {
+    description:
+      'Book as guest (customer mobile) — name + phone; no auth header required',
+  })
+  bookAppointmentAsGuest(
+    @Args('input') input: GuestBookAppointmentInput,
+  ): Promise<AppointmentModel> {
+    return this.appointmentsService.bookAppointmentAsGuest(
+      input,
+    ) as unknown as Promise<AppointmentModel>;
+  }
 
   @UseGuards(GqlJwtGuard, TenantGuard)
   @Mutation(() => AppointmentModel, { description: 'Create a new appointment' })

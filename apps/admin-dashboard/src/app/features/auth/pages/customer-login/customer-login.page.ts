@@ -30,9 +30,12 @@ export class CustomerLoginPageComponent {
     if (this.form.invalid || this.loading) return;
     this.loading = true;
     this.auth.requestOtp(this.form.value.phone!).subscribe({
-      next: () => {
+      next: (result) => {
         this.otpSent = true;
         this.loading = false;
+        if (result?.otp) {
+          this.otpForm.patchValue({ otp: result.otp });
+        }
         this.notifications.success('OTP sent', 'Please check your phone.');
       },
       error: (err) => {

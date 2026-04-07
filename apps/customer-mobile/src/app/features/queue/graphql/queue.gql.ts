@@ -20,10 +20,39 @@ export const SHOP_BRANCHES_BY_SLUG_QUERY = gql`
   query ShopBranchesBySlug($slug: String!) {
     shopBranchesBySlug(slug: $slug) {
       id
+      shopId
       name
       address
       city
       isMain
+      isActive
+    }
+  }
+`;
+
+export const PUBLIC_SERVICES_QUERY = gql`
+  query PublicServices($shopId: ID!) {
+    publicServices(shopId: $shopId) {
+      id
+      shopId
+      name
+      description
+      durationMins
+      price
+      currency
+      isActive
+    }
+  }
+`;
+
+export const PUBLIC_BARBERS_QUERY = gql`
+  query PublicBarbers($shopId: ID!) {
+    publicBarbers(shopId: $shopId) {
+      id
+      shopId
+      displayName
+      branchId
+      queueAccepting
       isActive
     }
   }
