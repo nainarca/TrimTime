@@ -11,7 +11,7 @@
 2. [System Architecture](#2-system-architecture)
 3. [Complete User Flows](#3-complete-user-flows)
 4. [Backend Module Breakdown](#4-backend-module-breakdown)
-5. [Frontend Module Breakdown](#5-frontend-module-breakdown)
+5. [Frontend Module Breakdown](#5-frontend-module-breakdown) *(includes Mobile App Detailed Status)*
 6. [Technology Choices](#6-technology-choices)
 7. [How to Run & Setup](#7-how-to-run--setup)
 8. [How to Customize the Project](#8-how-to-customize-the-project)
@@ -28,36 +28,44 @@
 
 ### What is QueueCut / TrimTime?
 
-QueueCut (branded **TrimTime**) is a **SaaS queue management platform for barber shops**. It replaces the old "wait outside / call your name" model with a smart digital queue that works on any smartphone — no app download needed.
+QueueCut (branded **TrimTime**) is a **SaaS platform + mobile app for smart queue management at barber shops**. It replaces the old "wait outside / call your name" model with a digital queue system that works across two access patterns:
+
+- **QR Code (first-time / walk-in):** Customer scans a QR code at the shop → opens the mobile web app in their browser → joins the queue instantly. No account required.
+- **Mobile App (repeat customers):** Customers who return regularly use the **Ionic-based mobile app** directly — browse their favourite shop, book appointments, join queue, and track status without scanning anything.
+
+The **Customer Mobile App** (built with Ionic + Angular) is a **core product**, not just a QR viewer. It is the primary retention channel — turning one-time walk-ins into loyal returning customers.
 
 ### Problem it Solves
 
 | Old Way | TrimTime Way |
 |---|---|
-| Customers wait physically at the shop | Customers join queue via QR code, wait anywhere |
+| Customers wait physically at the shop | Customers join queue via QR or mobile app, wait anywhere |
 | No idea of wait time | Live position + estimated wait time |
 | Owner can't see who's next from phone | Full queue dashboard on any browser |
 | TV just shows a number | Animated display screen with real-time updates |
-| No booking system | Customers can pre-book appointments |
+| No booking system | Customers can pre-book appointments from the mobile app |
+| One-time walk-in, no retention | Mobile app builds loyalty — customers come back directly |
 
 ### Key Features
 
-- **QR Code Check-In** — Scan code → join queue in under 30 seconds
+- **Customer Mobile App (Ionic)** — Cross-platform app (Android + iOS via Capacitor) for the complete customer journey: browse shops, join queue, book appointments, track live status. Primary experience for repeat customers.
+- **QR Code Check-In** — Scan code → join queue in under 30 seconds. Ideal for first-time / walk-in customers (no app install needed).
 - **Live Queue Tracker** — Real-time position, wait time, status (Waiting → Called → Serving)
-- **Shop Dashboard** — Manage queue, barbers, services, bookings
-- **Appointment Booking** — Choose barber, date, time, multiple services
+- **Appointment Booking** — Choose barber, date, time, multiple services — directly from the mobile app
+- **Shop Dashboard** — Admin web app: manage queue, barbers, services, bookings
 - **Queue Display Screen** — Large kiosk display for shop TV
 - **Multi-branch Support** — One shop, multiple locations
 - **Roles** — Customer, Barber, Shop Owner, Admin
 
 ### Target Users
 
-| User | What they do |
-|---|---|
-| **Shop Owner** | Manages shop, barbers, services, views reports |
-| **Barber** | Manages their queue, calls next customer |
-| **Customer** | Scans QR, joins queue, tracks status, books appointments |
-| **Display Screen** | Read-only kiosk showing live queue for shop TV |
+| User | Access Method | What they do |
+|---|---|---|
+| **Shop Owner** | Admin Dashboard (web) | Manages shop, barbers, services, views reports |
+| **Barber** | Admin Dashboard (web) | Manages their queue, calls next customer |
+| **Customer (first visit)** | QR Code → mobile browser | Scans QR, joins queue instantly as guest |
+| **Customer (returning)** | Mobile App (Ionic) | Opens app → browses shop → joins queue or books appointment |
+| **Display Screen** | Queue Display App (web) | Read-only kiosk showing live queue for shop TV |
 
 ---
 
@@ -290,6 +298,11 @@ QueueEntry.status:
 
 ### Customer Flow
 
+> **NOTE — Two Access Modes:**
+> - **QR Code** is for first-time or walk-in customers. They scan the QR at the shop, open the page in their mobile browser, and join as a guest in seconds. No account needed.
+> - **Mobile App (Ionic) is the primary experience for returning customers.** They open the app directly, browse their saved or nearby shops, join queue, or book appointments — without needing to scan anything. This is the main retention and engagement channel.
+
+#### Path A — First-time / Walk-in (QR Code)
 ```
 1. SCAN QR CODE
    Customer scans QR at shop → opens mobile browser → /shop/{slug}
@@ -298,7 +311,7 @@ QueueEntry.status:
    Sees: shop name, branch, list of barbers, available services
    Options: "Join Queue" or "Book Appointment"
 
-3. JOIN QUEUE (walk-in)
+3. JOIN QUEUE (guest)
    /join-queue?shopId=...&branchId=...
    Enter: name, phone (optional), select barber (optional)
    Tap "Join" → QueueEntry created → redirected to /queue/{entryId}
@@ -309,15 +322,39 @@ QueueEntry.status:
    Real-time updates via GraphQL subscription
    Status changes: "Waiting" → "You're being called!" → "You're being served"
 
-5. BOOK APPOINTMENT
+5. SERVED / DONE
+   Status → SERVED → review prompt (Phase 2)
+```
+
+#### Path B — Returning Customer (Mobile App)
+```
+1. OPEN APP
+   Customer opens the installed Ionic mobile app (localhost:4300 in dev,
+   native app via Capacitor build in production)
+
+2. SCAN OR BROWSE
+   Tab 1 (Scanner): Scan QR if at shop
+   OR directly navigate to a saved shop via search/history
+
+3. SHOP LANDING PAGE
+   /shop/:slug — same page, loads barbers, services, branches
+   Options: "Join Queue" or "Book Appointment"
+
+4. JOIN QUEUE or BOOK APPOINTMENT
+   Join Queue → Live Tracker (same as Path A above)
+
+   Book Appointment:
    /book-appointment?shopId=...&branchId=...
-   Step 1: Select barber
-   Step 2: Select service(s) + date chip + time slot
-   Step 3: Enter name + phone → Confirm
+   Step 1: Select barber (grid with photo + availability)
+   Step 2: Multi-select services + 14-day date chip scroll + time slot grid
+   Step 3: Review summary + enter name/phone → Confirm
    Backend creates Appointment (PENDING)
 
+5. LIVE TRACKER
+   Same real-time experience: position, EWT, status alerts
+
 6. SERVED / DONE
-   Status → SERVED → review prompt
+   Status → SERVED → review prompt (Phase 2)
 ```
 
 ### Queue Status Transitions
@@ -704,6 +741,52 @@ QueueService emits: 'queue.entry.called' event
 
 ---
 
+### Mobile App (Ionic) — Detailed Status
+
+> **Product note:** The Ionic mobile app is not a companion tool — it is the **core customer product**. QR code scanning is the acquisition channel (first visit); the mobile app is the retention channel (every visit after). Developers should treat mobile features with the same priority as admin dashboard features.
+
+#### Access Model
+
+```
+FIRST VISIT (Acquisition)
+  Customer at shop → Scan QR code → Mobile browser opens /shop/{slug}
+  → Joins as guest in < 30 seconds
+  → No app install required
+
+RETURN VISITS (Retention) ← PRIMARY FLOW
+  Customer opens installed Ionic app
+  → Navigates directly to saved shop
+  → Joins queue or books appointment
+  → Full logged-in experience (JWT session)
+  → Push notifications for queue status
+```
+
+#### Feature Status Table
+
+| Feature | Status | Priority | Phase |
+|---|---|---|---|
+| **QR Code Scanner** | ✅ Complete | — | 1 |
+| **Shop Landing Page** | ✅ Complete | — | 1 |
+| **Join Queue (guest)** | ✅ Complete | — | 1 |
+| **Live Queue Tracker** | ✅ Complete | — | 1 |
+| **Appointment Booking (multi-service)** | ✅ Complete | — | 1 |
+| **Profile Page (static)** | ⚠️ Partial | High | 2 |
+| **OTP Login + JWT session** | ⚠️ Partial | High | 2 |
+| **Queue History** | ⚠️ Partial | Medium | 2 |
+| **Post-service Reviews / Rating** | ❌ Missing | High | 2 |
+| **Payment Screen** | ❌ Missing | High | 2 |
+| **Push Notifications (Firebase)** | ❌ Missing | High | 2 |
+| **Logged-in booking (user identity)** | ❌ Missing | High | 2 |
+| **Loyalty / Favourites** | ❌ Missing | Low | 3 |
+| **Native iOS/Android build (Capacitor)** | ❌ Missing | Medium | 3 |
+| **Offline support (PWA)** | ❌ Missing | Low | 3 |
+
+**Mobile App Completion: ~70%**
+
+Core journeys (scan, join, track, book) are production-ready. The missing pieces (auth persistence, push notifications, payments, reviews) are Phase 2 work that turn the app from demo-ready to production-ready.
+
+---
+
 ## 6. Technology Choices
 
 | Technology | Why |
@@ -715,7 +798,7 @@ QueueService emits: 'queue.entry.called' event
 | **Redis** | Ticket counters (atomic INCR), OTP storage (TTL), PubSub for real-time events |
 | **Angular 17 (standalone)** | No NgModule boilerplate, tree-shaking, lazy routes |
 | **PrimeNG** | Production-ready enterprise UI (DataTable, Dialog, Toast) with theming |
-| **Ionic 8** | Cross-platform mobile web, native-feel components, Capacitor for camera |
+| **Ionic 8** | Cross-platform (Android + iOS + web) mobile app built on Angular. Native-feel UI components, Capacitor plugins for camera (QR scan), push notifications, and device APIs. Chosen because the customer mobile app is a core product — not a side feature — and Ionic shares Angular code with the admin dashboard, reducing duplication across the monorepo. |
 | **Apollo Angular** | GraphQL client with caching, WebSocket link for subscriptions |
 | **Nx Monorepo** | Shared libs across apps, dependency graph, single install, coordinated builds |
 
@@ -1005,19 +1088,24 @@ enum UserRole {
 | Finance | ❌ Missing | Page exists; no data wired |
 | Marketing / QR | ❌ Missing | Page exists; no QR generation |
 
-### Customer Mobile — ~70% Complete
+### Customer Mobile App (Ionic) — ~70% Complete
 
-| Page | Status | Notes |
-|---|---|---|
-| QR Scanner | ✅ Complete | Camera scan + manual URL |
-| Shop Landing | ✅ Complete | Barbers, services, branch info |
-| Join Queue (guest) | ✅ Complete | Guest form, barber selection |
-| Live Tracker | ✅ Complete | Real-time position + status |
-| Book Appointment | ✅ Complete | Multi-service, custom date/time picker |
-| Profile | ⚠️ Partial | Static; no auth-aware data |
-| History | ⚠️ Partial | Page exists; no API wired |
-| Payment Screen | ❌ Missing | Not started |
-| Reviews / Rating | ❌ Missing | Model exists; no UI |
+> The mobile app is the **primary customer-facing product**. QR code access serves as the entry point for first-time users; the app drives retention for returning customers.
+
+| Feature | Page / Route | Status | Notes |
+|---|---|---|---|
+| QR Code Scanner | `/tabs/scan` | ✅ Complete | Camera scan via Capacitor; manual slug fallback |
+| Shop Landing Page | `/shop/:slug` | ✅ Complete | Barbers, services, branch info; forkJoin parallel load |
+| Join Queue (guest) | `/join-queue` | ✅ Complete | Name + phone; barber selection; guest entry |
+| Live Queue Tracker | `/queue/:entryId` | ✅ Complete | Real-time position, EWT, status alerts, vibration on CALLED |
+| Appointment Booking | `/book-appointment` | ✅ Complete | Multi-service, scrollable date chips, time grid, 3-step flow |
+| User Profile | `/tabs/profile` | ⚠️ Partial | Static layout; not yet connected to `Me` query or JWT auth |
+| Queue History | `/history` | ⚠️ Partial | Page scaffolded; no API call wired |
+| OTP Login (full flow) | `/auth/otp` | ⚠️ Partial | Guest flow works; full JWT auth + session persistence incomplete |
+| Push Notifications | N/A | ❌ Missing | Firebase integration not started; Capacitor plugin ready |
+| Payment Screen | `/payment` | ❌ Missing | No UI or API; Phase 2 work |
+| Reviews / Rating | `/review` | ❌ Missing | Prisma model exists; no mobile UI |
+| Logged-in Booking | All pages | ❌ Missing | Currently all bookings are guest; user identity not persisted across sessions |
 
 ### Queue Display Kiosk — ~85% Complete
 
@@ -1035,37 +1123,50 @@ enum UserRole {
 
 ## 10. Roadmap
 
-### Phase 1 — Core MVP ✅ (Current)
+### Phase 1 — Core MVP ✅ (Complete)
 
-- [x] OTP authentication
-- [x] Shop + barber + service management
-- [x] Queue join, track, manage (full lifecycle)
-- [x] Live WebSocket updates
-- [x] Queue display kiosk
-- [x] Guest appointment booking
+- [x] OTP authentication (dev: static OTP; prod: Twilio ready)
+- [x] Shop + barber + service management (admin dashboard)
+- [x] Queue join, track, manage (full lifecycle: WAITING → SERVED)
+- [x] Live WebSocket updates across all clients
+- [x] Queue display kiosk (animated, sound alerts)
+- [x] Guest appointment booking (multi-service, custom date/time)
 - [x] Admin dashboard (queue, barbers, services)
-- [x] Customer mobile (scan, join, track, book)
+- [x] **Customer Mobile App — core flows** (scan, join, track, book)
 
-### Phase 2 — Production Ready
+### Phase 2 — Production Ready (Mobile-First)
 
-- [ ] Twilio SMS — OTP delivery + queue notifications
-- [ ] Payment integration (Stripe for cards, UPI for India)
-- [ ] QR code generation + print/download
-- [ ] Reviews and ratings (post-service)
-- [ ] Push notifications (Firebase)
-- [ ] Full reports with date-range filtering + CSV export
+**Mobile App (Ionic) — Retention & Engagement:**
+- [ ] Full OTP login + JWT session persistence in mobile app
+- [ ] Push notifications via Firebase (queue status alerts: called, served)
+- [ ] Post-service reviews and ratings (customer rates barber after SERVED)
+- [ ] Payment screen — post-service payment flow in mobile app (Stripe / UPI)
+- [ ] Queue history page — wired to API, shows past visits
+- [ ] Profile page — connected to `Me` query, shows user data and saved shops
+
+**Infrastructure:**
+- [ ] Twilio SMS — OTP delivery + queue position reminders
+- [ ] QR code generation + print/download (admin generates per shop/barber)
 - [ ] Logo and avatar file upload (Cloudinary)
+- [ ] Full reports with date-range filtering + CSV export
 - [ ] Appointment calendar view (admin)
 
-### Phase 3 — Growth & Scale
+### Phase 3 — Growth & Scale (Mobile-Led)
 
+**Mobile App — Loyalty & Retention:**
+- [ ] Favourite barbers — customer saves preferred barber, quick re-book
+- [ ] Loyalty points — earn per visit, redeem for discounts
+- [ ] Queue sharing — share ticket link with a friend
+- [ ] Smart booking suggestions — app recommends best time slot based on history
+- [ ] Native iOS + Android build via Capacitor (from existing Ionic codebase)
+- [ ] Offline-capable PWA — queue join works with poor/no connection
+
+**Platform:**
 - [ ] SaaS subscription billing (Free/Pro/Enterprise plans)
-- [ ] Multi-barber queue (each barber has independent queue)
-- [ ] AI-based wait time prediction (ML model on historical data)
-- [ ] Customer loyalty points
+- [ ] Multi-barber queue (each barber has fully independent queue)
+- [ ] AI-based wait time prediction (ML on historical serve times)
 - [ ] WhatsApp Business API notifications
 - [ ] Franchise / multi-shop owner accounts
-- [ ] Mobile app (iOS/Android via Capacitor build)
 
 ---
 
@@ -1074,23 +1175,27 @@ enum UserRole {
 **We are at: Phase 1 complete, starting Phase 2**
 
 ### What is done (demo-ready):
-- Full queue flow: scan → join → track → serve ✅
-- Admin can manage entire shop operation ✅
-- Customer can book appointments ✅
-- Queue display kiosk works with animations ✅
+- Full queue flow: scan QR → join → track live → served ✅
+- Customer Mobile App: scan, join, book appointments, live tracker ✅
+- Admin can manage entire shop operation (queue, barbers, services) ✅
+- Appointment booking: multi-service, custom date/time, 3-step flow ✅
+- Queue display kiosk works with animations and sound ✅
 - GraphQL API covers all core operations ✅
 
-### What is next (Phase 2 priorities):
-1. **Twilio SMS** — configure credentials, remove dev-only static OTP
-2. **QR code generation** — admin generates printable QR per shop/barber
-3. **Payments** — post-service payment flow (Stripe)
-4. **Reviews** — customer rates barber after SERVED
+### What is next (Phase 2 priorities — mobile-first):
+1. **OTP full flow in mobile app** — JWT session persistence so repeat customers stay logged in
+2. **Push notifications** — Firebase integration so customers are alerted when called (even if app is in background)
+3. **Payments** — post-service payment screen in mobile app (Stripe / UPI)
+4. **Reviews** — customer rates barber from mobile app after SERVED status
+5. **Twilio SMS** — configure credentials, remove dev-only static OTP
+6. **QR code generation** — admin generates printable QR per shop/barber
 
 ### Not blocking demo, but needed before production:
 - File uploads (logo, barber avatar currently URL-only)
 - Email notifications
 - Error monitoring (Sentry)
 - Rate limiting on GraphQL mutations
+- App-store submission prep (Capacitor build for iOS + Android)
 
 ---
 
@@ -1124,18 +1229,38 @@ enum UserRole {
 - [ ] QR code download page
 - [ ] Finance page wired to API
 
-### Customer Mobile Checklist
+### Customer Mobile App Checklist (Ionic)
 
-- [x] Apollo `query()` used (not `watchQuery().valueChanges`) on all read operations
-- [x] `forkJoin` for parallel data load on shop landing
-- [x] Loading skeleton states on shop landing
-- [x] Live tracker subscription active
-- [x] Book appointment multi-service + custom date/time
-- [x] Guest booking works without login
-- [ ] Logged-in user flow (JWT-based, not guest)
-- [ ] Payment screen
-- [ ] Review/rating after served
-- [ ] History page wired to API
+> The mobile app is the **core customer product**. These items represent the full production-ready standard.
+
+**Core flows (Phase 1 — done):**
+- [x] Apollo `query()` used (not `watchQuery().valueChanges`) on all read operations — prevents `forkJoin` hang
+- [x] `forkJoin` for parallel data load on shop landing page
+- [x] Loading skeleton states on shop landing while API loads
+- [x] Live tracker: GraphQL subscription active, real-time position updates
+- [x] Appointment booking: multi-service checkbox, scrollable date chips, time slot grid
+- [x] Guest booking works without any login (name + phone only)
+- [x] QR scanner (Capacitor) → shop landing page navigation
+
+**Auth & session (Phase 2 — pending):**
+- [ ] Full OTP login flow in mobile app (phone → OTP → JWT stored in Capacitor SecureStorage)
+- [ ] JWT session persists across app restarts (not just browser session)
+- [ ] Authenticated booking — user identity attached to QueueEntry and Appointment
+- [ ] Auto-refresh token when JWT expires
+
+**Engagement features (Phase 2 — pending):**
+- [ ] Push notifications wired (Firebase + Capacitor Push plugin) — alert on CALLED / SERVED
+- [ ] Post-service review / rating screen (after status → SERVED)
+- [ ] Payment screen in app (Stripe / UPI, post-service)
+- [ ] History page connected to API (past visits, ticket references)
+- [ ] Profile page connected to `Me` query (user name, phone, preferences)
+
+**Production readiness (Phase 2/3):**
+- [ ] Capacitor native build tested on Android
+- [ ] Capacitor native build tested on iOS
+- [ ] Deep links configured (open app from SMS queue link)
+- [ ] Error boundaries + loading/error states on all pages
+- [ ] Offline handling (graceful message when no internet)
 
 ### Demo Checklist
 
@@ -1205,10 +1330,12 @@ enum UserRole {
 
 ### Platform
 
-- [ ] Native iOS/Android app (Capacitor build from existing Ionic code)
+- [ ] Native iOS/Android build (Capacitor from existing Ionic codebase — no rewrite needed)
+- [ ] App Store + Play Store submission (icons, splash, privacy policy)
 - [ ] Offline-capable PWA (service worker, queue join works without internet)
+- [ ] Deep links — SMS/WhatsApp link opens mobile app directly at queue tracker
 - [ ] Webhook support (notify external systems on queue events)
 
 ---
 
-*Last updated: April 2026 | QueueCut/TrimTime — Phase 1 complete*
+*Last updated: April 2026 | QueueCut/TrimTime — Phase 1 complete · Mobile app is core product · Phase 2 in progress*
