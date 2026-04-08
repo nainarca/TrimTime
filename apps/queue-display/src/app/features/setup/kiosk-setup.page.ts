@@ -11,10 +11,11 @@ import { Router } from '@angular/router';
   styleUrls: ['./kiosk-setup.page.scss'],
 })
 export class KioskSetupPage {
-  shopId     = '';
-  branchId   = '';
-  shopName   = '';
-  branchName = '';
+  // Pre-filled for demo — operator can override at the kiosk
+  shopId     = 'seed-elite-shop-001';
+  branchId   = 'seed-elite-branch-001';
+  shopName   = 'Elite Barber Lounge';
+  branchName = 'Main Branch';
   error      = '';
 
   constructor(private readonly router: Router) {}

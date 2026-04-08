@@ -10,32 +10,32 @@ export declare class AppointmentsResolver {
     createAppointment(input: AppointmentInput, user: AuthenticatedUser): Promise<{
         id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
         durationMins: number;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        updatedAt: Date;
+        branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
-        scheduledAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         notes: string;
+        scheduledAt: Date;
         reminderSent: boolean;
     }>;
     cancelAppointment(id: string, user: AuthenticatedUser): Promise<boolean>;
     appointmentsByShop(shopId: string, user: AuthenticatedUser): Promise<{
         id: string;
         shopId: string;
-        branchId: string;
-        createdAt: Date;
-        updatedAt: Date;
         durationMins: number;
+        createdAt: Date;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        updatedAt: Date;
+        branchId: string;
         barberId: string;
         customerId: string;
         serviceId: string;
-        scheduledAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         notes: string;
+        scheduledAt: Date;
         reminderSent: boolean;
     }[]>;
 }

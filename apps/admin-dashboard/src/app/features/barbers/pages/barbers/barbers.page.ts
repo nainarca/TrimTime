@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NotificationService } from '../../../../core/services/notification.service';
 
 export interface Barber {
   id: string;
   name: string;
   initials: string;
+  avatarUrl: string;
   phone: string;
   email: string;
   specialties: string[];
@@ -14,31 +15,14 @@ export interface Barber {
   queueSize: number;
 }
 
+const AV = (n: string, c: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=${c}&color=fff&size=200&bold=true`;
+
 const SEED_BARBERS: Barber[] = [
-  {
-    id: '1', name: 'Mike Johnson',    initials: 'MJ',
-    phone: '+1 555-0101', email: 'mike@barbershop.com',
-    specialties: ['Haircut', 'Beard Trim'],
-    status: 'ACTIVE', rating: 4.9, todayServed: 12, queueSize: 3,
-  },
-  {
-    id: '2', name: 'James Williams',  initials: 'JW',
-    phone: '+1 555-0102', email: 'james@barbershop.com',
-    specialties: ['Haircut', 'Hair Color'],
-    status: 'ACTIVE', rating: 4.7, todayServed: 8, queueSize: 2,
-  },
-  {
-    id: '3', name: 'Carlos Martinez', initials: 'CM',
-    phone: '+1 555-0103', email: 'carlos@barbershop.com',
-    specialties: ['Beard Trim', 'Hot Shave'],
-    status: 'ACTIVE', rating: 4.8, todayServed: 6, queueSize: 1,
-  },
-  {
-    id: '4', name: 'David Chen',      initials: 'DC',
-    phone: '+1 555-0104', email: 'david@barbershop.com',
-    specialties: ['Haircut'],
-    status: 'INACTIVE', rating: 4.5, todayServed: 0, queueSize: 0,
-  },
+  { id: '1', name: 'Arjun Kumar',   initials: 'AK', avatarUrl: AV('Arjun Kumar',   '6366f1'), phone: '+91 98765 00011', email: 'arjun@elitebarber.in',   specialties: ['Haircut', 'Fade', 'Texture'], status: 'ACTIVE',   rating: 4.9, todayServed: 16, queueSize: 3 },
+  { id: '2', name: 'Karthik Raja',  initials: 'KR', avatarUrl: AV('Karthik Raja',  '10b981'), phone: '+91 98765 00012', email: 'karthik@elitebarber.in',  specialties: ['Beard Trim', 'Hot Shave'],     status: 'ACTIVE',   rating: 4.7, todayServed: 14, queueSize: 2 },
+  { id: '3', name: 'Rahim Sheikh',  initials: 'RS', avatarUrl: AV('Rahim Sheikh',  'f59e0b'), phone: '+91 98765 00013', email: 'rahim@elitebarber.in',    specialties: ['Haircut + Beard', 'Hair Spa'], status: 'ACTIVE',   rating: 4.8, todayServed: 12, queueSize: 1 },
+  { id: '4', name: 'Vijay Kumar',   initials: 'VK', avatarUrl: AV('Vijay Kumar',   'ef4444'), phone: '+91 98765 00014', email: 'vijay@elitebarber.in',    specialties: ['Kids Cut', 'Haircut'],         status: 'ACTIVE',   rating: 4.5, todayServed:  6, queueSize: 0 },
 ];
 
 @Component({
@@ -52,13 +36,20 @@ export class BarbersPageComponent implements OnInit {
 
   barbers: Barber[] = [];
 
-  dialogVisible     = false;
+  dialogVisible    = false;
   editingId: string | null = null;
   deleteConfirmId: string | null = null;
 
-  form = { name: '', phone: '', email: '', specialties: '' };
+  form = {
+    name: '', phone: '', email: '', specialties: '',
+    avatarUrl: '',
+    avatarPreview: '',   // shown in dialog preview
+  };
 
-  constructor(private readonly notify: NotificationService) {}
+  constructor(
+    private readonly notify: NotificationService,
+    private readonly cdr:    ChangeDetectorRef,
+  ) {}
 
   get totalActive(): number { return this.barbers.filter(b => b.status === 'ACTIVE').length; }
   get totalServed(): number { return this.barbers.reduce((s, b) => s + b.todayServed, 0); }
@@ -69,8 +60,6 @@ export class BarbersPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Simulate loading from API; replace with real GraphQL call when barbers
-    // resolver is added to the backend (Phase-2).
     setTimeout(() => {
       this.barbers = [...SEED_BARBERS];
       this.loading = false;
@@ -79,19 +68,42 @@ export class BarbersPageComponent implements OnInit {
 
   openNew(): void {
     this.editingId = null;
-    this.form = { name: '', phone: '', email: '', specialties: '' };
+    this.form = { name: '', phone: '', email: '', specialties: '', avatarUrl: '', avatarPreview: '' };
     this.dialogVisible = true;
   }
 
   editBarber(b: Barber): void {
     this.editingId = b.id;
     this.form = {
-      name:        b.name,
-      phone:       b.phone,
-      email:       b.email,
-      specialties: b.specialties.join(', '),
+      name:          b.name,
+      phone:         b.phone,
+      email:         b.email,
+      specialties:   b.specialties.join(', '),
+      avatarUrl:     b.avatarUrl || '',
+      avatarPreview: b.avatarUrl || '',
     };
     this.dialogVisible = true;
+  }
+
+  /** Handle file picker */
+  onPhotoChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input?.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      this.form.avatarUrl     = result;
+      this.form.avatarPreview = result;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto(): void {
+    this.form.avatarUrl     = '';
+    this.form.avatarPreview = '';
   }
 
   saveBarber(): void {
@@ -102,17 +114,17 @@ export class BarbersPageComponent implements OnInit {
     const specialties = this.form.specialties.split(',').map(s => s.trim()).filter(Boolean);
     this.saving = true;
 
-    // Simulate async save (replace with upsertBarber mutation when available)
     setTimeout(() => {
       if (this.editingId) {
         const idx = this.barbers.findIndex(b => b.id === this.editingId);
         if (idx !== -1) {
           this.barbers[idx] = {
             ...this.barbers[idx],
-            name:       this.form.name,
-            initials:   this.toInitials(this.form.name),
-            phone:      this.form.phone,
-            email:      this.form.email,
+            name:        this.form.name,
+            initials:    this.toInitials(this.form.name),
+            avatarUrl:   this.form.avatarUrl,
+            phone:       this.form.phone,
+            email:       this.form.email,
             specialties,
           };
           this.barbers = [...this.barbers];
@@ -123,6 +135,7 @@ export class BarbersPageComponent implements OnInit {
           id:          Date.now().toString(),
           name:        this.form.name,
           initials:    this.toInitials(this.form.name),
+          avatarUrl:   this.form.avatarUrl,
           phone:       this.form.phone,
           email:       this.form.email,
           specialties,
@@ -133,7 +146,7 @@ export class BarbersPageComponent implements OnInit {
         }];
         this.notify.success('Added', `${this.form.name} added to your team.`);
       }
-      this.saving       = false;
+      this.saving        = false;
       this.dialogVisible = false;
     }, 500);
   }
@@ -144,17 +157,16 @@ export class BarbersPageComponent implements OnInit {
     const next = b.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     this.barbers[idx] = { ...b, status: next };
     this.barbers = [...this.barbers];
-    const label = next === 'ACTIVE' ? 'activated' : 'deactivated';
-    this.notify.info('Status changed', `${b.name} has been ${label}.`);
+    this.notify.info('Status changed', `${b.name} ${next === 'ACTIVE' ? 'activated' : 'deactivated'}.`);
   }
 
   deleteBarber(b: Barber): void {
     this.barbers = this.barbers.filter(x => x.id !== b.id);
     this.deleteConfirmId = null;
-    this.notify.warn('Deleted', `${b.name} has been removed.`);
+    this.notify.warn('Deleted', `${b.name} removed.`);
   }
 
-  starsArray(_rating: number): number[] {
+  starsArray(): number[] {
     return Array.from({ length: 5 });
   }
 

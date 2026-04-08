@@ -25,7 +25,7 @@
   <ng-container *ngIf="shopId && branchId">
     <div class="shop-info-card animate-in">
       <div class="shop-info-icon">
-        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-icon name="cut-outline"></ion-icon>
       </div>
       <div class="shop-info-text">
         <span class="shop-info-name">{{ shopName || 'Shop' }}</span>
@@ -44,7 +44,7 @@
       <div class="stepper-line" [class.active]="step >= 2"></div>
       <div class="stepper-item" [class.active]="step >= 2" [class.current]="step === 2">
         <span class="stepper-dot">2</span>
-        <span class="stepper-label">Time</span>
+        <span class="stepper-label">Service</span>
       </div>
       <div class="stepper-line" [class.active]="step >= 3"></div>
       <div class="stepper-item" [class.active]="step >= 3" [class.current]="step === 3">
@@ -53,6 +53,7 @@
       </div>
     </div>
 
+    <!-- Step 1 skeleton -->
     <ng-container *ngIf="loadingData && step === 1">
       <div class="section">
         <div class="sk-label skeleton-shimmer"></div>
@@ -60,7 +61,7 @@
       </div>
     </ng-container>
 
-    <!-- Step 1: Barber -->
+    <!-- ── Step 1: Barber ── -->
     <div class="section animate-in" *ngIf="step === 1 && !loadingData">
       <h3 class="section-label">Select barber</h3>
       <p class="step-hint" *ngIf="barbers.length === 0">
@@ -72,12 +73,18 @@
           *ngFor="let b of barbers"
           class="barber-option"
           [class.selected]="selectedBarberId === b.id"
-          (click)="selectBarber(b.id)"
+          [class.barber-option--busy]="!b.queueAccepting"
+          (click)="b.queueAccepting && selectBarber(b.id)"
         >
-          <div class="barber-avatar">{{ barberInitials(b.displayName) }}</div>
+          <div class="barber-avatar" [class.barber-avatar--photo]="!!b.avatarUrl">
+            <img *ngIf="b.avatarUrl" [src]="b.avatarUrl" [alt]="b.displayName" class="barber-avatar-img" />
+            <span *ngIf="!b.avatarUrl">{{ barberInitials(b.displayName) }}</span>
+          </div>
           <div class="barber-info">
             <span class="barber-name">{{ b.displayName }}</span>
+            <span class="barber-bio" *ngIf="b.bio">{{ b.bio }}</span>
             <span class="barber-status" [class.barber-status--busy]="!b.queueAccepting">
+              <ion-icon [name]="b.queueAccepting ? 'checkmark-circle' : 'time-outline'"></ion-icon>
               {{ b.queueAccepting ? 'Available' : 'Busy' }}
             </span>
           </div>
@@ -89,47 +96,129 @@
       </div>
     </div>
 
-    <!-- Step 2: Service + date/time -->
+    <!-- ── Step 2: Services + Date/Time ── -->
     <div class="section animate-in" *ngIf="step === 2">
-      <h3 class="section-label">Select service</h3>
-      <div class="service-grid" *ngIf="services.length > 0">
+
+      <!-- Service list header -->
+      <div class="section-head-row">
+        <h3 class="section-label">Select services</h3>
+        <span class="select-hint">Select one or more</span>
+      </div>
+
+      <p class="step-hint" *ngIf="services.length === 0">No services loaded. Check your connection.</p>
+
+      <div class="service-list" *ngIf="services.length > 0">
         <div
           *ngFor="let svc of services"
-          class="svc-option"
-          [class.selected]="selectedServiceId === svc.id"
-          (click)="selectService(svc.id)"
+          class="svc-row"
+          [class.selected]="isServiceSelected(svc.id)"
+          (click)="toggleService(svc.id)"
         >
-          <div class="svc-opt-icon" [class.svc-opt-icon--selected]="selectedServiceId === svc.id">
-            <ion-icon name="cut-outline"></ion-icon>
+          <div class="svc-row-left">
+            <div class="svc-row-icon" [class.active]="isServiceSelected(svc.id)">
+              <ion-icon name="cut-outline"></ion-icon>
+            </div>
+            <div class="svc-row-body">
+              <span class="svc-row-name">{{ svc.name }}</span>
+              <span class="svc-row-meta">{{ svc.durationMins }} min · {{ svc.currency }} {{ svc.price }}</span>
+            </div>
           </div>
-          <div class="svc-opt-body">
-            <span class="svc-opt-name">{{ svc.name }}</span>
-            <span class="svc-opt-meta"
-              >{{ svc.durationMins }} min · {{ svc.currency }} {{ svc.price }}</span
-            >
-          </div>
-          <div class="svc-check-wrap" [class.svc-check-wrap--selected]="selectedServiceId === svc.id">
-            <ion-icon class="svc-check" [name]="selectedServiceId === svc.id ? 'checkmark' : ''"></ion-icon>
+          <div class="svc-checkbox" [class.checked]="isServiceSelected(svc.id)">
+            <ion-icon *ngIf="isServiceSelected(svc.id)" name="checkmark"></ion-icon>
           </div>
         </div>
       </div>
-      <p class="step-hint" *ngIf="services.length === 0">No services loaded. Check your connection.</p>
 
-      <h3 class="section-label" style="margin-top: 1.25rem">Date &amp; time</h3>
-      <div class="datetime-wrap">
-        <ion-datetime
-          presentation="date-time"
-          [value]="scheduledIso"
-          (ionChange)="onScheduleChange($event)"
-          [min]="minIso"
-          [max]="maxIso"
-        ></ion-datetime>
+      <!-- Selection summary -->
+      <div class="svc-summary" *ngIf="selectedServiceIds.length > 0">
+        <div class="svc-summary-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>{{ totalDuration }} min total</span>
+        </div>
+        <div class="svc-summary-sep">·</div>
+        <div class="svc-summary-item">
+          <ion-icon name="cash-outline"></ion-icon>
+          <span>{{ totalCurrency }} {{ totalPrice }}</span>
+        </div>
+        <div class="svc-summary-count">{{ selectedServiceIds.length }} selected</div>
       </div>
+
+      <!-- Date picker -->
+      <h3 class="section-label dt-label">Pick a date</h3>
+      <div class="date-scroll-wrap">
+        <div class="date-scroll">
+          <div
+            *ngFor="let chip of dateChips"
+            class="date-chip"
+            [class.selected]="selectedDate === chip.iso"
+            [class.today]="chip.isToday"
+            (click)="selectDate(chip.iso)"
+          >
+            <span class="dc-day-label">{{ chip.label }}</span>
+            <span class="dc-day-num">{{ chip.day }}</span>
+            <span class="dc-month">{{ chip.month }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time picker -->
+      <h3 class="section-label dt-label">Pick a time</h3>
+      <div class="time-grid">
+        <div
+          *ngFor="let slot of timeSlots"
+          class="time-chip"
+          [class.selected]="selectedTime === slot.value"
+          (click)="selectTime(slot)"
+        >
+          {{ slot.label }}
+        </div>
+      </div>
+
     </div>
 
-    <!-- Step 3: Confirm -->
+    <!-- ── Step 3: Confirm ── -->
     <div class="section animate-in" *ngIf="step === 3">
-      <h3 class="section-label">Your details</h3>
+
+      <!-- Booking summary card -->
+      <div class="booking-summary">
+        <div class="bs-row">
+          <ion-icon name="person-outline"></ion-icon>
+          <span class="bs-label">Barber</span>
+          <span class="bs-value">{{ selectedBarberName }}</span>
+        </div>
+        <div class="bs-row">
+          <ion-icon name="cut-outline"></ion-icon>
+          <span class="bs-label">Services</span>
+          <span class="bs-value">
+            {{ selectedServices.length === 1
+                ? selectedServices[0].name
+                : selectedServices.length + ' services' }}
+          </span>
+        </div>
+        <div class="bs-row" *ngIf="selectedServices.length > 1">
+          <ion-icon name="list-outline"></ion-icon>
+          <span class="bs-label"></span>
+          <span class="bs-value bs-value--muted">{{ selectedServiceNames }}</span>
+        </div>
+        <div class="bs-row">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span class="bs-label">Date</span>
+          <span class="bs-value">{{ selectedDateObj | date:'EEE, d MMM yyyy' }}</span>
+        </div>
+        <div class="bs-row">
+          <ion-icon name="time-outline"></ion-icon>
+          <span class="bs-label">Time</span>
+          <span class="bs-value">{{ selectedTime }}</span>
+        </div>
+        <div class="bs-divider"></div>
+        <div class="bs-row bs-total">
+          <ion-icon name="cash-outline"></ion-icon>
+          <span class="bs-label">Total</span>
+          <span class="bs-value">{{ totalCurrency }} {{ totalPrice }} · {{ totalDuration }} min</span>
+        </div>
+      </div>
+
+      <h3 class="section-label" style="margin-top: 1.25rem">Your details</h3>
       <div class="form-fields">
         <div class="field-wrap" [class.has-value]="guestName.length > 0">
           <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
@@ -165,6 +254,14 @@
 
 <ion-footer *ngIf="shopId && branchId" class="jq-footer">
   <div class="footer-inner">
+    <!-- Step 2 mini-summary in footer -->
+    <div class="footer-summary" *ngIf="step === 2 && selectedServiceIds.length > 0">
+      <span>{{ selectedServiceIds.length }} service{{ selectedServiceIds.length > 1 ? 's' : '' }}</span>
+      <span class="fs-dot">·</span>
+      <span>{{ totalDuration }} min</span>
+      <span class="fs-dot">·</span>
+      <span>{{ totalCurrency }} {{ totalPrice }}</span>
+    </div>
     <ion-button
       *ngIf="step < 3"
       expand="block"

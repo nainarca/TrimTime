@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { QueueApiService, ShopBranch } from '../queue/services/queue-api.service';
 
 export interface ServiceCard {
@@ -52,32 +54,25 @@ export class ShopLandingPage implements OnInit {
       return;
     }
 
-    this.queueApi.getShopBySlug(this.slug).subscribe({
-      next: (shop) => {
+    forkJoin({
+      shop:     this.queueApi.getShopBySlug(this.slug).pipe(catchError(() => of(null))),
+      branches: this.queueApi.getShopBranchesBySlug(this.slug).pipe(catchError(() => of([] as ShopBranch[]))),
+    }).subscribe({
+      next: ({ shop, branches }) => {
         if (!shop) {
           this.error = 'Shop not found';
-          this.loading = false;
-          return;
+        } else {
+          this.resolvedShopId = shop.id;
+          this.shopName    = shop.name;
+          this.description = shop.description || 'Join queue and get notified when it\'s your turn.';
+          this.cityDisplay = shop.country;
         }
-        this.resolvedShopId = shop.id;
-        this.shopName    = shop.name;
-        this.description = shop.description || 'Join queue and get notified when it\'s your turn.';
-        this.cityDisplay = shop.country;
-      },
-      error: (err) => {
-        this.error = err.message || 'Could not load shop';
-        this.loading = false;
-      },
-    });
-
-    this.queueApi.getShopBranchesBySlug(this.slug).subscribe({
-      next: (branches) => {
         this.branches = branches;
         if (branches.length > 0) this.selectedBranch = branches[0];
         this.loading = false;
       },
-      error: () => {
-        // Branches optional — still allow joining at shop level
+      error: (err) => {
+        this.error = err.message || 'Could not load shop';
         this.loading = false;
       },
     });
@@ -88,13 +83,28 @@ export class ShopLandingPage implements OnInit {
   }
 
   get canJoin(): boolean {
-    return !!(this.resolvedShopId && this.selectedBranch?.id);
+    if (!this.resolvedShopId) return false;
+    // If branches exist, one must be selected
+    if (this.branches.length > 0) return !!this.selectedBranch?.id;
+    // No branches — allow anyway (shop-level join)
+    return true;
+  }
+
+  get noBranchesWarning(): boolean {
+    return !this.loading && !this.error && this.branches.length === 0;
   }
 
   joinQueue(): void {
     const shopId   = this.selectedBranch?.shopId || this.resolvedShopId;
     const branchId = this.selectedBranch?.id;
-    if (!shopId || !branchId) return;
+    if (!shopId) return;
+    if (!branchId) {
+      // No branch — cannot form a valid request; surface a message
+      this.router.navigate(['/join-queue'], {
+        queryParams: { shopId, shopName: this.shopName, error: 'no-branch' },
+      });
+      return;
+    }
 
     this.router.navigate(['/join-queue'], {
       queryParams: {
@@ -102,6 +112,21 @@ export class ShopLandingPage implements OnInit {
         branchId,
         shopName:   this.shopName,
         branchName: this.selectedBranch?.name || 'Main Branch',
+      },
+    });
+  }
+
+  bookAppointment(): void {
+    const shopId   = this.selectedBranch?.shopId || this.resolvedShopId;
+    if (!shopId) return;
+
+    this.router.navigate(['/book-appointment'], {
+      queryParams: {
+        shopId,
+        branchId:   this.selectedBranch?.id || '',
+        shopName:   this.shopName,
+        branchName: this.selectedBranch?.name || 'Main Branch',
+        slug:       this.slug,
       },
     });
   }

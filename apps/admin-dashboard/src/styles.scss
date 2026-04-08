@@ -628,6 +628,81 @@ html, body {
   animation: scaleIn 0.15s var(--tt-ease) both;
 }
 
+// ═══════════════════════════════════════════════════════════
+// Toast Overrides (lara-dark-blue theme → light page fix)
+// ═══════════════════════════════════════════════════════════
+
+.p-toast {
+  .p-toast-message {
+    border-radius: var(--tt-radius-md) !important;
+    box-shadow: var(--tt-shadow-lg) !important;
+    backdrop-filter: blur(12px);
+
+    .p-toast-message-content {
+      padding: 1rem 1.25rem !important;
+      align-items: flex-start !important;
+    }
+
+    .p-toast-summary {
+      font-size: 0.875rem !important;
+      font-weight: 700 !important;
+      line-height: 1.3;
+    }
+
+    .p-toast-detail {
+      font-size: 0.8rem !important;
+      font-weight: 400 !important;
+      margin-top: 0.2rem !important;
+      line-height: 1.45;
+      opacity: 0.88;
+    }
+
+    // ── Success ──
+    &.p-toast-message-success {
+      background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+      border-left: 4px solid var(--tt-success) !important;
+      color: #14532d !important;
+
+      .p-toast-message-icon,
+      .p-toast-icon-close { color: var(--tt-success-dark) !important; }
+    }
+
+    // ── Error ──
+    &.p-toast-message-error {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      border-left: 4px solid var(--tt-danger) !important;
+      color: #7f1d1d !important;
+
+      .p-toast-message-icon,
+      .p-toast-icon-close { color: var(--tt-danger-dark) !important; }
+    }
+
+    // ── Warning ──
+    &.p-toast-message-warn {
+      background: #fffbeb !important;
+      border: 1px solid #fde68a !important;
+      border-left: 4px solid var(--tt-warning) !important;
+      color: #78350f !important;
+
+      .p-toast-message-icon,
+      .p-toast-icon-close { color: var(--tt-warning-dark) !important; }
+    }
+
+    // ── Info ──
+    &.p-toast-message-info {
+      background: #eff6ff !important;
+      border: 1px solid #bfdbfe !important;
+      border-left: 4px solid #3b82f6 !important;
+      color: #1e3a5f !important;
+
+      .p-toast-message-icon,
+      .p-toast-icon-close { color: #2563eb !important; }
+    }
+  }
+}
+
 // ── Dialog Form ───────────────────────────────────────────
 .dialog-form {
   display: flex;

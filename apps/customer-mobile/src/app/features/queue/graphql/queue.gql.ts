@@ -51,6 +51,8 @@ export const PUBLIC_BARBERS_QUERY = gql`
       id
       shopId
       displayName
+      bio
+      avatarUrl
       branchId
       queueAccepting
       isActive
@@ -71,6 +73,22 @@ export const JOIN_QUEUE_MUTATION = gql`
       branchId
       guestName
       guestPhone
+    }
+  }
+`;
+
+export const BOOK_APPOINTMENT_AS_GUEST_MUTATION = gql`
+  mutation BookAppointmentAsGuest($input: GuestBookAppointmentInput!) {
+    bookAppointmentAsGuest(input: $input) {
+      id
+      shopId
+      branchId
+      barberId
+      serviceId
+      scheduledAt
+      durationMins
+      status
+      notes
     }
   }
 `;

@@ -1,4 +1,4 @@
-import { ApplicationConfig, inject } from '@angular/core';
+import { ApplicationConfig, inject, isDevMode } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import {
@@ -6,7 +6,6 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { provideServiceWorker } from '@angular/service-worker';
 import { MessageService } from 'primeng/api';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';

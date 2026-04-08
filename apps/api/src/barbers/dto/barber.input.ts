@@ -1,5 +1,5 @@
 import { InputType, Field, ID, Int } from '@nestjs/graphql';
-import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, IsUrl, IsUUID, Max, Min } from 'class-validator';
 
 @InputType()
 export class BarberInput {
@@ -19,6 +19,16 @@ export class BarberInput {
   @Field()
   @IsString()
   displayName: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @Field(() => String, { nullable: true, description: 'Profile photo URL or base64 data-URL' })
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
 
   @Field(() => ID, { nullable: true })
   @IsOptional()

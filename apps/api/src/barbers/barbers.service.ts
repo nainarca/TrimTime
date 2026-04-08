@@ -30,11 +30,13 @@ export class BarbersService {
       return this.prisma.barber.update({
         where: { id: input.id },
         data: {
-          displayName: input.displayName,
+          displayName:  input.displayName,
+          bio:          input.bio,
+          avatarUrl:    input.avatarUrl,
           ...(input.branchId ? { branch: { connect: { id: input.branchId } } } : { branch: { disconnect: true } }),
           queueAccepting: input.queueAccepting,
-          maxQueueSize: input.maxQueueSize,
-          isActive: input.isActive,
+          maxQueueSize:   input.maxQueueSize,
+          isActive:       input.isActive,
         },
       });
     }
@@ -44,10 +46,12 @@ export class BarbersService {
         user: { connect: { id: input.userId } },
         shop: { connect: { id: input.shopId } },
         ...(input.branchId ? { branch: { connect: { id: input.branchId } } } : {}),
-        displayName: input.displayName,
+        displayName:  input.displayName,
+        bio:          input.bio,
+        avatarUrl:    input.avatarUrl,
         queueAccepting: input.queueAccepting,
-        maxQueueSize: input.maxQueueSize,
-        isActive: input.isActive,
+        maxQueueSize:   input.maxQueueSize,
+        isActive:       input.isActive,
       },
     });
   }

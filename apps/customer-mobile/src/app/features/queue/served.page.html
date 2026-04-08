@@ -19,21 +19,42 @@
 
     <!-- Summary Card -->
     <div class="summary-card animate-in" style="animation-delay: 0.15s">
-      <div class="summary-row">
+
+      <div class="summary-row" *ngIf="shopName">
         <span class="sum-label">
           <ion-icon name="storefront-outline"></ion-icon>
           Shop
         </span>
-        <span class="sum-val">Mike's Barber Shop</span>
+        <span class="sum-val">{{ shopName }}</span>
       </div>
-      <div class="summary-divider"></div>
-      <div class="summary-row">
+
+      <div class="summary-divider" *ngIf="ticketDisplay"></div>
+      <div class="summary-row" *ngIf="ticketDisplay">
+        <span class="sum-label">
+          <ion-icon name="ticket-outline"></ion-icon>
+          Token
+        </span>
+        <span class="sum-val sum-val--token">{{ ticketDisplay }}</span>
+      </div>
+
+      <div class="summary-divider" *ngIf="barberName"></div>
+      <div class="summary-row" *ngIf="barberName">
+        <span class="sum-label">
+          <ion-icon name="person-outline"></ion-icon>
+          Barber
+        </span>
+        <span class="sum-val">{{ barberName }}</span>
+      </div>
+
+      <div class="summary-divider" *ngIf="serviceName"></div>
+      <div class="summary-row" *ngIf="serviceName">
         <span class="sum-label">
           <ion-icon name="cut-outline"></ion-icon>
           Service
         </span>
-        <span class="sum-val">Haircut</span>
+        <span class="sum-val">{{ serviceName }}</span>
       </div>
+
       <div class="summary-divider"></div>
       <div class="summary-row">
         <span class="sum-label">
@@ -42,10 +63,11 @@
         </span>
         <span class="sum-val">{{ today | date:'shortTime' }}</span>
       </div>
+
     </div>
 
     <!-- Rating -->
-    <div class="rating-section animate-in" style="animation-delay: 0.22s">
+    <div class="rating-section animate-in" style="animation-delay: 0.22s" *ngIf="!submitted">
       <p class="rating-label">How was your experience?</p>
       <div class="stars">
         <ion-icon
@@ -56,6 +78,29 @@
           (click)="setRating(s)"
         ></ion-icon>
       </div>
+      <div class="rating-comment" *ngIf="rating > 0">
+        <textarea
+          class="comment-input"
+          [(ngModel)]="comment"
+          placeholder="Leave a comment (optional)…"
+          rows="2"
+        ></textarea>
+        <ion-button
+          expand="block"
+          shape="round"
+          class="submit-rating-btn"
+          (click)="submitRating()"
+        >
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+          Submit Rating
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Post-rating thank you -->
+    <div class="rating-thanks animate-in" *ngIf="submitted">
+      <ion-icon name="heart" class="heart-icon"></ion-icon>
+      <p>Thanks for your feedback!</p>
     </div>
 
     <!-- Actions -->

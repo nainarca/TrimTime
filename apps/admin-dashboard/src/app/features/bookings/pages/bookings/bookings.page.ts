@@ -18,70 +18,31 @@ const d = (offsetDays: number, h = 10, m = 0) => {
 };
 
 const MOCK_BOOKINGS: Booking[] = [
-  {
-    id: 'bk-001', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-mike',    customerId: 'cust-james',
-    serviceId: 'svc-haircut',   scheduledAt: d(0, 10, 0),
-    durationMins: 30,           status: 'CONFIRMED', notes: null,
-  },
-  {
-    id: 'bk-002', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-james',   customerId: 'cust-sofia',
-    serviceId: 'svc-beard',     scheduledAt: d(0, 11, 0),
-    durationMins: 20,           status: 'CONFIRMED', notes: null,
-  },
-  {
-    id: 'bk-003', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-carlos',  customerId: 'cust-david',
-    serviceId: 'svc-combo',     scheduledAt: d(0, 12, 30),
-    durationMins: 45,           status: 'PENDING', notes: 'First visit',
-  },
-  {
-    id: 'bk-004', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-mike',    customerId: 'cust-amira',
-    serviceId: 'svc-haircut',   scheduledAt: d(1, 9, 0),
-    durationMins: 30,           status: 'CONFIRMED', notes: null,
-  },
-  {
-    id: 'bk-005', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-james',   customerId: 'cust-liam',
-    serviceId: 'svc-shave',     scheduledAt: d(1, 14, 0),
-    durationMins: 30,           status: 'PENDING', notes: null,
-  },
-  {
-    id: 'bk-006', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-carlos',  customerId: 'cust-omar',
-    serviceId: 'svc-haircut',   scheduledAt: d(-1, 15, 0),
-    durationMins: 30,           status: 'COMPLETED', notes: null,
-  },
-  {
-    id: 'bk-007', shopId: 'demo', branchId: 'br-1',
-    barberId: 'barber-mike',    customerId: 'cust-chen',
-    serviceId: 'svc-beard',     scheduledAt: d(-1, 11, 30),
-    durationMins: 20,           status: 'CANCELLED', notes: 'Customer cancelled',
-  },
+  { id: 'bk-001', shopId: 'demo', branchId: 'br-1', barberId: 'arjun',   customerId: 'suresh',  serviceId: 'haircut', scheduledAt: d(0,  9, 30), durationMins: 20, status: 'COMPLETED', notes: null },
+  { id: 'bk-002', shopId: 'demo', branchId: 'br-1', barberId: 'karthik', customerId: 'ramesh',  serviceId: 'beard',   scheduledAt: d(0, 10,  0), durationMins: 10, status: 'COMPLETED', notes: null },
+  { id: 'bk-003', shopId: 'demo', branchId: 'br-1', barberId: 'rahim',   customerId: 'anand',   serviceId: 'combo',   scheduledAt: d(0, 10, 30), durationMins: 30, status: 'CONFIRMED', notes: null },
+  { id: 'bk-004', shopId: 'demo', branchId: 'br-1', barberId: 'arjun',   customerId: 'priya',   serviceId: 'haircut', scheduledAt: d(0, 15,  0), durationMins: 20, status: 'CONFIRMED', notes: null },
+  { id: 'bk-005', shopId: 'demo', branchId: 'br-1', barberId: 'karthik', customerId: 'kavitha', serviceId: 'spa',     scheduledAt: d(0, 16,  0), durationMins: 45, status: 'CONFIRMED', notes: 'Deep conditioning' },
+  { id: 'bk-006', shopId: 'demo', branchId: 'br-1', barberId: 'vijay',   customerId: 'ravi',    serviceId: 'combo',   scheduledAt: d(0, 18, 30), durationMins: 30, status: 'CONFIRMED', notes: 'Kids cut too' },
+  { id: 'bk-007', shopId: 'demo', branchId: 'br-1', barberId: 'rahim',   customerId: 'murugan', serviceId: 'spa',     scheduledAt: d(1, 11,  0), durationMins: 45, status: 'CONFIRMED', notes: null },
+  { id: 'bk-008', shopId: 'demo', branchId: 'br-1', barberId: 'arjun',   customerId: 'selvam',  serviceId: 'haircut', scheduledAt: d(2, 16,  0), durationMins: 20, status: 'CONFIRMED', notes: null },
+  { id: 'bk-009', shopId: 'demo', branchId: 'br-1', barberId: 'karthik', customerId: 'lakshmi', serviceId: 'spa',     scheduledAt: d(-1, 14, 30), durationMins: 45, status: 'COMPLETED', notes: null },
+  { id: 'bk-010', shopId: 'demo', branchId: 'br-1', barberId: 'rahim',   customerId: 'deepa',   serviceId: 'beard',   scheduledAt: d(-1, 16,  0), durationMins: 10, status: 'CANCELLED', notes: 'Customer rescheduled' },
 ];
 
-// Human-readable display maps (ID → name) for mock data
 const BARBER_NAMES: Record<string, string> = {
-  'barber-mike':   'Mike Johnson',
-  'barber-james':  'James Williams',
-  'barber-carlos': 'Carlos Martinez',
+  arjun: 'Arjun Kumar', karthik: 'Karthik Raja',
+  rahim: 'Rahim Sheikh', vijay: 'Vijay Kumar',
 };
 const SERVICE_NAMES: Record<string, string> = {
-  'svc-haircut': 'Haircut',
-  'svc-beard':   'Beard Trim',
-  'svc-combo':   'Haircut + Beard',
-  'svc-shave':   'Hot Towel Shave',
+  haircut: 'Haircut', beard: 'Beard Trim',
+  combo: 'Haircut + Beard', spa: 'Hair Spa',
 };
 const CUSTOMER_NAMES: Record<string, string> = {
-  'cust-james': 'James Carter',
-  'cust-sofia': 'Sofia Martinez',
-  'cust-david': 'David Park',
-  'cust-amira': 'Amira Hassan',
-  'cust-liam':  'Liam Thompson',
-  'cust-omar':  'Omar Al-Rashid',
-  'cust-chen':  'Chen Wei',
+  suresh: 'Suresh Babu', ramesh: 'Ramesh Kumar', priya: 'Priya Devi',
+  anand: 'Anand Raj', kavitha: 'Kavitha Subramani', ravi: 'Ravi Shankar',
+  deepa: 'Deepa Menon', murugan: 'Murugan Pillai', lakshmi: 'Lakshmi Narayanan',
+  selvam: 'Selvam Rajendran',
 };
 
 @Component({

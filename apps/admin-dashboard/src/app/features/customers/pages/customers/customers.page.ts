@@ -5,21 +5,25 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
 // Demo seed — shown when the backend customers resolver is not yet available.
 const MOCK_CUSTOMERS: Customer[] = [
-  { id: 'm1', name: 'James Carter',    phone: '+1 555-2001', email: 'james@demo.com', isVerified: true,  isActive: true  },
-  { id: 'm2', name: 'Sofia Martinez',  phone: '+1 555-2002', email: null,             isVerified: false, isActive: true  },
-  { id: 'm3', name: 'David Park',      phone: '+1 555-2003', email: 'david@demo.com', isVerified: true,  isActive: true  },
-  { id: 'm4', name: 'Amira Hassan',    phone: '+1 555-2004', email: null,             isVerified: false, isActive: false },
-  { id: 'm5', name: 'Liam Thompson',   phone: '+1 555-2005', email: 'liam@demo.com',  isVerified: true,  isActive: true  },
-  { id: 'm6', name: 'Chen Wei',        phone: '+1 555-2006', email: null,             isVerified: false, isActive: true  },
-  { id: 'm7', name: 'Omar Al-Rashid',  phone: '+1 555-2007', email: 'omar@demo.com',  isVerified: true,  isActive: true  },
-  { id: 'm8', name: 'Priya Patel',     phone: '+1 555-2008', email: null,             isVerified: false, isActive: false },
+  { id: 'm01', name: 'Suresh Babu',      phone: '+91 98765 01001', email: 'suresh@demo.in',  isVerified: true,  isActive: true  },
+  { id: 'm02', name: 'Ramesh Kumar',     phone: '+91 98765 01002', email: 'ramesh@demo.in',  isVerified: true,  isActive: true  },
+  { id: 'm03', name: 'Priya Devi',       phone: '+91 98765 01003', email: null,               isVerified: false, isActive: true  },
+  { id: 'm04', name: 'Anand Raj',        phone: '+91 98765 01004', email: 'anand@demo.in',   isVerified: true,  isActive: true  },
+  { id: 'm05', name: 'Kavitha Subramani',phone: '+91 98765 01005', email: null,               isVerified: false, isActive: true  },
+  { id: 'm06', name: 'Ravi Shankar',     phone: '+91 98765 01006', email: 'ravi@demo.in',    isVerified: true,  isActive: true  },
+  { id: 'm07', name: 'Deepa Menon',      phone: '+91 98765 01007', email: null,               isVerified: false, isActive: true  },
+  { id: 'm08', name: 'Murugan Pillai',   phone: '+91 98765 01008', email: 'murugan@demo.in', isVerified: true,  isActive: true  },
+  { id: 'm09', name: 'Lakshmi Narayanan',phone: '+91 98765 01009', email: 'lakshmi@demo.in', isVerified: true,  isActive: false },
+  { id: 'm10', name: 'Selvam Rajendran', phone: '+91 98765 01010', email: null,               isVerified: false, isActive: true  },
+  { id: 'm11', name: 'Nithya Krishnan',  phone: '+91 98765 01011', email: null,               isVerified: false, isActive: true  },
+  { id: 'm12', name: 'Balaji Venkatesh', phone: '+91 98765 01012', email: 'balaji@demo.in',  isVerified: true,  isActive: true  },
 ];
 
 const MOCK_HISTORY: { date: string; service: string; barber: string; wait: string; status: string }[] = [
-  { date: '2025-04-03', service: 'Haircut',         barber: 'Mike',   wait: '12 min', status: 'SERVED' },
-  { date: '2025-03-28', service: 'Beard Trim',      barber: 'James',  wait: '8 min',  status: 'SERVED' },
-  { date: '2025-03-20', service: 'Haircut + Beard', barber: 'Carlos', wait: '15 min', status: 'SERVED' },
-  { date: '2025-03-12', service: 'Haircut',         barber: 'Mike',   wait: '10 min', status: 'SERVED' },
+  { date: '2025-04-06', service: 'Haircut',         barber: 'Arjun',   wait: '10 min', status: 'SERVED' },
+  { date: '2025-03-30', service: 'Beard Trim',      barber: 'Karthik', wait: '8 min',  status: 'SERVED' },
+  { date: '2025-03-22', service: 'Haircut + Beard', barber: 'Rahim',   wait: '14 min', status: 'SERVED' },
+  { date: '2025-03-15', service: 'Hair Spa',        barber: 'Arjun',   wait: '5 min',  status: 'SERVED' },
 ];
 
 @Component({

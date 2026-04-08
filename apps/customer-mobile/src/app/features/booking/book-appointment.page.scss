@@ -1,5 +1,6 @@
 @import '../queue/join-queue.page.scss';
 
+// ── Stepper ────────────────────────────────────────────────
 .stepper {
   display: flex;
   align-items: center;
@@ -16,9 +17,7 @@
   opacity: 0.35;
   transition: opacity 0.2s;
 
-  &.active {
-    opacity: 1;
-  }
+  &.active  { opacity: 1; }
   &.current .stepper-dot {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border-color: transparent;
@@ -55,9 +54,7 @@
   margin-bottom: 1.25rem;
   transition: background 0.2s;
 
-  &.active {
-    background: rgba(99, 102, 241, 0.6);
-  }
+  &.active { background: rgba(99, 102, 241, 0.6); }
 }
 
 .step-hint {
@@ -67,15 +64,305 @@
   margin: 0 0 1rem;
 }
 
-.datetime-wrap {
+// ── Section header row ─────────────────────────────────────
+.section-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.select-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+// ── Service multi-select list ──────────────────────────────
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.svc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.98); }
+
+  &.selected {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+}
+
+.svc-row-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.svc-row-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: #94a3b8;
+  transition: background 0.15s, color 0.15s;
+
+  &.active {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #818cf8;
+  }
+}
+
+.svc-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.svc-row-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.svc-row-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.svc-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: #fff;
+  transition: background 0.15s, border-color 0.15s;
+
+  &.checked {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: transparent;
+  }
+}
+
+// ── Service summary strip ──────────────────────────────────
+.svc-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 0.8rem;
+  color: #a5b4fc;
+}
+
+.svc-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  ion-icon { font-size: 0.85rem; }
+}
+
+.svc-summary-sep { color: rgba(255,255,255,0.25); }
+
+.svc-summary-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.18);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+}
+
+// ── Date/time section labels ────────────────────────────────
+.dt-label { margin-top: 1.5rem; }
+
+// ── Horizontal date scroll ─────────────────────────────────
+.date-scroll-wrap {
+  margin: 0 -1rem;   // bleed to edge
+}
+
+.date-scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 1rem 0.75rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.date-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 54px;
+  padding: 0.65rem 0.5rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.95); }
+
+  &.today .dc-day-label { color: #6366f1; }
+
+  &.selected {
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+    border-color: #6366f1;
+  }
+}
+
+.dc-day-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.dc-day-num {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  line-height: 1.1;
+}
+
+.dc-month {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.date-chip.selected .dc-day-num,
+.date-chip.selected .dc-day-label,
+.date-chip.selected .dc-month { color: #c7d2fe; }
+
+// ── Time slot grid ─────────────────────────────────────────
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.time-chip {
+  padding: 0.55rem 0.25rem;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.93); }
+
+  &.selected {
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+    border-color: #6366f1;
+    color: #c7d2fe;
+  }
+}
+
+// ── Booking summary (step 3) ────────────────────────────────
+.booking-summary {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  overflow: hidden;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
 
-  ion-datetime {
-    width: 100%;
-    --background: transparent;
-    color: #e2e8f0;
+.bs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+
+  ion-icon {
+    font-size: 0.95rem;
+    color: #6366f1;
+    flex-shrink: 0;
+    width: 18px;
   }
 }
+
+.bs-label {
+  color: #64748b;
+  min-width: 62px;
+  font-size: 0.78rem;
+}
+
+.bs-value {
+  color: #e2e8f0;
+  font-weight: 600;
+  flex: 1;
+  font-size: 0.85rem;
+
+  &.bs-value--muted { color: #94a3b8; font-weight: 400; font-size: 0.8rem; }
+}
+
+.bs-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.1rem 0;
+}
+
+.bs-total {
+  .bs-value { color: #a5b4fc; font-size: 0.9rem; }
+}
+
+// ── Footer summary strip ────────────────────────────────────
+.footer-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0 0.6rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.fs-dot { color: rgba(255,255,255,0.2); }

@@ -107,10 +107,15 @@
             [class.barber-option--busy]="!b.queueAccepting"
             (click)="b.queueAccepting && selectBarber(b.id)"
           >
-            <div class="barber-avatar">{{ barberInitials(b.displayName) }}</div>
+            <div class="barber-avatar" [class.barber-avatar--photo]="!!b.avatarUrl">
+              <img *ngIf="b.avatarUrl" [src]="b.avatarUrl" [alt]="b.displayName" class="barber-avatar-img" />
+              <span *ngIf="!b.avatarUrl">{{ barberInitials(b.displayName) }}</span>
+            </div>
             <div class="barber-info">
               <span class="barber-name">{{ b.displayName }}</span>
+              <span class="barber-bio" *ngIf="b.bio">{{ b.bio }}</span>
               <span class="barber-status" [class.barber-status--busy]="!b.queueAccepting">
+                <ion-icon [name]="b.queueAccepting ? 'checkmark-circle' : 'time-outline'"></ion-icon>
                 {{ b.queueAccepting ? 'Available' : 'Busy' }}
               </span>
             </div>
@@ -125,38 +130,74 @@
 
       <!-- ── Your Details ── -->
       <div class="section animate-in" style="animation-delay: 0.14s">
-        <h3 class="section-label">Your Details</h3>
+        <h3 class="section-label">Your Details <span class="section-hint">(all fields required)</span></h3>
         <div class="form-fields">
 
+          <!-- Name -->
           <div class="field-wrap" [class.has-value]="guestName.length > 0">
             <div class="field-icon"><ion-icon name="person-outline"></ion-icon></div>
             <div class="field-body">
-              <label class="field-label">Full Name</label>
-              <input
-                type="text"
-                class="field-input"
-                [(ngModel)]="guestName"
-                placeholder="Your name"
-                autocorrect="off"
-              />
+              <label class="field-label">Full Name *</label>
+              <input type="text" class="field-input" [(ngModel)]="guestName"
+                     placeholder="Your full name" autocorrect="off" />
             </div>
           </div>
 
+          <!-- Age + Gender row -->
+          <div class="field-row">
+            <div class="field-wrap field-wrap--half" [class.has-value]="guestAge.length > 0">
+              <div class="field-icon"><ion-icon name="calendar-number-outline"></ion-icon></div>
+              <div class="field-body">
+                <label class="field-label">Age *</label>
+                <input type="number" class="field-input" [(ngModel)]="guestAge"
+                       placeholder="25" min="1" max="120" />
+              </div>
+            </div>
+
+            <div class="field-wrap field-wrap--half" [class.has-value]="guestGender.length > 0">
+              <div class="field-icon"><ion-icon name="male-female-outline"></ion-icon></div>
+              <div class="field-body">
+                <label class="field-label">Gender *</label>
+                <select class="field-input field-select" [(ngModel)]="guestGender">
+                  <option value="" disabled>Select</option>
+                  <option *ngFor="let g of genderOptions" [value]="g">{{ g }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- WhatsApp -->
           <div class="field-wrap" [class.has-value]="guestPhone.length > 0">
-            <div class="field-icon"><ion-icon name="call-outline"></ion-icon></div>
+            <div class="field-icon"><ion-icon name="logo-whatsapp"></ion-icon></div>
             <div class="field-body">
-              <label class="field-label">WhatsApp / Phone <span class="field-hint">(optional)</span></label>
-              <input
-                type="tel"
-                class="field-input"
-                [(ngModel)]="guestPhone"
-                placeholder="+91 98765 43210"
-              />
+              <label class="field-label">WhatsApp Number *</label>
+              <input type="tel" class="field-input" [(ngModel)]="guestPhone"
+                     placeholder="+91 98765 43210" />
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="field-wrap" [class.has-value]="guestAddress.length > 0">
+            <div class="field-icon"><ion-icon name="home-outline"></ion-icon></div>
+            <div class="field-body">
+              <label class="field-label">Address *</label>
+              <input type="text" class="field-input" [(ngModel)]="guestAddress"
+                     placeholder="House no., street, area" autocorrect="off" />
+            </div>
+          </div>
+
+          <!-- Pincode -->
+          <div class="field-wrap" [class.has-value]="guestPincode.length > 0">
+            <div class="field-icon"><ion-icon name="location-outline"></ion-icon></div>
+            <div class="field-body">
+              <label class="field-label">Pincode *</label>
+              <input type="number" class="field-input" [(ngModel)]="guestPincode"
+                     placeholder="600001" />
             </div>
           </div>
 
         </div>
-        <p class="phone-note">Include country code — we'll notify you when it's your turn.</p>
+        <p class="phone-note">Your details are saved for faster re-entry next time.</p>
       </div>
 
     </ng-container>

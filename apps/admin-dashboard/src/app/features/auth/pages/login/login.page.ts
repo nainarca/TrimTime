@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -41,6 +41,7 @@ export class LoginPageComponent implements OnInit {
     private readonly notifications: NotificationService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
+    private readonly ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -146,7 +147,7 @@ export class LoginPageComponent implements OnInit {
       next: () => {
         this.loading = false;
         this.notifications.success('Login successful', 'OTP verified');
-        void this.router.navigate(['/dashboard']);
+        this.navigateToDashboard();
       },
       error: (err) => {
         this.loading = false;
@@ -170,11 +171,19 @@ export class LoginPageComponent implements OnInit {
       next: () => {
         this.loading = false;
         this.notifications.success('Login successful', 'Welcome back!');
+        this.navigateToDashboard();
       },
       error: (err) => {
         this.loading = false;
         this.errorMessage = this.extractFriendlyError(err, 'Login failed. Please try again.');
       },
+    });
+  }
+
+  private navigateToDashboard(): void {
+    const returnUrl = this.route.snapshot.queryParams['redirect'] || '/dashboard';
+    this.ngZone.run(() => {
+      this.router.navigateByUrl(returnUrl);
     });
   }
 

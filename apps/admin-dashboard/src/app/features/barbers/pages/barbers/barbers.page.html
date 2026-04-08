@@ -93,7 +93,8 @@
           <td>
             <div class="barber-wrap">
               <div class="barber-avatar" [class.inactive-avatar]="b.status === 'INACTIVE'">
-                {{ b.initials }}
+                <img *ngIf="b.avatarUrl" [src]="b.avatarUrl" class="barber-avatar-img" [alt]="b.name" />
+                <span *ngIf="!b.avatarUrl">{{ b.initials }}</span>
               </div>
               <div class="barber-info">
                 <span class="barber-name">{{ b.name }}</span>
@@ -226,6 +227,29 @@
       <div class="form-field">
         <label>Specialties <span class="form-hint">(comma-separated)</span></label>
         <input pInputText [(ngModel)]="form.specialties" placeholder="Haircut, Beard Trim" />
+      </div>
+
+      <!-- ── Photo Upload ── -->
+      <div class="photo-upload-area">
+        <div class="photo-preview" [class.photo-preview--has-image]="!!form.avatarPreview">
+          <img *ngIf="form.avatarPreview" [src]="form.avatarPreview" class="photo-preview-img" alt="Preview" />
+          <span *ngIf="!form.avatarPreview" class="photo-placeholder-initials">
+            {{ form.name ? toInitials(form.name) : 'Photo' }}
+          </span>
+          <button *ngIf="form.avatarPreview" type="button" class="photo-remove-btn" (click)="removePhoto()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        <div class="photo-upload-right">
+          <p class="photo-upload-label">Profile Photo</p>
+          <p class="photo-upload-hint">JPG, PNG or GIF · max 2 MB</p>
+          <label class="photo-upload-btn" for="barberPhotoInput">
+            <i class="pi pi-upload"></i>
+            {{ form.avatarPreview ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+          <input id="barberPhotoInput" type="file" accept="image/*"
+                 class="photo-file-input" (change)="onPhotoChange($event)" />
+        </div>
       </div>
 
     </div>

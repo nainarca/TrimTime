@@ -12,11 +12,12 @@ export interface Service {
 }
 
 const SEED_SERVICES: Service[] = [
-  { id: '1', name: 'Haircut',         category: 'Hair',    durationMins: 30, price: 25, status: 'ACTIVE',   bookingsToday: 14 },
-  { id: '2', name: 'Beard Trim',      category: 'Beard',   durationMins: 15, price: 15, status: 'ACTIVE',   bookingsToday: 9  },
-  { id: '3', name: 'Haircut + Beard', category: 'Package', durationMins: 45, price: 35, status: 'ACTIVE',   bookingsToday: 6  },
-  { id: '4', name: 'Hot Towel Shave', category: 'Beard',   durationMins: 30, price: 28, status: 'ACTIVE',   bookingsToday: 4  },
-  { id: '5', name: 'Hair Coloring',   category: 'Hair',    durationMins: 90, price: 65, status: 'INACTIVE', bookingsToday: 0  },
+  { id: '1', name: 'Haircut',         category: 'Hair',      durationMins: 20, price: 200, status: 'ACTIVE',   bookingsToday: 16 },
+  { id: '2', name: 'Beard Trim',      category: 'Beard',     durationMins: 10, price: 100, status: 'ACTIVE',   bookingsToday: 12 },
+  { id: '3', name: 'Haircut + Beard', category: 'Package',   durationMins: 30, price: 250, status: 'ACTIVE',   bookingsToday: 10 },
+  { id: '4', name: 'Hair Spa',        category: 'Treatment', durationMins: 45, price: 500, status: 'ACTIVE',   bookingsToday:  4 },
+  { id: '5', name: 'Kids Haircut',    category: 'Hair',      durationMins: 20, price: 150, status: 'ACTIVE',   bookingsToday:  3 },
+  { id: '6', name: 'Head Massage',    category: 'Treatment', durationMins: 20, price: 200, status: 'INACTIVE', bookingsToday:  0 },
 ];
 
 @Component({
@@ -44,7 +45,7 @@ export class ServicesPageComponent implements OnInit {
   get avgPrice(): string {
     const active = this.services.filter(s => s.status === 'ACTIVE');
     if (!active.length) return '—';
-    return '$' + (active.reduce((t, s) => t + s.price, 0) / active.length).toFixed(0);
+    return '₹' + (active.reduce((t, s) => t + s.price, 0) / active.length).toFixed(0);
   }
   get topService(): string {
     const top = [...this.services].sort((a, b) => b.bookingsToday - a.bookingsToday)[0];

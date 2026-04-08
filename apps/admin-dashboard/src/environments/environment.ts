@@ -8,10 +8,10 @@ export const environment = {
    * use seeded users so roles/data match `npx prisma db seed`.
    */
   devLoginDefaults: {
-    ADMIN: { username: 'admin@trimtime.app', password: 'demo1234' },
-    OWNER: { username: 'owner@demo.trimtime.app', password: 'demo1234' },
-    STAFF: { username: 'mike@demo.trimtime.app', password: 'demo1234' },
+    ADMIN: { username: 'admin@trimtime.app',    password: 'demo1234' },
+    OWNER: { username: 'owner@elitebarber.in',  password: 'demo1234' },
+    STAFF: { username: 'arjun@elitebarber.in',  password: 'demo1234' },
     /** Matches API demo default when DEV_STATIC_OTP is unset (non-production). */
-    CUSTOMER: { phone: '+919900010001', otp: '123456' },
+    CUSTOMER: { phone: '+919876501001', otp: '123456' },
   } as const,
 };

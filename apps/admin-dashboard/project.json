@@ -19,7 +19,8 @@
         "tsConfig": "apps/admin-dashboard/tsconfig.app.json",
         "assets": [
           "apps/admin-dashboard/src/favicon.ico",
-          "apps/admin-dashboard/src/assets"
+          "apps/admin-dashboard/src/assets",
+          "apps/admin-dashboard/src/manifest.webmanifest"
         ],
         "styles": [
           "node_modules/bootstrap/dist/css/bootstrap.min.css",

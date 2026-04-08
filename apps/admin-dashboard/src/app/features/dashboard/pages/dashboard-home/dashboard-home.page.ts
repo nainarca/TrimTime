@@ -61,18 +61,18 @@ const WEEK_LABELS  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const BARBERS = [
-  { name: 'Mike',   servedToday: 18, servedYesterday: 14, avgWait: 12, rating: 4.8 },
-  { name: 'James',  servedToday: 13, servedYesterday: 11, avgWait: 14, rating: 4.6 },
-  { name: 'Carlos', servedToday:  9, servedYesterday:  8, avgWait: 16, rating: 4.5 },
-  { name: 'Andre',  servedToday:  7, servedYesterday: 10, avgWait: 18, rating: 4.3 },
+  { name: 'Arjun',   servedToday: 16, servedYesterday: 14, avgWait: 10, rating: 4.9 },
+  { name: 'Karthik', servedToday: 14, servedYesterday: 12, avgWait: 12, rating: 4.7 },
+  { name: 'Rahim',   servedToday: 12, servedYesterday: 11, avgWait: 14, rating: 4.8 },
+  { name: 'Vijay',   servedToday:  6, servedYesterday:  8, avgWait: 12, rating: 4.5 },
 ];
 
 const SERVICES = [
-  { label: 'Haircut',         value: 44, color: '#6366f1' },
-  { label: 'Beard Trim',      value: 22, color: '#10b981' },
-  { label: 'Haircut + Beard', value: 19, color: '#f59e0b' },
-  { label: 'Treatment',       value:  9, color: '#8b5cf6' },
-  { label: 'Other',           value:  6, color: '#94a3b8' },
+  { label: 'Haircut',         value: 42, color: '#6366f1' },
+  { label: 'Haircut + Beard', value: 26, color: '#10b981' },
+  { label: 'Beard Trim',      value: 18, color: '#f59e0b' },
+  { label: 'Hair Spa',        value: 10, color: '#8b5cf6' },
+  { label: 'Other',           value:  4, color: '#94a3b8' },
 ];
 
 @Component({

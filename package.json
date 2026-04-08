@@ -18,6 +18,7 @@
     "prisma:migrate:prod": "prisma migrate deploy --schema=prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=prisma/schema.prisma",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "seed": "npx prisma db seed",
     "prisma:reset": "prisma migrate reset --schema=prisma/schema.prisma",
     "codegen": "graphql-codegen --config libs/graphql-schema/codegen.yml",
     "codegen:watch": "graphql-codegen --config libs/graphql-schema/codegen.yml --watch",

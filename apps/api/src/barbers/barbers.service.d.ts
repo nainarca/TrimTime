@@ -5,35 +5,35 @@ export declare class BarbersService {
     constructor(prisma: PrismaService);
     listBarbers(shopId: string, allowedShopIds?: string[]): Promise<{
         id: string;
-        userId: string;
         shopId: string;
+        isActive: boolean;
+        createdAt: Date;
+        avatarUrl: string;
+        updatedAt: Date;
+        userId: string;
         branchId: string;
         displayName: string;
         bio: string;
-        avatarUrl: string;
         avgServiceDurationMins: number;
         currentStatus: import(".prisma/client").$Enums.BarberStatus;
         queueAccepting: boolean;
         maxQueueSize: number;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     upsertBarber(input: BarberInput, allowedShopIds?: string[]): Promise<{
         id: string;
-        userId: string;
         shopId: string;
+        isActive: boolean;
+        createdAt: Date;
+        avatarUrl: string;
+        updatedAt: Date;
+        userId: string;
         branchId: string;
         displayName: string;
         bio: string;
-        avatarUrl: string;
         avgServiceDurationMins: number;
         currentStatus: import(".prisma/client").$Enums.BarberStatus;
         queueAccepting: boolean;
         maxQueueSize: number;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     deleteBarber(id: string, allowedShopIds?: string[]): Promise<boolean>;
 }

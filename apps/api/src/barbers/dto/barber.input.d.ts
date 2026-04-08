@@ -3,6 +3,8 @@ export declare class BarberInput {
     shopId: string;
     userId: string;
     displayName: string;
+    bio?: string;
+    avatarUrl?: string;
     branchId?: string;
     queueAccepting: boolean;
     maxQueueSize: number;

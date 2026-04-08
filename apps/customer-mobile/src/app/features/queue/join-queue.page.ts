@@ -11,6 +11,17 @@ export interface ServiceOption extends PublicService {
 
 export interface BarberOption extends PublicBarber {}
 
+const PROFILE_KEY = 'queuecut_customer_profile';
+
+interface CustomerProfile {
+  name:    string;
+  phone:   string;
+  age:     string;
+  gender:  string;
+  address: string;
+  pincode: string;
+}
+
 @Component({
   standalone: true,
   selector: 'tt-join-queue-page',
@@ -24,17 +35,25 @@ export class JoinQueuePage implements OnInit {
   shopName   = '';
   branchName = '';
 
-  guestName  = '';
-  guestPhone = '';
-  loading    = false;
+  // ── Customer details ──────────────────────────────────────────
+  guestName    = '';
+  guestPhone   = '';
+  guestAge     = '';
+  guestGender  = '';
+  guestAddress = '';
+  guestPincode = '';
+
+  loading     = false;
   loadingData = false;
-  error      = '';
+  error       = '';
 
   services: ServiceOption[] = [];
   barbers:  BarberOption[]  = [];
 
   selectedServiceIds = new Set<string>();
   selectedBarberId: string | null = null;  // null = "Any Barber"
+
+  readonly genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
   private readonly mockServices: ServiceOption[] = [
     { id: 's1', name: 'Haircut',         durationMins: 30, price: 25, currency: 'USD', shopId: '', description: null, isActive: true, icon: 'cut-outline'          },
@@ -55,21 +74,61 @@ export class JoinQueuePage implements OnInit {
     this.shopName   = this.route.snapshot.queryParamMap.get('shopName')   || '';
     this.branchName = this.route.snapshot.queryParamMap.get('branchName') || '';
 
+    // Handle "no branch" error from shop-landing
+    const err = this.route.snapshot.queryParamMap.get('error');
+    if (err === 'no-branch') {
+      this.error = 'This shop has no branches configured yet. Please contact the shop owner.';
+    }
+
+    // Pre-fill from saved profile
+    this.loadProfile();
+
     if (this.shopId) {
       this.loadShopData(this.shopId);
     }
   }
+
+  // ── Profile persistence ──────────────────────────────────────
+
+  private loadProfile(): void {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (raw) {
+        const p: CustomerProfile = JSON.parse(raw);
+        this.guestName    = p.name    || '';
+        this.guestPhone   = p.phone   || '';
+        this.guestAge     = p.age     || '';
+        this.guestGender  = p.gender  || '';
+        this.guestAddress = p.address || '';
+        this.guestPincode = p.pincode || '';
+      }
+    } catch { /* ignore */ }
+  }
+
+  private saveProfile(): void {
+    try {
+      const p: CustomerProfile = {
+        name:    this.guestName.trim(),
+        phone:   this.guestPhone.trim(),
+        age:     this.guestAge.trim(),
+        gender:  this.guestGender,
+        address: this.guestAddress.trim(),
+        pincode: this.guestPincode.trim(),
+      };
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    } catch { /* ignore */ }
+  }
+
+  // ── Shop data ────────────────────────────────────────────────
 
   private loadShopData(shopId: string): void {
     this.loadingData = true;
 
     this.queueApi.getPublicServices(shopId).subscribe({
       next: (svcs) => {
-        if (svcs.length > 0) {
-          this.services = svcs.map((s) => ({ ...s, icon: this.iconForService(s.name) }));
-        } else {
-          this.services = this.mockServices;
-        }
+        this.services    = svcs.length > 0
+          ? svcs.map((s) => ({ ...s, icon: this.iconForService(s.name) }))
+          : this.mockServices;
         this.loadingData = false;
       },
       error: () => {
@@ -79,12 +138,8 @@ export class JoinQueuePage implements OnInit {
     });
 
     this.queueApi.getPublicBarbers(shopId).subscribe({
-      next: (barbers) => {
-        this.barbers = barbers.filter((b) => b.isActive);
-      },
-      error: () => {
-        this.barbers = [];
-      },
+      next:  (list) => { this.barbers = list.filter((b) => b.isActive); },
+      error: ()     => { this.barbers = []; },
     });
   }
 
@@ -98,7 +153,7 @@ export class JoinQueuePage implements OnInit {
     return 'cut-outline';
   }
 
-  // ── Service selection (multi-select) ────────────────────────────
+  // ── Service selection (multi-select) ────────────────────────
 
   toggleService(id: string): void {
     if (this.selectedServiceIds.has(id)) {
@@ -106,7 +161,6 @@ export class JoinQueuePage implements OnInit {
     } else {
       this.selectedServiceIds.add(id);
     }
-    // Reassign to trigger Angular change detection
     this.selectedServiceIds = new Set(this.selectedServiceIds);
   }
 
@@ -142,39 +196,30 @@ export class JoinQueuePage implements OnInit {
     return h > 0 ? `${h}h ${m > 0 ? m + 'm' : ''}`.trim() : `${m} min`;
   }
 
-  // ── Barber selection ─────────────────────────────────────────────
+  // ── Barber selection ─────────────────────────────────────────
 
   selectBarber(id: string | null): void {
     this.selectedBarberId = id;
   }
 
   barberInitials(name: string): string {
-    return name
-      .split(' ')
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join('')
-      .toUpperCase();
+    return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   }
 
-  // ── Phone normalisation ──────────────────────────────────────────
+  // ── Phone normalisation ──────────────────────────────────────
 
   private normalizePhone(raw: string): string {
     let p = raw.replace(/[\s\-\(\)\.]/g, '');
     if (p && !p.startsWith('+')) {
-      p = '+91' + p;   // default to India country code for demo
+      p = '+91' + p;
     }
     return p;
   }
 
-  // ── Submit ───────────────────────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────
 
   get isFormValid(): boolean {
-    return !!(
-      this.shopId &&
-      this.branchId &&
-      this.guestName.trim()
-    );
+    return !!(this.shopId && this.branchId && this.guestName.trim() && this.guestPhone.trim());
   }
 
   join(): void {
@@ -186,15 +231,44 @@ export class JoinQueuePage implements OnInit {
       this.error = 'Please enter your name.';
       return;
     }
+    if (!this.guestAge.trim()) {
+      this.error = 'Please enter your age.';
+      return;
+    }
+    if (!this.guestGender) {
+      this.error = 'Please select your gender.';
+      return;
+    }
+    if (!this.guestPhone.trim()) {
+      this.error = 'Please enter your WhatsApp number.';
+      return;
+    }
 
     const phone = this.normalizePhone(this.guestPhone.trim());
-    if (phone && !/^\+[1-9]\d{6,14}$/.test(phone)) {
+    if (!/^\+[1-9]\d{6,14}$/.test(phone)) {
       this.error = 'Enter a valid phone number with country code, e.g. +91 98765 43210';
+      return;
+    }
+
+    if (!this.guestAddress.trim()) {
+      this.error = 'Please enter your address.';
+      return;
+    }
+    if (!this.guestPincode.trim()) {
+      this.error = 'Please enter your pincode.';
       return;
     }
 
     this.loading = true;
     this.error   = '';
+
+    // Serialize extra profile fields into notes
+    const notes = JSON.stringify({
+      age:     this.guestAge.trim(),
+      gender:  this.guestGender,
+      address: this.guestAddress.trim(),
+      pincode: this.guestPincode.trim(),
+    });
 
     this.queueApi
       .joinQueue({
@@ -203,13 +277,21 @@ export class JoinQueuePage implements OnInit {
         entryType:  'WALK_IN',
         priority:   1,
         guestName:  this.guestName.trim(),
-        guestPhone: phone || undefined,
+        guestPhone: phone,
         barberId:   this.selectedBarberId || undefined,
+        notes,
       })
       .subscribe({
         next: (entry) => {
           this.loading = false;
-          this.router.navigate(['/queue', entry.id]);
+          this.saveProfile();           // persist for next visit
+          const selectedBarber = this.barbers.find(b => b.id === this.selectedBarberId);
+          this.router.navigate(['/queue', entry.id], {
+            queryParams: {
+              shopName:   this.shopName,
+              barberName: selectedBarber?.displayName || '',
+            },
+          });
         },
         error: (err) => {
           this.loading = false;

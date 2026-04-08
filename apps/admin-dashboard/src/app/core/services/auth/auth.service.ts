@@ -39,9 +39,6 @@ export class AuthService {
         tap((login) => {
           this.setTokens(login.accessToken, login.refreshToken);
         }),
-        tap(() => {
-          void this.router.navigate(['/dashboard']);
-        }),
       );
   }
 

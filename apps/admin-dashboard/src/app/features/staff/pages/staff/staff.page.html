@@ -27,38 +27,26 @@
   <div class="summary-strip" *ngIf="!loading">
     <div class="summary-card">
       <span class="sc-icon blue"><i class="pi pi-users"></i></span>
-      <div class="sc-body">
-        <span class="sc-value">{{ staff.length }}</span>
-        <span class="sc-label">Total Members</span>
-      </div>
+      <div class="sc-body"><span class="sc-value">{{ staff.length }}</span><span class="sc-label">Total Members</span></div>
     </div>
     <div class="summary-card">
       <span class="sc-icon green"><i class="pi pi-check-circle"></i></span>
-      <div class="sc-body">
-        <span class="sc-value">{{ activeCount }}</span>
-        <span class="sc-label">Active</span>
-      </div>
+      <div class="sc-body"><span class="sc-value">{{ activeCount }}</span><span class="sc-label">Active</span></div>
     </div>
     <div class="summary-card">
       <span class="sc-icon indigo"><i class="pi pi-id-card"></i></span>
-      <div class="sc-body">
-        <span class="sc-value">{{ barberCount }}</span>
-        <span class="sc-label">Barbers</span>
-      </div>
+      <div class="sc-body"><span class="sc-value">{{ barberCount }}</span><span class="sc-label">Barbers</span></div>
     </div>
     <div class="summary-card">
       <span class="sc-icon amber"><i class="pi pi-crown"></i></span>
-      <div class="sc-body">
-        <span class="sc-value">{{ ownerCount }}</span>
-        <span class="sc-label">Owners</span>
-      </div>
+      <div class="sc-body"><span class="sc-value">{{ ownerCount }}</span><span class="sc-label">Owners</span></div>
     </div>
   </div>
 
   <!-- ── Staff Table Skeleton ── -->
   <div class="table-card" *ngIf="loading">
     <div class="skel-row" *ngFor="let i of [1,2,3,4,5]">
-      <span class="skel skel-icon" style="border-radius:10px;flex-shrink:0"></span>
+      <span class="skel skel-icon" style="border-radius:50%;flex-shrink:0"></span>
       <span class="skel skel-text" style="flex:1"></span>
       <span class="skel skel-chip"></span>
       <span class="skel skel-chip"></span>
@@ -87,8 +75,9 @@
           <!-- Member -->
           <td>
             <div class="member-wrap">
-              <div class="member-avatar" [class.inactive-avatar]="m.status === 'INACTIVE'">
-                {{ m.initials }}
+              <div class="member-avatar" [class.inactive-avatar]="m.status === 'INACTIVE'" [class.member-avatar--photo]="!!m.avatarUrl">
+                <img *ngIf="m.avatarUrl" [src]="m.avatarUrl" [alt]="m.name" class="member-avatar-img" />
+                <span *ngIf="!m.avatarUrl">{{ m.initials }}</span>
               </div>
               <div class="member-info">
                 <span class="member-name">{{ m.name }}</span>
@@ -154,7 +143,7 @@
             <div class="empty-state">
               <div class="empty-icon-wrap"><i class="pi pi-users"></i></div>
               <p class="empty-title">No team members yet</p>
-              <p class="empty-sub">Invite your first team member to manage roles and access permissions.</p>
+              <p class="empty-sub">Invite your first team member to manage roles and access.</p>
               <button pButton label="Add Member" icon="pi pi-user-plus" class="btn-grad" style="margin-top:0.75rem" (click)="openNew()"></button>
             </div>
           </td>
@@ -163,20 +152,52 @@
     </p-table>
   </div>
 
-  <!-- ── Dialog ── -->
+  <!-- ── Add / Edit Dialog ── -->
   <p-dialog
     [(visible)]="dialogVisible"
     [header]="editingId ? 'Edit Member' : 'Add Team Member'"
     [modal]="true" [draggable]="false" [resizable]="false"
-    [style]="{ width: '440px' }" styleClass="tt-dialog"
+    [style]="{ width: '460px' }" styleClass="tt-dialog"
   >
     <div class="dialog-form">
 
+      <!-- ── Photo Upload ── -->
+      <div class="photo-upload-area">
+        <div class="photo-preview" [class.photo-preview--has-image]="!!form.avatarPreview">
+          <img *ngIf="form.avatarPreview" [src]="form.avatarPreview" class="photo-preview-img" alt="Preview" />
+          <span *ngIf="!form.avatarPreview" class="photo-placeholder-initials">
+            {{ previewInitials }}
+          </span>
+          <button *ngIf="form.avatarPreview" type="button" class="photo-remove-btn" (click)="removePhoto()" pTooltip="Remove photo">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        <div class="photo-upload-right">
+          <p class="photo-upload-label">Profile Photo</p>
+          <p class="photo-upload-hint">JPG, PNG or GIF · max 2 MB</p>
+          <label class="photo-upload-btn" for="staffPhotoInput">
+            <i class="pi pi-upload"></i>
+            {{ form.avatarPreview ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+          <input
+            id="staffPhotoInput"
+            type="file"
+            accept="image/*"
+            class="photo-file-input"
+            (change)="onPhotoChange($event)"
+          />
+        </div>
+      </div>
+
+      <div class="form-divider"></div>
+
+      <!-- ── Name ── -->
       <div class="form-field">
         <label>Full Name *</label>
         <input pInputText [(ngModel)]="form.name" placeholder="Sarah Chen" />
       </div>
 
+      <!-- ── Phone + Role row ── -->
       <div class="form-row">
         <div class="form-field">
           <label>Phone</label>
@@ -190,16 +211,23 @@
         </div>
       </div>
 
+      <!-- ── Email ── -->
       <div class="form-field">
         <label>Email</label>
-        <input pInputText [(ngModel)]="form.email" placeholder="name&#64;shop.com" />
+        <input pInputText [(ngModel)]="form.email" placeholder="name@shop.com" />
       </div>
 
     </div>
+
     <ng-template pTemplate="footer">
-      <button pButton label="Cancel" class="p-button-text" (click)="dialogVisible = false"></button>
-      <button pButton [label]="editingId ? 'Save Changes' : 'Add Member'" class="btn-grad"
-        (click)="saveMember()" [disabled]="!form.name.trim()"></button>
+      <button pButton label="Cancel" class="p-button-text" [disabled]="saving" (click)="dialogVisible = false"></button>
+      <button pButton
+        [label]="saving ? 'Saving…' : (editingId ? 'Save Changes' : 'Add Member')"
+        [icon]="saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+        class="btn-grad"
+        [disabled]="!form.name.trim() || saving"
+        (click)="saveMember()">
+      </button>
     </ng-template>
   </p-dialog>
 

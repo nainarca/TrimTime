@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { DashboardLayoutComponent } from './core/layout/dashboard-layout/dashboard-layout.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { inject } from '@angular/core';
+import { AuthService } from './core/services/auth/auth.service';
+import { Router } from '@angular/router';
 
 export const routes: Routes = [
   {
@@ -11,6 +14,14 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
+    canActivate: [() => {
+      const auth = inject(AuthService);
+      const router = inject(Router);
+      if (auth.isAuthenticated()) {
+        return router.createUrlTree(['/dashboard']);
+      }
+      return true;
+    }],
     loadChildren: () =>
       import('./features/auth/auth.module').then((m) => m.AuthModule),
   },

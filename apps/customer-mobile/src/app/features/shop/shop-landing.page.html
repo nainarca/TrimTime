@@ -134,19 +134,41 @@
 <!-- ── Sticky Footer ── -->
 <ion-footer *ngIf="!loading && !error" class="shop-footer">
   <div class="footer-inner">
+
+    <!-- No branches warning -->
+    <div class="no-branch-warn" *ngIf="noBranchesWarning">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span>No locations set up yet. Contact the shop.</span>
+    </div>
+
     <div class="footer-wait" *ngIf="selectedBranch">
       <ion-icon name="time-outline"></ion-icon>
       <span>Est. 5–15 min wait</span>
     </div>
-    <ion-button
-      expand="block"
-      shape="round"
-      class="join-btn"
-      [disabled]="!canJoin"
-      (click)="joinQueue()"
-    >
-      <ion-icon name="people-outline" slot="start"></ion-icon>
-      Join Queue
-    </ion-button>
+
+    <div class="footer-btn-row">
+      <ion-button
+        expand="block"
+        fill="outline"
+        shape="round"
+        class="book-btn"
+        [disabled]="!canJoin"
+        (click)="bookAppointment()"
+      >
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
+        Book Appointment
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        shape="round"
+        class="join-btn"
+        [disabled]="!canJoin"
+        (click)="joinQueue()"
+      >
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        Join Queue
+      </ion-button>
+    </div>
   </div>
 </ion-footer>

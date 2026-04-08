@@ -21,6 +21,10 @@ export class LiveTrackerPage implements OnInit, OnDestroy {
   loading  = true;
   error    = '';
 
+  // ── Passed from join-queue page (for served summary) ────────
+  shopName  = '';
+  barberName = '';
+
   // ── Connection ───────────────────────────────────────────────
   socketConnected = false;
   connectionState: ConnectionState = {
@@ -68,7 +72,9 @@ export class LiveTrackerPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.entryId = this.route.snapshot.paramMap.get('entryId');
+    this.entryId   = this.route.snapshot.paramMap.get('entryId');
+    this.shopName  = this.route.snapshot.queryParamMap.get('shopName')  || '';
+    this.barberName = this.route.snapshot.queryParamMap.get('barberName') || '';
     if (!this.entryId) {
       this.error   = 'Invalid queue entry';
       this.loading = false;
@@ -131,7 +137,13 @@ export class LiveTrackerPage implements OnInit, OnDestroy {
         if (updated) {
           this.applyEntryUpdate(updated as unknown as QueueEntry);
           if (this.entry?.status === 'SERVED') {
-            this.router.navigate(['/queue', this.entryId, 'done']);
+            this.router.navigate(['/queue', this.entryId, 'done'], {
+  queryParams: {
+    shopName:      this.shopName,
+    barberName:    this.barberName,
+    ticket:        this.entry?.ticketDisplay || '',
+  },
+});
           }
         }
       }),
@@ -156,7 +168,13 @@ export class LiveTrackerPage implements OnInit, OnDestroy {
           if (!this.queueSocket.isConnected && evt.entry?.id === this.entryId) {
             this.applyEntryUpdate({ ...this.entry!, ...evt.entry });
             if (this.entry?.status === 'SERVED') {
-              this.router.navigate(['/queue', this.entryId, 'done']);
+              this.router.navigate(['/queue', this.entryId, 'done'], {
+  queryParams: {
+    shopName:      this.shopName,
+    barberName:    this.barberName,
+    ticket:        this.entry?.ticketDisplay || '',
+  },
+});
             }
           }
         },
