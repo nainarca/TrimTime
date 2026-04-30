@@ -27,7 +27,7 @@ export declare class NotificationService implements OnModuleInit {
      * High-priority — plays sound on the frontend.
      *
      * Emitted by: QueueService.recalculateQueue()
-     * Dedup: guarded by Redis SETNX in QueueService — fires at most once per entry.
+     * Dedup: guarded by in-memory Map in QueueService — fires at most once per entry.
      */
     handleNextInLine(evt: NextInLineEvent): Promise<void>;
     /**

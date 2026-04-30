@@ -6,7 +6,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
 // Infrastructure
 import { DatabaseModule } from '../modules/database/database.module';
-import { RedisModule } from '../modules/redis/redis.module';
 
 // Feature modules
 import { AuthModule } from '../modules/auth/auth.module';
@@ -43,7 +42,6 @@ import { graphqlConfig } from '../config/graphql.config';
 
     // Infrastructure (global)
     DatabaseModule,
-    RedisModule,
 
     // Feature modules
     AuthModule,

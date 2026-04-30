@@ -7,11 +7,20 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../database/prisma.service';
-import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcryptjs';
 import { generateOtp, isOtpLocked } from '@trimtime/shared-utils';
 import { JwtPayload } from '@trimtime/shared-types';
 import { AuthResponse, OtpRequestResponse } from './dto/auth-response.type';
+
+interface OtpEntry {
+  hash: string;
+  expiresAt: number;
+}
+
+interface OtpAttemptEntry {
+  count: number;
+  expiresAt: number;
+}
 
 @Injectable()
 export class AuthService {
@@ -22,15 +31,19 @@ export class AuthService {
   private readonly OTP_LENGTH: number;
   private readonly LOCK_TTL = 900; // 15 min lockout
 
+  private readonly otpStore     = new Map<string, OtpEntry>();
+  private readonly otpAttempts  = new Map<string, OtpAttemptEntry>();
+  private readonly otpLocks     = new Map<string, number>(); // phone -> expiresAt ms
+  private readonly refreshTokens = new Map<string, string>(); // userId -> token
+
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
-    private readonly jwt: JwtService,
-    private readonly config: ConfigService,
+    private readonly prisma:  PrismaService,
+    private readonly jwt:     JwtService,
+    private readonly config:  ConfigService,
   ) {
-    this.OTP_TTL = this.config.get<number>('OTP_TTL_SECONDS', 300);
+    this.OTP_TTL          = this.config.get<number>('OTP_TTL_SECONDS', 300);
     this.OTP_MAX_ATTEMPTS = this.config.get<number>('OTP_MAX_ATTEMPTS', 3);
-    this.OTP_LENGTH = this.config.get<number>('OTP_LENGTH', 6);
+    this.OTP_LENGTH       = this.config.get<number>('OTP_LENGTH', 6);
     this.logDemoOtpMode();
   }
 
@@ -67,20 +80,54 @@ export class AuthService {
     }
   }
 
-  /** E.164-ish: strip spaces so Redis keys match request + verify. */
+  /** E.164-ish: strip spaces so keys match request + verify. */
   private canonicalPhone(phone: string): string {
     return typeof phone === 'string' ? phone.replace(/\s/g, '').trim() : phone;
+  }
+
+  private isOtpLockActive(phone: string): boolean {
+    const expiresAt = this.otpLocks.get(phone);
+    if (!expiresAt) return false;
+    if (Date.now() > expiresAt) {
+      this.otpLocks.delete(phone);
+      return false;
+    }
+    return true;
+  }
+
+  private getOtpLockTtlSeconds(phone: string): number {
+    const expiresAt = this.otpLocks.get(phone);
+    if (!expiresAt) return 0;
+    return Math.ceil((expiresAt - Date.now()) / 1000);
+  }
+
+  private getOtpEntry(phone: string): OtpEntry | null {
+    const entry = this.otpStore.get(phone);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.otpStore.delete(phone);
+      return null;
+    }
+    return entry;
+  }
+
+  private getOtpAttempts(phone: string): number {
+    const entry = this.otpAttempts.get(phone);
+    if (!entry) return 0;
+    if (Date.now() > entry.expiresAt) {
+      this.otpAttempts.delete(phone);
+      return 0;
+    }
+    return entry.count;
   }
 
   // ── Request OTP ───────────────────────────────────────────────────────────
 
   async requestOtp(phone: string): Promise<OtpRequestResponse> {
     phone = this.canonicalPhone(phone);
-    // Check if phone is locked
-    const lockKey = this.redis.otpLockKey(phone);
-    const isLocked = await this.redis.exists(lockKey);
-    if (isLocked) {
-      const ttl = await this.redis.ttl(lockKey);
+
+    if (this.isOtpLockActive(phone)) {
+      const ttl = this.getOtpLockTtlSeconds(phone);
       throw new BadRequestException(
         `Too many attempts. Try again in ${Math.ceil(ttl / 60)} minutes.`,
       );
@@ -93,14 +140,9 @@ export class AuthService {
         : generateOtp(this.OTP_LENGTH);
     const otpHash = await bcrypt.hash(otp, 10);
 
-    // Store hashed OTP with TTL
-    const otpKey = this.redis.otpKey(phone);
-    await this.redis.set(otpKey, otpHash, this.OTP_TTL);
+    this.otpStore.set(phone, { hash: otpHash, expiresAt: Date.now() + this.OTP_TTL * 1000 });
+    this.otpAttempts.delete(phone);
 
-    // Reset attempts
-    await this.redis.del(this.redis.otpAttemptsKey(phone));
-
-    // In development, log the OTP (never do this in production)
     if (this.config.get('NODE_ENV') !== 'production') {
       this.logger.debug(`OTP for ${phone}: ${otp}`);
     }
@@ -120,36 +162,32 @@ export class AuthService {
 
   async verifyOtp(phone: string, otp: string): Promise<AuthResponse> {
     phone = this.canonicalPhone(phone);
-    otp = typeof otp === 'string' ? otp.trim() : otp;
-    const lockKey = this.redis.otpLockKey(phone);
-    const isLocked = await this.redis.exists(lockKey);
-    if (isLocked) {
+    otp   = typeof otp === 'string' ? otp.trim() : otp;
+
+    if (this.isOtpLockActive(phone)) {
       throw new BadRequestException('Account temporarily locked. Try again later.');
     }
 
-    const otpKey = this.redis.otpKey(phone);
-    const storedHash = await this.redis.get(otpKey);
-    if (!storedHash) {
+    const otpEntry = this.getOtpEntry(phone);
+    if (!otpEntry) {
       throw new BadRequestException('OTP expired or not found. Request a new one.');
     }
 
-    // Track attempts
-    const attemptsKey = this.redis.otpAttemptsKey(phone);
-    const attemptsRaw = await this.redis.get(attemptsKey);
-    const attempts = attemptsRaw ? parseInt(attemptsRaw, 10) : 0;
+    const attempts = this.getOtpAttempts(phone);
 
     if (isOtpLocked(attempts, this.OTP_MAX_ATTEMPTS)) {
-      await this.redis.set(lockKey, '1', this.LOCK_TTL);
-      await this.redis.del(otpKey, attemptsKey);
+      this.otpLocks.set(phone, Date.now() + this.LOCK_TTL * 1000);
+      this.otpStore.delete(phone);
+      this.otpAttempts.delete(phone);
       throw new BadRequestException(
         'Too many failed attempts. Account locked for 15 minutes.',
       );
     }
 
-    const isValid = await bcrypt.compare(otp, storedHash);
+    const isValid = await bcrypt.compare(otp, otpEntry.hash);
     if (!isValid) {
       const newAttempts = attempts + 1;
-      await this.redis.set(attemptsKey, String(newAttempts), this.OTP_TTL);
+      this.otpAttempts.set(phone, { count: newAttempts, expiresAt: Date.now() + this.OTP_TTL * 1000 });
       const remaining = this.OTP_MAX_ATTEMPTS - newAttempts;
       throw new BadRequestException(
         remaining > 0
@@ -159,7 +197,8 @@ export class AuthService {
     }
 
     // OTP valid — clean up
-    await this.redis.del(otpKey, attemptsKey);
+    this.otpStore.delete(phone);
+    this.otpAttempts.delete(phone);
 
     // Upsert user
     let user = await this.prisma.user.findUnique({ where: { phone } });
@@ -250,9 +289,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    // Verify stored token matches
-    const storedKey = this.redis.refreshTokenKey(payload.sub);
-    const storedToken = await this.redis.get(storedKey);
+    const storedToken = this.refreshTokens.get(payload.sub);
     if (storedToken !== token) {
       throw new UnauthorizedException('Refresh token revoked');
     }
@@ -270,7 +307,7 @@ export class AuthService {
   // ── Logout ────────────────────────────────────────────────────────────────
 
   async logout(userId: string): Promise<boolean> {
-    await this.redis.del(this.redis.refreshTokenKey(userId));
+    this.refreshTokens.delete(userId);
     return true;
   }
 
@@ -300,12 +337,7 @@ export class AuthService {
       expiresIn: this.config.get('JWT_REFRESH_EXPIRY', '30d'),
     });
 
-    // Store refresh token in Redis (30d TTL)
-    await this.redis.set(
-      this.redis.refreshTokenKey(userId),
-      refreshToken,
-      60 * 60 * 24 * 30,
-    );
+    this.refreshTokens.set(userId, refreshToken);
 
     return { accessToken, refreshToken, userId, isNewUser };
   }

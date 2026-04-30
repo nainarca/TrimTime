@@ -8,34 +8,34 @@ export declare class AppointmentsResolver {
     constructor(appointmentsService: AppointmentsService);
     bookAppointmentAsGuest(input: GuestBookAppointmentInput): Promise<AppointmentModel>;
     createAppointment(input: AppointmentInput, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         durationMins: number;
         createdAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         updatedAt: Date;
         branchId: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         barberId: string;
         customerId: string;
         serviceId: string;
-        notes: string;
         scheduledAt: Date;
+        notes: string;
         reminderSent: boolean;
     }>;
     cancelAppointment(id: string, user: AuthenticatedUser): Promise<boolean>;
     appointmentsByShop(shopId: string, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         durationMins: number;
         createdAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         updatedAt: Date;
         branchId: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         barberId: string;
         customerId: string;
         serviceId: string;
-        notes: string;
         scheduledAt: Date;
+        notes: string;
         reminderSent: boolean;
     }[]>;
 }

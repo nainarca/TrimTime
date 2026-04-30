@@ -5,8 +5,8 @@ export declare class ShopsService {
     constructor(prisma: PrismaService);
     createShop(ownerId: string, input: CreateShopInput): Promise<{
         name: string;
-        id: string;
         description: string;
+        id: string;
         currency: string;
         isActive: boolean;
         createdAt: Date;
@@ -22,8 +22,8 @@ export declare class ShopsService {
     }>;
     findById(id: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
         description: string;
+        id: string;
         currency: string;
         isActive: boolean;
         createdAt: Date;
@@ -39,8 +39,8 @@ export declare class ShopsService {
     }>;
     findBySlug(slug: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
         description: string;
+        id: string;
         currency: string;
         isActive: boolean;
         createdAt: Date;
@@ -56,8 +56,8 @@ export declare class ShopsService {
     }>;
     findByOwner(ownerId: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
         description: string;
+        id: string;
         currency: string;
         isActive: boolean;
         createdAt: Date;
@@ -73,8 +73,8 @@ export declare class ShopsService {
     }>;
     getBranches(shopId: string, allowedShopIds?: string[]): Promise<{
         name: string;
-        id: string;
         shopId: string;
+        id: string;
         isActive: boolean;
         createdAt: Date;
         phone: string;
@@ -87,8 +87,8 @@ export declare class ShopsService {
     }[]>;
     getBranchesBySlug(slug: string): Promise<{
         name: string;
-        id: string;
         shopId: string;
+        id: string;
         isActive: boolean;
         createdAt: Date;
         phone: string;
@@ -101,8 +101,8 @@ export declare class ShopsService {
     }[]>;
     updateShop(shopId: string, ownerId: string, input: UpdateShopInput): Promise<{
         name: string;
-        id: string;
         description: string;
+        id: string;
         currency: string;
         isActive: boolean;
         createdAt: Date;

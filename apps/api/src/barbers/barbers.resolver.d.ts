@@ -5,8 +5,8 @@ export declare class BarbersResolver {
     private readonly barbersService;
     constructor(barbersService: BarbersService);
     publicBarbers(shopId: string): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         isActive: boolean;
         createdAt: Date;
         avatarUrl: string;
@@ -21,8 +21,8 @@ export declare class BarbersResolver {
         maxQueueSize: number;
     }[]>;
     barbers(shopId: string, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         isActive: boolean;
         createdAt: Date;
         avatarUrl: string;
@@ -37,8 +37,8 @@ export declare class BarbersResolver {
         maxQueueSize: number;
     }[]>;
     upsertBarber(input: BarberInput, user: AuthenticatedUser): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         isActive: boolean;
         createdAt: Date;
         avatarUrl: string;

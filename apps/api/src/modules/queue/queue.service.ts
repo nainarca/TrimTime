@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../database/prisma.service';
-import { RedisService } from '../redis/redis.service';
 import { JoinQueueInput } from './dto/join-queue.input';
 import { UpdateQueueStatusInput } from './dto/update-queue-status.input';
 import { pubSub, QUEUE_EVENTS } from './queue.pubsub';
@@ -24,7 +23,6 @@ import { NOTIFICATION_EVENTS } from '../notifications/types/notification.types';
 
 const DEFAULT_AVG_DURATION = 20; // minutes fallback
 
-// ── Terminal statuses that indicate a customer is done with the queue ──────────
 const TERMINAL_STATUSES = new Set(['SERVED', 'LEFT', 'NO_SHOW']);
 
 /** Staff/owner tokens carry shop IDs; customers often have [] — only enforce tenant when non-empty. */
@@ -36,27 +34,26 @@ function isTenantScoped(allowedShopIds?: string[]): boolean {
 export class QueueService {
   private readonly logger = new Logger(QueueService.name);
 
+  /** In-memory dedup for NEXT_IN_LINE notifications: entryId -> expiresAt ms */
+  private readonly nextInLineNotifSent = new Map<string, number>();
+
   constructor(
     private readonly prisma:       PrismaService,
-    private readonly redis:        RedisService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ── Join queue ─────────────────────────────────────────────────────────────
 
   async joinQueue(input: JoinQueueInput, customerId?: string, allowedShopIds?: string[]) {
-    // Tenant check (skip when shopIds is missing or [] — public / customer OTP users)
     if (isTenantScoped(allowedShopIds) && !allowedShopIds!.includes(input.shopId)) {
       throw new ForbiddenException('Cannot join queue for another shop');
     }
 
-    // Validate shop & branch
     const branch = await this.prisma.shopBranch.findFirst({
       where: { id: input.branchId, shopId: input.shopId, isActive: true },
     });
     if (!branch) throw new NotFoundException('Branch not found');
 
-    // Validate barber if specified
     if (input.barberId) {
       const barber = await this.prisma.barber.findFirst({
         where: { id: input.barberId, shopId: input.shopId, isActive: true },
@@ -67,19 +64,21 @@ export class QueueService {
       }
     }
 
-    // Generate ticket number
-    const today        = new Date().toISOString().slice(0, 10);
-    const counterKey   = this.redis.ticketCounterKey(input.shopId, today);
-    const ticketNumber = await this.redis.incr(counterKey);
+    // Generate ticket number from DB: max ticketNumber for this shop today + 1
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
-    // Set TTL for ticket counter (2 days auto-expire)
-    if (ticketNumber === 1) {
-      await this.redis.expire(counterKey, 60 * 60 * 48);
-    }
-
+    const lastEntry = await this.prisma.queueEntry.findFirst({
+      where: {
+        shopId: input.shopId,
+        joinedAt: { gte: todayStart },
+      },
+      orderBy: { ticketNumber: 'desc' },
+      select: { ticketNumber: true },
+    });
+    const ticketNumber = (lastEntry?.ticketNumber ?? 0) + 1;
     const ticketDisplay = formatTicket(ticketNumber);
 
-    // Create queue entry
     const entry = await this.prisma.queueEntry.create({
       data: {
         shopId:        input.shopId,
@@ -91,14 +90,13 @@ export class QueueService {
         entryType:     input.entryType,
         priority:      input.priority,
         status:        'WAITING',
-        position:      0, // recalculated immediately below
+        position:      0,
         guestName:     input.guestName,
         guestPhone:    input.guestPhone,
         appointmentId: input.appointmentId,
       },
     });
 
-    // Recalculate positions and EWT; also broadcasts QUEUE_UPDATED
     await this.recalculateQueue(input.shopId, input.barberId);
 
     return entry;
@@ -168,7 +166,6 @@ export class QueueService {
       );
     }
 
-    // Build timestamp updates
     const now = new Date();
     const timestampUpdate: Record<string, Date> = {};
     if (input.newStatus === 'CALLED')   timestampUpdate.calledAt   = now;
@@ -182,18 +179,10 @@ export class QueueService {
       data:  { status: input.newStatus, ...timestampUpdate },
     });
 
-    // ── Recalculate & broadcast FIRST ─────────────────────────────────────────
-    // Ensures the queue state is up-to-date on the frontend BEFORE the customer
-    // receives their notification.
     await this.recalculateQueue(entry.shopId, entry.barberId ?? undefined);
 
-    // ── Emit QUEUE_CALLED after the queue broadcast ───────────────────────────
-    // Ordering: frontend sees the updated queue, then the "your turn!" toast
-    // pops up with an accurate position/status in the background.
     if (input.newStatus === 'CALLED') {
-      // Clear the NEXT_IN_LINE dedup so the customer can be notified again if
-      // they re-join the queue on a future visit.
-      await this.redis.clearNextInLineNotif(updated.id);
+      this.clearNextInLineNotif(updated.id);
 
       this.logger.log(
         `[NOTIF] QUEUE_CALLED → entry:${updated.id} ticket:${updated.ticketDisplay} shop:${updated.shopId}`,
@@ -209,9 +198,8 @@ export class QueueService {
       });
     }
 
-    // Also clear the dedup key when the entry reaches a terminal status
     if (TERMINAL_STATUSES.has(input.newStatus)) {
-      await this.redis.clearNextInLineNotif(updated.id);
+      this.clearNextInLineNotif(updated.id);
     }
 
     return updated;
@@ -233,17 +221,6 @@ export class QueueService {
   }
 
   // ── Recalculate positions + EWT ───────────────────────────────────────────
-  //
-  // Order of operations inside this method:
-  //   1. Snapshot current positions from DB
-  //   2. Sort + assign new positions
-  //   3. Bulk-update DB (positions + EWT)
-  //   4. Fetch updated list → broadcast QUEUE_UPDATED  ← frontend state synced
-  //   5. Emit domain events (POSITION_CHANGED, NEXT_IN_LINE)  ← notify customer
-  //
-  // Notifications always fire AFTER the broadcast so that when the customer's
-  // live-tracker receives the toast, the QUEUE_UPDATED has already arrived and
-  // their position number is correct.
 
   async recalculateQueue(shopId: string, barberId?: string) {
     const rawEntries = await this.prisma.queueEntry.findMany({
@@ -259,10 +236,8 @@ export class QueueService {
       return;
     }
 
-    // ── 1. Snapshot current positions BEFORE recalculation ────────────────────
     const positionSnapshot = new Map(rawEntries.map((e) => [e.id, e.position]));
 
-    // ── 2. Sort and assign new positions ──────────────────────────────────────
     const sortable = rawEntries.map((e) => ({
       id:              e.id,
       priority:        e.priority,
@@ -273,7 +248,6 @@ export class QueueService {
     const sorted    = sortQueueEntries(sortable);
     const positions = assignPositions(sorted);
 
-    // ── 3. Calculate EWT ──────────────────────────────────────────────────────
     const barberRecord = barberId
       ? await this.prisma.barber.findUnique({
           where: { id: barberId },
@@ -295,7 +269,6 @@ export class QueueService {
       ? (Date.now() - servingEntry.servingAt.getTime()) / 60000
       : 0;
 
-    // ── 4. Bulk update DB + collect notification candidates ───────────────────
     interface NotifCandidate {
       entryId:           string;
       ticketDisplay:     string;
@@ -320,8 +293,6 @@ export class QueueService {
 
         const oldPos = positionSnapshot.get(entry.id) ?? 0;
 
-        // Only track entries whose position actually changed AND had a real
-        // prior position (oldPos === 0 means it was just created this cycle).
         if (oldPos !== 0 && oldPos !== newPos) {
           notifCandidates.push({
             entryId:           entry.id,
@@ -341,13 +312,10 @@ export class QueueService {
       }),
     );
 
-    // ── 5. Broadcast QUEUE_UPDATED ← must happen BEFORE notifications ─────────
     const updatedEntries = await this.getActiveQueue(shopId, barberId);
     await this.publishUpdate(shopId, barberId, 'POSITION_UPDATE', null, updatedEntries);
 
-    // ── 6. Emit per-customer notifications (after broadcast) ──────────────────
     for (const c of notifCandidates) {
-      // ── POSITION_CHANGED ────────────────────────────────────────────────────
       this.logger.debug(
         `[NOTIF] POSITION_CHANGED → entry:${c.entryId} ` +
         `${c.oldPosition}→${c.newPosition} shop:${shopId}`,
@@ -365,11 +333,8 @@ export class QueueService {
         estimatedWaitMins: c.estimatedWaitMins,
       });
 
-      // ── NEXT_IN_LINE ─────────────────────────────────────────────────────────
-      // Use atomic Redis SETNX to guarantee this fires exactly once per entry
-      // even under concurrent recalculations.
       if (c.newPosition === 1) {
-        const claimed = await this.redis.claimNextInLineNotif(c.entryId);
+        const claimed = this.claimNextInLineNotif(c.entryId);
 
         if (claimed) {
           this.logger.log(
@@ -411,16 +376,27 @@ export class QueueService {
       activeEntries,
     };
 
-    // GraphQL subscription (Apollo PubSub)
     await pubSub.publish(QUEUE_EVENTS.QUEUE_UPDATED, {
       queueUpdated: payload,
     });
 
-    // WebSocket broadcast (socket.io via EventEmitter → QueueGateway)
     this.eventEmitter.emit('queue.updated', payload);
 
     this.logger.debug(
       `[BROADCAST] QUEUE_UPDATED → shop:${shopId} entries:${(activeEntries as unknown[]).length}`,
     );
+  }
+
+  // ── NEXT_IN_LINE dedup (in-memory) ────────────────────────────────────────
+
+  private claimNextInLineNotif(entryId: string, ttlSeconds = 600): boolean {
+    const existing = this.nextInLineNotifSent.get(entryId);
+    if (existing && Date.now() < existing) return false;
+    this.nextInLineNotifSent.set(entryId, Date.now() + ttlSeconds * 1000);
+    return true;
+  }
+
+  private clearNextInLineNotif(entryId: string): void {
+    this.nextInLineNotifSent.delete(entryId);
   }
 }

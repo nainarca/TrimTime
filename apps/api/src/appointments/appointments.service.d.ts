@@ -6,50 +6,50 @@ export declare class AppointmentsService {
     constructor(prisma: PrismaService);
     private canonicalPhone;
     createAppointment(input: AppointmentInput, allowedShopIds?: string[]): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         durationMins: number;
         createdAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         updatedAt: Date;
         branchId: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         barberId: string;
         customerId: string;
         serviceId: string;
-        notes: string;
         scheduledAt: Date;
+        notes: string;
         reminderSent: boolean;
     }>;
     cancelAppointment(id: string, allowedShopIds?: string[]): Promise<boolean>;
     appointmentsByShop(shopId: string, allowedShopIds?: string[]): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         durationMins: number;
         createdAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         updatedAt: Date;
         branchId: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         barberId: string;
         customerId: string;
         serviceId: string;
-        notes: string;
         scheduledAt: Date;
+        notes: string;
         reminderSent: boolean;
     }[]>;
     /** Customer app — no JWT; links or creates user by phone. */
     bookAppointmentAsGuest(input: GuestBookAppointmentInput): Promise<{
-        id: string;
         shopId: string;
+        id: string;
         durationMins: number;
         createdAt: Date;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         updatedAt: Date;
         branchId: string;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         barberId: string;
         customerId: string;
         serviceId: string;
-        notes: string;
         scheduledAt: Date;
+        notes: string;
         reminderSent: boolean;
     }>;
 }

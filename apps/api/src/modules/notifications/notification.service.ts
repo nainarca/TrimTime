@@ -58,7 +58,7 @@ export class NotificationService implements OnModuleInit {
    * High-priority — plays sound on the frontend.
    *
    * Emitted by: QueueService.recalculateQueue()
-   * Dedup: guarded by Redis SETNX in QueueService — fires at most once per entry.
+   * Dedup: guarded by in-memory Map in QueueService — fires at most once per entry.
    */
   @OnEvent(NOTIFICATION_EVENTS.NEXT_IN_LINE)
   async handleNextInLine(evt: NextInLineEvent): Promise<void> {

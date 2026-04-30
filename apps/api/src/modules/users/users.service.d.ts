@@ -5,8 +5,8 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findById(id: string): Promise<{
         roles: {
-            id: string;
             shopId: string;
+            id: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -25,8 +25,8 @@ export declare class UsersService {
     }>;
     findByPhone(phone: string): Promise<{
         roles: {
-            id: string;
             shopId: string;
+            id: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;
@@ -45,8 +45,8 @@ export declare class UsersService {
     }>;
     updateProfile(userId: string, input: UpdateProfileInput): Promise<{
         roles: {
-            id: string;
             shopId: string;
+            id: string;
             createdAt: Date;
             userId: string;
             role: import(".prisma/client").$Enums.UserRole;

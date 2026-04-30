@@ -6,9 +6,9 @@ export declare class ServicesResolver {
     constructor(servicesService: ServicesService);
     publicServices(shopId: string): Promise<{
         name: string;
-        id: string;
-        shopId: string;
         description: string;
+        shopId: string;
+        id: string;
         durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -18,9 +18,9 @@ export declare class ServicesResolver {
     }[]>;
     services(shopId: string, user: AuthenticatedUser): Promise<{
         name: string;
-        id: string;
-        shopId: string;
         description: string;
+        shopId: string;
+        id: string;
         durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -30,9 +30,9 @@ export declare class ServicesResolver {
     }[]>;
     upsertService(input: ServiceInput, user: AuthenticatedUser): Promise<{
         name: string;
-        id: string;
-        shopId: string;
         description: string;
+        shopId: string;
+        id: string;
         durationMins: number;
         price: import("@prisma/client/runtime/library").Decimal;
         currency: string;
